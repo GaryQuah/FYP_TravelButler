@@ -11,3 +11,4 @@ Back end instructions
 
 to run back end:
 `poetry run uvicorn app.main:app `
+`poetry run uvicorn app.main:app --reload`
