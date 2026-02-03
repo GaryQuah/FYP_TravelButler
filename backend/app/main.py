@@ -1,10 +1,21 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 import boto3
+from boto3.dynamodb.conditions import Attr
 from typing import Optional
+import uuid
 
 # ---------- App ----------
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # React dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ---------- DynamoDB ----------
 dynamodb = boto3.resource("dynamodb")
@@ -12,25 +23,25 @@ user_table = dynamodb.Table("Users")
 
 # ---------- Request Models ----------
 class User(BaseModel):
-    user_id: str
     name: str
     email: str
-    age: int
 
 class UpdateUserRequest(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
-    age: Optional[int] = None
 
 # ---------- CREATE ----------
 @app.post("/users/")
 def create_user(user: User):
+    user_id = str(uuid.uuid4())
+    user_data = user.dict()
+    user_data["user_id"] = user_id
     try:
         user_table.put_item(
-            Item=user.dict(),
+            Item=user_data,
             ConditionExpression="attribute_not_exists(user_id)"  # Prevent overwrite
         )
-        return {"message": "User created successfully", "user": user.dict()}
+        return {"message": "User created successfully", "user": user_data}
 
     except user_table.meta.client.exceptions.ConditionalCheckFailedException:
         raise HTTPException(status_code=400, detail="User already exists")
@@ -39,13 +50,17 @@ def create_user(user: User):
         raise HTTPException(status_code=500, detail=str(e))
 
 # ---------- READ ----------
-@app.get("/users/{user_id}")
-def get_user(user_id: str):
+@app.get("/users/{email}")
+def get_user(email: str):
     try:
-        response = user_table.get_item(Key={"user_id": user_id})
-        if "Item" not in response:
+        response = user_table.scan(
+            FilterExpression=Attr('email').eq(email)
+        )
+        items = response.get('Items', [])
+        if not items:
             raise HTTPException(status_code=404, detail="User not found")
-        return response["Item"]
+        # Assuming email is unique, return the first item
+        return items[0]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -64,10 +79,6 @@ def update_user(user_id: str, data: UpdateUserRequest):
     if data.email is not None:
         update_expr_parts.append("email = :email")
         expr_values[":email"] = data.email
-
-    if data.age is not None:
-        update_expr_parts.append("age = :age")
-        expr_values[":age"] = data.age
 
     if not update_expr_parts:
         raise HTTPException(status_code=400, detail="No fields to update")

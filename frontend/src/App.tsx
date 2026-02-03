@@ -1,16 +1,21 @@
 import { Routes, Route } from "react-router-dom";
 
-import { LoginPage } from "./pages/LoginPage";
-import { HomePage } from "./pages/HomePage";
-import { OnboardingPage } from "./pages/OnboardingPage";
+import { LoginPage } from "./views/LoginPage";
+import { HomePage } from "./views/HomePage";
+import { OnboardingPage } from "./views/OnboardingPage";
+import { UserProvider } from "./models/UserContext";
+import { Header } from "./views/Header";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/Home" element={<HomePage />} />
-      <Route path="/Setup" element={<OnboardingPage />} />
-    </Routes>
+    <UserProvider>
+      <Header />
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/Home" element={<HomePage />} />
+        <Route path="/Setup" element={<OnboardingPage />} />
+      </Routes>
+    </UserProvider>
   );
 }
 
