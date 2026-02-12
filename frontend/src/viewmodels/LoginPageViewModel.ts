@@ -8,32 +8,31 @@ export function LoginPageViewModel() {
   const { setUser } = useUser();
 
   const handleGoogleLogin = async (credentialResponse: any) => {
-    if (credentialResponse.credential) {
-      const decoded: any = jwtDecode(credentialResponse.credential);
-      const email = decoded.email;
-      console.log(decoded);
+    if (!credentialResponse.credential) return;
 
-      // Check if user exists
-      const existingUser = await getUserByEmail(email);
-      if (existingUser) {
-        setUser(existingUser);
-        navigate("/Home");
-      } else {
-        // Store email for onboarding
-        localStorage.setItem("pendingEmail", email);
-        navigate("/Setup");
-      }
+    const decoded: { email: string; name?: string } =
+      jwtDecode(credentialResponse.credential);
+
+    const existingUser = await getUserByEmail(decoded.email);
+
+    if (existingUser) {
+      setUser(existingUser);
+      navigate("/Home");
+    } else {
+      localStorage.setItem("pendingEmail", decoded.email);
+      navigate("/Setup");
     }
   };
 
   const handleGuestLogin = async () => {
     try {
-      const user = await createUser("guest", "guest@guest.com");
+      const guestEmail = `guest_${Date.now()}@guest.com`;
+
+      const user = await createUser("Guest", guestEmail);
       setUser(user);
       navigate("/Home");
     } catch (error) {
       console.error("Failed to create guest user:", error);
-      // Maybe show error
     }
   };
 

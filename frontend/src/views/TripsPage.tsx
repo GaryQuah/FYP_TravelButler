@@ -28,6 +28,12 @@ const cardsData = [
     date: "Nov 16",
     description: "Another example of supporting text.",
   },
+  {
+    id: 5,
+    title: "Something else",
+    date: "Nov 16",
+    description: "Another example of supporting text.",
+  },
 ];
 
 export function TripsPage() {
@@ -38,6 +44,7 @@ export function TripsPage() {
       <div className="container">
         {/* Navigation */}
         <Navbar />
+        <button className="btn btn-primary">Add new trip</button>
 
         {/* Featured trips */}
         <div className="row mb-4">

@@ -9,7 +9,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Home", path: "/home" },
   { label: "My trips", path: "/trips" },
-  { label: "AI Suggestions", path: "/business" },
+  { label: "AI Suggestions", path: "/suggestions" },
 ];
 
 const Navbar: React.FC = () => {

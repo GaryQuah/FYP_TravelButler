@@ -13,9 +13,7 @@ export function LoginPage() {
         <div className="d-flex justify-content-center mb-3">
           <GoogleLogin
             onSuccess={handleGoogleLogin}
-            onError={() => {
-              console.log("Login Failed");
-            }}
+            onError={() => console.log("Login Failed")}
             auto_select={false}
           />
         </div>

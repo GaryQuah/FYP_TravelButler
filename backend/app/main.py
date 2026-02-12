@@ -1,119 +1,115 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
-import boto3
-from boto3.dynamodb.conditions import Attr
+import os
+import sys
+from contextlib import asynccontextmanager
 from typing import Optional
-import uuid
+
+from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, EmailStr
+from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
+from dotenv import load_dotenv
+
+# ---------- Load env ----------
+load_dotenv()  # loads variables from .env
+
+MONGO_URL = os.environ["MONGO_URL"]
+DATABASE_NAME = os.environ.get("DATABASE_NAME", "travelmate_db")
+COLLECTION_NAME = os.environ.get("COLLECTION_NAME", "travelmate_collection")
+DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"}
+
+# ---------- Helper ----------
+def user_serializer(user) -> dict:
+    return {
+        "user_id": str(user["_id"]),
+        "name": user["name"],
+        "email": user["email"],
+    }
+
+# ---------- Request Models ----------
+class User(BaseModel):
+    name: str
+    email: EmailStr
+
+class UpdateUserRequest(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+# ---------- Lifespan ----------
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Connect to MongoDB
+    client = AsyncIOMotorClient(MONGO_URL)
+    db = client[DATABASE_NAME]
+
+    # Ping to ensure connection
+    pong = await db.command("ping")
+    if int(pong["ok"]) != 1:
+        raise Exception("MongoDB Atlas connection failed!")
+
+    # Attach collection to app
+    app.users_collection = db[COLLECTION_NAME]
+
+    yield  # app ready
+
+    # Close connection on shutdown
+    client.close()
 
 # ---------- App ----------
-app = FastAPI()
+app = FastAPI(lifespan=lifespan, debug=DEBUG)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # React dev server
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---------- DynamoDB ----------
-dynamodb = boto3.resource("dynamodb")
-user_table = dynamodb.Table("Users")
+# ---------- CRUD Routes ----------
+@app.post("/users/", status_code=status.HTTP_201_CREATED)
+async def create_user(user: User):
+    existing_user = await app.users_collection.find_one({"email": user.email})
+    if existing_user:
+        return user_serializer(existing_user)
 
-# ---------- Request Models ----------
-class User(BaseModel):
-    name: str
-    email: str
+    result = await app.users_collection.insert_one(user.dict())
+    new_user = await app.users_collection.find_one({"_id": result.inserted_id})
+    return user_serializer(new_user)
 
-class UpdateUserRequest(BaseModel):
-    name: Optional[str] = None
-    email: Optional[str] = None
-
-# ---------- CREATE ----------
-@app.post("/users/")
-def create_user(user: User):
-    user_id = str(uuid.uuid4())
-    user_data = user.dict()
-    user_data["user_id"] = user_id
-    try:
-        user_table.put_item(
-            Item=user_data,
-            ConditionExpression="attribute_not_exists(user_id)"  # Prevent overwrite
-        )
-        return {"message": "User created successfully", "user": user_data}
-
-    except user_table.meta.client.exceptions.ConditionalCheckFailedException:
-        raise HTTPException(status_code=400, detail="User already exists")
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# ---------- READ ----------
 @app.get("/users/{email}")
-def get_user(email: str):
-    try:
-        response = user_table.scan(
-            FilterExpression=Attr('email').eq(email)
-        )
-        items = response.get('Items', [])
-        if not items:
-            raise HTTPException(status_code=404, detail="User not found")
-        # Assuming email is unique, return the first item
-        return items[0]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+async def get_user(email: str):
+    user = await app.users_collection.find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user_serializer(user)
 
-# ---------- UPDATE ----------
 @app.put("/users/{user_id}")
-def update_user(user_id: str, data: UpdateUserRequest):
-    update_expr_parts = []
-    expr_values = {}
-    expr_names = {}
-
-    if data.name is not None:
-        update_expr_parts.append("#name = :name")
-        expr_values[":name"] = data.name
-        expr_names["#name"] = "name"
-
-    if data.email is not None:
-        update_expr_parts.append("email = :email")
-        expr_values[":email"] = data.email
-
-    if not update_expr_parts:
+async def update_user(user_id: str, data: UpdateUserRequest):
+    update_data = {k: v for k, v in data.dict().items() if v is not None}
+    if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
 
-    try:
-        response = user_table.update_item(
-            Key={"user_id": user_id},
-            UpdateExpression="SET " + ", ".join(update_expr_parts),
-            ExpressionAttributeValues=expr_values,
-            ExpressionAttributeNames=expr_names if expr_names else None,
-            ConditionExpression="attribute_exists(user_id)",
-            ReturnValues="ALL_NEW"
-        )
-
-        return {
-            "message": "User updated successfully",
-            "user": response["Attributes"]
-        }
-
-    except user_table.meta.client.exceptions.ConditionalCheckFailedException:
+    result = await app.users_collection.update_one(
+        {"_id": ObjectId(user_id)}, {"$set": update_data}
+    )
+    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    updated_user = await app.users_collection.find_one({"_id": ObjectId(user_id)})
+    return user_serializer(updated_user)
 
-# ---------- DELETE ----------
 @app.delete("/users/{user_id}")
-def delete_user(user_id: str):
-    try:
-        response = user_table.delete_item(
-            Key={"user_id": user_id},
-            ConditionExpression="attribute_exists(user_id)"
-        )
-        return {"message": "User deleted successfully"}
-    except user_table.meta.client.exceptions.ConditionalCheckFailedException:
+async def delete_user(user_id: str):
+    result = await app.users_collection.delete_one({"_id": ObjectId(user_id)})
+    if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return {"message": "User deleted successfully"}
+
+# ---------- Run ----------
+def main(argv=sys.argv[1:]):
+    import uvicorn
+    uvicorn.run("app.main:app", host="0.0.0.0", port=3001, reload=DEBUG)
+
+if __name__ == "__main__":
+    main()
