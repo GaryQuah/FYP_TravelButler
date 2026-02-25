@@ -1,69 +1,145 @@
 import { HomePageViewModel } from "../viewmodels/HomePageViewModel";
-
+import { useState } from "react";
 import Navbar from "../components/Navbar";
-import Card from "../components/TripCard";
-
+import TripNavbar from "../components/TripNavBar";
+import ItineraryCard from "../components/ItineraryCard";
+import AddItineraryModal from "../components/AddItineraryModal";
+//TODO: Migrate these static data into the database & import from there
 const cardsData = [
   {
     id: 1,
-    title: "Singapore",
-    date: "Nov 12",
-    description: "This is a wider card with supporting text below.",
+    activity_name: "BBQ",
+    start_time: "1pm",
+    end_time: "4pm",
+    description: "BBQ at East coast park.",
   },
   {
-    id: 2,
-    title: "Malaysia",
-    date: "Nov 14",
-    description: "Another example of supporting text.",
+    id: 1,
+    activity_name: "BBQ",
+    start_time: "1pm",
+    end_time: "4pm",
+    description: "BBQ at East coast park.",
   },
   {
-    id: 3,
-    title: "Japan",
-    date: "Nov 15",
-    description: "Another example of supporting text.",
+    id: 1,
+    activity_name: "BBQ",
+    start_time: "1pm",
+    end_time: "4pm",
+    description: "BBQ at East coast park.",
   },
   {
-    id: 4,
-    title: "Something else",
-    date: "Nov 16",
-    description: "Another example of supporting text.",
+    id: 1,
+    activity_name: "BBQ",
+    start_time: "1pm",
+    end_time: "4pm",
+    description: "BBQ at East coast park.",
   },
   {
-    id: 5,
-    title: "Something else",
-    date: "Nov 16",
-    description: "Another example of supporting text.",
+    id: 1,
+    activity_name: "BBQ",
+    start_time: "1pm",
+    end_time: "4pm",
+    description: "BBQ at East coast park.",
+  },
+  {
+    id: 1,
+    activity_name: "BBQ",
+    start_time: "1pm",
+    end_time: "4pm",
+    description: "BBQ at East coast park.",
   },
 ];
 
 export function TripsPage() {
   const {} = HomePageViewModel();
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <>
-      <div className="container">
-        {/* Navigation */}
-        <Navbar />
-        <button className="btn btn-primary">Add new trip</button>
+      {/* TOP NAVBAR */}
+      <Navbar />
 
-        {/* Featured trips */}
-        <div className="row mb-4">
-          {cardsData.map((card) => (
-            <div key={card.id} className="col-md-6">
-              <Card
-                title={card.title}
-                date={card.date}
-                description={card.description}
-              />
+      {/* BELOW NAVBAR: Sidebar + Content */}
+      <div className="d-flex">
+        {/* LEFT SIDEBAR */}
+        <TripNavbar />
+
+        {/* RIGHT CONTENT */}
+        <div>
+          <>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowModal(true)}
+            >
+              Add Itinerary
+            </button>
+
+            {showModal && (
+              <AddItineraryModal onClose={() => setShowModal(false)} />
+            )}
+          </>
+
+          <div className="container">
+            <p className="lead my-3">01/01/2001</p>
+            <div className="container">
+              {/* User's current trips */}
+              <div className="row mb-4">
+                {cardsData.map((card) => (
+                  <div key={card.id} className="col-md-6">
+                    <ItineraryCard
+                      activity_name={card.activity_name}
+                      start_time={card.start_time}
+                      end_time={card.end_time}
+                      description={card.description}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+          </div>
+          <div className="container">
+            <p className="lead my-3">02/01/2001</p>
+            <div className="container">
+              {/* User's current trips */}
+              <div className="row mb-4">
+                {cardsData.map((card) => (
+                  <div key={card.id} className="col-md-6">
+                    <ItineraryCard
+                      activity_name={card.activity_name}
+                      start_time={card.start_time}
+                      end_time={card.end_time}
+                      description={card.description}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="container">
+            <p className="lead my-3">03/01/2001</p>
+            <div className="container">
+              {/* User's current trips */}
+              <div className="row mb-4">
+                {cardsData.map((card) => (
+                  <div key={card.id} className="col-md-6">
+                    <ItineraryCard
+                      activity_name={card.activity_name}
+                      start_time={card.start_time}
+                      end_time={card.end_time}
+                      description={card.description}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <footer className="py-4 text-center border-top mt-5">
+            <a href="#">Back to top</a>
+          </footer>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="py-4 text-center border-top mt-5">
-        <a href="#">Back to top</a>
-      </footer>
     </>
   );
 }
