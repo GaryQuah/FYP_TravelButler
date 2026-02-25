@@ -1,7 +1,7 @@
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../models/UserContext";
-import { getUserByEmail } from "../models/api";
+import { loginOrRegisterUser } from "../models/api";
 
 export function LoginPageViewModel() {
   const navigate = useNavigate();
@@ -13,14 +13,18 @@ export function LoginPageViewModel() {
     const decoded: { email: string; name?: string } =
       jwtDecode(credentialResponse.credential);
 
-    const existingUser = await getUserByEmail(decoded.email);
+    const user = await loginOrRegisterUser(decoded.email, decoded.name);
 
-    if (existingUser) {
-      setUser(existingUser);
+    if (user && user.name) {
+      setUser(user);
       navigate("/Home");
-    } else {
+    } else if (user) {
+      // User exists but has no name, needs onboarding
       localStorage.setItem("pendingEmail", decoded.email);
       navigate("/Setup");
+    } else {
+      // Handle error case where user is null
+      console.error("Login failed: no user data returned");
     }
   };
 

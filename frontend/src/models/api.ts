@@ -6,13 +6,22 @@ export interface User {
   email: string;
 }
 
-export const getUserByEmail = async (
-  email: string
+export const loginOrRegisterUser = async (
+  email: string,
+  name?: string
 ): Promise<User | null> => {
-  const response = await fetch(`${API_BASE_URL}/users/${email}`);
+  const response = await fetch(`${API_BASE_URL}/users/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, name }),
+  });
 
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error("Failed to fetch user");
+  if (!response.ok) {
+    console.error("Failed to login or register user");
+    return null;
+  }
 
   return response.json();
 };
