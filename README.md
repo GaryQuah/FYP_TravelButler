@@ -7,15 +7,12 @@ Front end instructions
 to run front end:
 `npm run dev`
 
-
 Back end instructions
 
 to run back end:
 `poetry run uvicorn app.main:app `
 `poetry run uvicorn app.main:app --reload`
 
+Architecture:
 
-
-Architecture: 
-
-This project uses MongoDB as its database. 
+This project uses MongoDB as its database.

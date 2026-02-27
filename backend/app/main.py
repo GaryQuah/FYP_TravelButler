@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import DEBUG
 from app.controllers.user_controller import router as user_router
+from app.controllers.trips_controller import router as trips_router
 from app.db.mongo import lifespan
 
 app = FastAPI(lifespan=lifespan, debug=DEBUG)
@@ -18,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(user_router)
+app.include_router(trips_router)
 
 
 # ---------- Run ----------

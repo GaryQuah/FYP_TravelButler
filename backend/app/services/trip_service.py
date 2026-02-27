@@ -1,6 +1,16 @@
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.trip import Trip
 
+async def get_all_trips(collection: AsyncIOMotorCollection):
+    """
+    Retrieve all trips from the database.
+    """
+    trips = []
+    cursor = collection.find({})
+    async for trip in cursor:
+        trips.append(Trip(**trip))
+    return trips
+
 async def create_trip(collection: AsyncIOMotorCollection, trip: Trip):
     """
     Create a new trip in the database.

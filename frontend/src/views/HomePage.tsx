@@ -1,46 +1,39 @@
-import { HomePageViewModel } from "../viewmodels/HomePageViewModel";
-
+import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Card from "../components/TripCard";
+import { HomePageViewModel } from "../viewmodels/HomePageViewModel";
+import AddTripModal from "../components/AddTripModal";
 
-//TODO: Migrate these static data into the database & import from there
-const cardsData = [
-  {
-    id: 1,
-    title: "Singapore",
-    date: "Nov 12",
-    description: "This is a wider card with supporting text below.",
-  },
-  {
-    id: 2,
-    title: "Malaysia",
-    date: "Nov 14",
-    description: "Another example of supporting text.",
-  },
-  {
-    id: 3,
-    title: "Japan",
-    date: "Nov 15",
-    description: "Another example of supporting text.",
-  },
-  {
-    id: 4,
-    title: "Something else",
-    date: "Nov 16",
-    description: "Another example of supporting text.",
-  },
-  {
-    id: 5,
-    title: "Something else",
-    date: "Nov 16",
-    description: "Another example of supporting text.",
-  },
-];
+interface Trip {
+  trip_id: string;
+  title: string;
+  budget: number;
+  itineraries: any[]; // Define a more specific type for itineraries if possible
+}
 
 const {} = HomePageViewModel();
 
 export function HomePage() {
-  const {} = HomePageViewModel();
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [showModal, setShowModal] = useState(false);
+
+  const createNewTrip = async () => {};
+  useEffect(() => {
+    const fetchTrips = async () => {
+      try {
+        const response = await fetch("/api/trips");
+        if (!response.ok) {
+          throw new Error("Failed to fetch trips");
+        }
+        const data = await response.json();
+        setTrips(data);
+      } catch (error) {
+        console.error("Error fetching trips:", error);
+      }
+    };
+
+    fetchTrips();
+  }, []);
 
   return (
     <>
@@ -55,6 +48,14 @@ export function HomePage() {
             <p className="lead my-3">
               Plan, collaborate with friends, and explore smarter ✈️
             </p>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowModal(true)}
+            >
+              Add Trip
+            </button>
+
+            {showModal && <AddTripModal onClose={() => setShowModal(false)} />}
           </div>
         </div>
       </div>
@@ -62,12 +63,12 @@ export function HomePage() {
       <div className="container">
         {/* User's current trips */}
         <div className="row mb-4">
-          {cardsData.map((card) => (
-            <div key={card.id} className="col-md-6">
+          {trips.map((trip) => (
+            <div key={trip.trip_id} className="col-md-6">
               <Card
-                title={card.title}
-                date={card.date}
-                description={card.description}
+                title={trip.title}
+                date={""} // You might want to derive a date from the itineraries
+                description={`Budget: ${trip.budget}`}
               />
             </div>
           ))}

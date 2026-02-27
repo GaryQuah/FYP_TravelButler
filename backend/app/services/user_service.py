@@ -15,6 +15,7 @@ async def create_user(users_collection, user):
         return user_serializer(existing_user)
 
     result = await users_collection.insert_one(user.dict())
+    # Fetch the newly created user to return it with the generated ID from MongoDB
     new_user = await users_collection.find_one({"_id": result.inserted_id})
     return user_serializer(new_user)
 
