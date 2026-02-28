@@ -1,10 +1,11 @@
+// A modal is a popup window that appears on top of the current page, allowing for user interaction without navigating away
 import React, { useState } from "react";
 
 interface Props {
   onClose: () => void;
 }
 
-const AddItineraryModal: React.FC<Props> = ({ onClose }) => {
+const AddItineraryModal = ({ onClose }: Props) => {
   const [formData, setFormData] = useState({
     activity_name: "",
     start_time: "",

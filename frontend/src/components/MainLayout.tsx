@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import { useUser } from "../models/UserContext";
 
-const MainLayout: React.FC = () => {
+const MainLayout = () => {
   const { user, loading } = useUser();
   const navigate = useNavigate();
 

@@ -6,6 +6,7 @@ def trip_serializer(trip) -> dict:
     """
     Serializes a trip document from MongoDB into a dictionary,
     converting the database _id to a string-based trip_id.
+    Note this is due to ObjectId from MongoDB not being JSON serializable, so we convert it to a string.
     """
     return {
         "trip_id": str(trip["_id"]),

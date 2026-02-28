@@ -1,3 +1,4 @@
+// The main navigation bar at the top of the page. It allows users to navigate between different pages of the application, such as home and AI suggestions.
 import React from "react";
 import { useUser } from "../models/UserContext";
 import { useNavigate, useLocation } from "react-router-dom";

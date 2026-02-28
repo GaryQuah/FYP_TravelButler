@@ -1,6 +1,11 @@
+/*
+Custom hook to manage trip data fetching and creation. 
+It provides functions to fetch the list of trips and create new trips, as well as state variables to track the list of trips and loading status.
+*/
 import { useState, useEffect } from "react";
 import {
   createTrip as apiCreateTrip,
+  deleteTrip as apiDeleteTrip,
   type Trip,
   type TripCreationData,
 } from "../models/api";
@@ -39,9 +44,28 @@ export function useTrips() {
     }
   };
 
+  const deleteTrip = async (tripId: string) => {
+    try {
+      await apiDeleteTrip(tripId);
+      // Remove the trip from the local state to update the UI
+      setTrips((prevTrips) =>
+        prevTrips.filter((trip) => trip.trip_id !== tripId),
+      );
+    } catch (error) {
+      console.error("Failed to delete trip:", error);
+      // Optionally, show an error message to the user
+    }
+  };
+
   useEffect(() => {
     fetchTrips();
   }, []);
 
-  return { trips, loading, createNewTrip, refreshTrips: fetchTrips };
+  return {
+    trips,
+    loading,
+    createNewTrip,
+    deleteTrip,
+    refreshTrips: fetchTrips,
+  };
 }

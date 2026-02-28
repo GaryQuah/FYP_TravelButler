@@ -7,6 +7,9 @@ export function LoginPageViewModel() {
   const navigate = useNavigate();
   const { setUser } = useUser();
 
+  /*
+  Receives the response from Google One Tap login, decodes the JWT to extract user information, and then calls the API to login or register the user.
+  */
   const handleGoogleLogin = async (credentialResponse: any) => {
     if (!credentialResponse.credential) return;
 

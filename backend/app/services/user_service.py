@@ -2,6 +2,11 @@ from bson import ObjectId
 
 
 def user_serializer(user) -> dict:
+    """
+    Serializes a user document from MongoDB into a dictionary,
+    converting the database _id to a string-based trip_id.
+    Note this is due to ObjectId from MongoDB not being JSON serializable, so we convert it to a string.
+    """
     return {
         "user_id": str(user["_id"]),
         "name": user["name"],
@@ -10,6 +15,11 @@ def user_serializer(user) -> dict:
 
 
 async def create_user(users_collection, user):
+    """
+    Create: A new user in the database from "user" data in the "users_collection". 
+    Return: The created user with the generated ID from MongoDB.
+    """
+
     existing_user = await users_collection.find_one({"email": user.email})
     if existing_user:
         return user_serializer(existing_user)

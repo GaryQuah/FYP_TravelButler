@@ -1,3 +1,8 @@
+"""
+This file is used to define configuration settings for the application, such as database connection details and collection names. 
+This is to standardize naming across files preventing hardcoding of values in multiple places, and to allow for easy updates to 
+configuration settings in the future.
+"""
 import os
 
 from dotenv import load_dotenv

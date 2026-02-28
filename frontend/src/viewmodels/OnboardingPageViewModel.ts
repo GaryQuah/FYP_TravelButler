@@ -1,3 +1,8 @@
+/*
+Initial plan was to have an onboarding page to allow user to set their username, but for now we extract if from google one tap login response, 
+so this page is not used. We can decide later if we want to bring it back for users to customize their username after login.
+TODO: decide if we want to bring back the onboarding page for users to customize their username after login, or if we are fine with just using the name from google one tap login response.
+*/
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../models/UserContext";
