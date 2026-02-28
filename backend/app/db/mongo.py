@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from app.config import DATABASE_NAME, MONGO_URL, USER_COLLECTION, TRIP_COLLECTION
+from app.config import DATABASE_NAME, MONGO_URL, USER_COLLECTION, TRIP_COLLECTION, ITINERARY_COLLECTION
 
 collections_to_check = ["users", "events", "itineraries", "trips"]
 
@@ -17,6 +17,7 @@ async def lifespan(app):
 
     app.users_collection = db[USER_COLLECTION]
     app.trips_collection = db[TRIP_COLLECTION]
+    app.itineraries_collection = db[ITINERARY_COLLECTION]
 
     #Check for collections in use
     existing_collections = await db.list_collection_names()

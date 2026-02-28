@@ -1,143 +1,83 @@
-import { HomePageViewModel } from "../viewmodels/HomePageViewModel";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import TripNavbar from "../components/TripNavBar";
 import ItineraryCard from "../components/ItineraryCard";
 import AddItineraryModal from "../components/AddItineraryModal";
-//TODO: Migrate these static data into the database & import from there
-const cardsData = [
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-];
+import { useItineraries } from "../hooks/UseItineraries";
+import { useTrips } from "../hooks/UseTrip"; // We need trip details
+import { type ItineraryCreationData, type Trip } from "../models/api";
 
 export function TripsPage() {
-  const {} = HomePageViewModel();
+  const { tripId } = useParams<{ tripId: string }>();
+  const { itineraries, loading, error, addItinerary } = useItineraries(tripId);
+  const { getTripById } = useTrips(); // Assuming useTrips has a function to get a single trip
+  const [tripDetails, setTripDetails] = useState<Trip | null>(null);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    if (tripId && getTripById) {
+      const fetchTripDetails = () => {
+        const details = getTripById(tripId);
+        setTripDetails(details || null); // Handle case where details might be undefined
+      };
+      fetchTripDetails();
+    }
+  }, [tripId, getTripById]);
+
+  const handleSaveItinerary = async (itineraryData: ItineraryCreationData) => {
+    await addItinerary(itineraryData);
+    setShowModal(false);
+  };
 
   return (
     <>
-      {/* TOP NAVBAR */}
       <Navbar />
-
-      {/* BELOW NAVBAR: Sidebar + Content */}
       <div className="d-flex">
-        {/* LEFT SIDEBAR */}
         <TripNavbar />
-
-        {/* RIGHT CONTENT */}
-        <div>
-          <>
-            <button
-              className="btn btn-primary"
-              onClick={() => setShowModal(true)}
-            >
-              Add Itinerary
-            </button>
-
-            {showModal && (
-              <AddItineraryModal onClose={() => setShowModal(false)} />
-            )}
-          </>
-
-          <div className="container">
-            <p className="lead my-3">01/01/2001</p>
-            <div className="container">
-              {/* User's current trips */}
-              <div className="row mb-4">
-                {cardsData.map((card) => (
-                  <div key={card.id} className="col-md-6">
-                    <ItineraryCard
-                      activity_name={card.activity_name}
-                      start_time={card.start_time}
-                      end_time={card.end_time}
-                      description={card.description}
-                    />
-                  </div>
-                ))}
+        <div className="container p-4">
+          {loading && <p>Loading itinerary...</p>}
+          {error && <p className="text-danger">{error}</p>}
+          {tripDetails && (
+            <>
+              <div className="p-4 p-md-5 mb-4 text-white rounded bg-dark">
+                <h1 className="display-5 fst-italic">
+                  {tripDetails.trip_name}
+                </h1>
+                <p className="lead my-3">{tripDetails.description}</p>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setShowModal(true)}
+                >
+                  Add Itinerary
+                </button>
               </div>
-            </div>
-          </div>
-          <div className="container">
-            <p className="lead my-3">02/01/2001</p>
-            <div className="container">
-              {/* User's current trips */}
-              <div className="row mb-4">
-                {cardsData.map((card) => (
-                  <div key={card.id} className="col-md-6">
-                    <ItineraryCard
-                      activity_name={card.activity_name}
-                      start_time={card.start_time}
-                      end_time={card.end_time}
-                      description={card.description}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="container">
-            <p className="lead my-3">03/01/2001</p>
-            <div className="container">
-              {/* User's current trips */}
-              <div className="row mb-4">
-                {cardsData.map((card) => (
-                  <div key={card.id} className="col-md-6">
-                    <ItineraryCard
-                      activity_name={card.activity_name}
-                      start_time={card.start_time}
-                      end_time={card.end_time}
-                      description={card.description}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
 
-          {/* Footer */}
-          <footer className="py-4 text-center border-top mt-5">
-            <a href="#">Back to top</a>
-          </footer>
+              {showModal && (
+                <AddItineraryModal
+                  onClose={() => setShowModal(false)}
+                  onSave={handleSaveItinerary}
+                />
+              )}
+
+              <div className="row">
+                {itineraries && itineraries.length > 0
+                  ? itineraries.map((item) => (
+                      <div key={item.id} className="col-md-6 mb-4">
+                        <ItineraryCard
+                          activity_name={item.activity_name}
+                          start_time={item.start_time}
+                          end_time={item.end_time}
+                          description={item.description}
+                        />
+                      </div>
+                    ))
+                  : !loading && (
+                      <p>No itinerary items found. Add one to get started!</p>
+                    )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>

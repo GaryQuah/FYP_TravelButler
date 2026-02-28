@@ -61,11 +61,16 @@ export function useTrips() {
     fetchTrips();
   }, []);
 
+  const getTripById = (tripId: string): Trip | undefined => {
+    return trips.find((trip) => trip.trip_id === tripId);
+  };
+
   return {
     trips,
     loading,
     createNewTrip,
     deleteTrip,
+    getTripById,
     refreshTrips: fetchTrips,
   };
 }

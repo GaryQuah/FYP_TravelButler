@@ -15,7 +15,7 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/Home" element={<HomePage />} />
         <Route path="/Setup" element={<OnboardingPage />} />
-        <Route path="/Trips" element={<TripsPage />} />
+        <Route path="/trips/:tripId" element={<TripsPage />} />
         <Route path="/Suggestions" element={<SuggestionsPage />} />
       </Routes>
     </UserProvider>

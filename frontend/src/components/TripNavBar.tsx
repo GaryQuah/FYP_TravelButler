@@ -22,7 +22,7 @@ const TripNavbar = () => {
     >
       {navItems.map((item) => (
         <button
-          key={item.path}
+          key={item.label}
           onClick={() => navigate(item.path)}
           className={`btn text-start mb-2 ${
             location.pathname === item.path

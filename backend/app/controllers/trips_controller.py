@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Body, HTTPException, status, Depends, Request
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.trip import Trip, TripCreationRequest
+from app.models.itinerary import Itinerary
 from app.services.trip_service import (
     create_trip,
     delete_trip,
@@ -9,7 +10,7 @@ from app.services.trip_service import (
     get_all_trips,
 )
  
-router = APIRouter(prefix="/trips", tags=["trips"])
+router = APIRouter(prefix="/api/trips", tags=["trips"])
 
 #Retrieve all the trips collection from the app state and return it for use in the route handlers through dependency injection
 def get_trips_collection(request: Request) -> AsyncIOMotorCollection:
@@ -49,3 +50,15 @@ async def delete_trip_by_id(trip_id: str, trips_collection: AsyncIOMotorCollecti
     if not deleted_trip:
         raise HTTPException(status_code=404, detail="Trip not found")
     return deleted_trip
+ 
+ 
+@router.post("/{trip_id}/itineraries", status_code=status.HTTP_201_CREATED)
+async def add_new_itinerary_to_trip(
+    trip_id: str,
+    itinerary_data: Itinerary,
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)
+):
+    new_itinerary = await add_itinerary_to_trip(trips_collection, trip_id, itinerary_data)
+    if not new_itinerary:
+        raise HTTPException(status_code=404, detail="Trip not found or itinerary could not be added")
+    return new_itinerary

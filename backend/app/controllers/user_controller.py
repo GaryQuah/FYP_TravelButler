@@ -15,7 +15,7 @@ class LoginRequest(BaseModel):
     email: str
     name: str | None = None
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/api/users", tags=["users"])
 
 # Dependency to get the database collection from the application state
 def get_users_collection(request: Request) -> AsyncIOMotorCollection:
