@@ -21,7 +21,6 @@ router = APIRouter(prefix="/users", tags=["users"])
 def get_users_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.users_collection
 
-
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def login_user(
     request: LoginRequest,

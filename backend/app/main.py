@@ -1,4 +1,5 @@
 import sys
+import uvicorn
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +11,7 @@ from app.db.mongo import lifespan
 
 app = FastAPI(lifespan=lifespan, debug=DEBUG)
 
+# CORS configuration to allow requests from the frontend on localhost:5173
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -18,13 +20,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Define routers here
 app.include_router(user_router)
 app.include_router(trips_router)
 
 
-# ---------- Run ----------
-def main(argv=sys.argv[1:]):
-    import uvicorn
+def main():
     uvicorn.run("app.main:app", host="0.0.0.0", port=3001, reload=DEBUG)
 
 if __name__ == "__main__":
