@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Body, HTTPException, status, Depends
+from fastapi import APIRouter, Body, HTTPException, status, Depends, Request
 from motor.motor_asyncio import AsyncIOMotorCollection
-from app.models.trip import Trip
+from app.models.trip import Trip, TripCreationRequest
 from app.services.trip_service import (
     create_trip,
     delete_trip,
@@ -12,7 +12,7 @@ from app.services.trip_service import (
 router = APIRouter(prefix="/trips", tags=["trips"])
 
 #Retrieve all the trips collection from the app state and return it for use in the route handlers through dependency injection
-def get_trips_collection(request) -> AsyncIOMotorCollection:
+def get_trips_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.trips_collection
  
 @router.get("/")
@@ -23,8 +23,8 @@ async def get_all_trips_route(trips_collection: AsyncIOMotorCollection = Depends
     return trips
  
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_new_trip(trip: Trip, trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):
-    return await create_trip(trips_collection, trip)
+async def create_new_trip(trip_data: TripCreationRequest, trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):
+    return await create_trip(trips_collection, trip_data)
  
  
 @router.get("/{trip_id}")

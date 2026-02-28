@@ -18,10 +18,6 @@ export function LoginPageViewModel() {
     if (user && user.name) {
       setUser(user);
       navigate("/Home");
-    } else if (user) {
-      // User exists but has no name, needs onboarding
-      localStorage.setItem("pendingEmail", decoded.email);
-      navigate("/Setup");
     } else {
       // Handle error case where user is null
       console.error("Login failed: no user data returned");

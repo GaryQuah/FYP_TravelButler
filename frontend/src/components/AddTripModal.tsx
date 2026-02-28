@@ -1,28 +1,36 @@
 import React, { useState } from "react";
+import { type TripCreationData } from "../models/api";
+
+type TripFormData = Omit<TripCreationData, "user_ids">;
 
 interface Props {
   onClose: () => void;
+  onSave: (tripData: TripFormData) => void;
 }
 
-const AddTripModal: React.FC<Props> = ({ onClose }) => {
-  const [formData, setFormData] = useState({
+const AddTripModal: React.FC<Props> = ({ onClose, onSave }) => {
+  const [formData, setFormData] = useState<TripFormData>({
     trip_name: "",
     start_date: "",
     end_date: "",
     description: "",
+    budget: 0,
   });
 
+  // When there is a change in form data, update accordingly.
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      // Handle budget as a number, and all other fields as strings
+      [name]: name === "budget" ? parseFloat(value) || 0 : value,
     });
   };
 
   const handleSubmit = () => {
-    console.log(formData); // later send to backend
+    onSave(formData);
     onClose();
   };
 
@@ -37,13 +45,20 @@ const AddTripModal: React.FC<Props> = ({ onClose }) => {
           <div className="modal-content p-3">
             <h5>Add Trip</h5>
 
-            <input
-              className="form-control mb-2"
-              name="trip_name"
-              placeholder="Trip Name"
-              value={formData.trip_name}
-              onChange={handleChange}
-            />
+            <div className="mb-2">
+              <label htmlFor="trip_name" className="form-label">
+                Trip Name
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="trip_name"
+                name="trip_name"
+                value={formData.trip_name}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
             <input
               className="form-control mb-2"

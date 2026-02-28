@@ -1,5 +1,22 @@
 from motor.motor_asyncio import AsyncIOMotorCollection
-from app.models.trip import Trip
+from app.models.trip import Trip, TripCreationRequest
+from bson import ObjectId
+
+def trip_serializer(trip) -> dict:
+    """
+    Serializes a trip document from MongoDB into a dictionary,
+    converting the database _id to a string-based trip_id.
+    """
+    return {
+        "trip_id": str(trip["_id"]),
+        "user_ids": trip["user_ids"],
+        "itineraries": trip["itineraries"],
+        "budget": trip["budget"],
+        "trip_name": trip["trip_name"],
+        "start_date": trip["start_date"],
+        "end_date": trip["end_date"],
+        "description": trip["description"],
+    }
 
 async def get_all_trips(collection: AsyncIOMotorCollection):
     """
@@ -8,42 +25,52 @@ async def get_all_trips(collection: AsyncIOMotorCollection):
     trips = []
     cursor = collection.find({})
     async for trip in cursor:
-        trips.append(Trip(**trip))
+        trips.append(trip_serializer(trip))
     return trips
 
-async def create_trip(collection: AsyncIOMotorCollection, trip: Trip):
+async def create_trip(collection: AsyncIOMotorCollection, trip_data: TripCreationRequest):
     """
-    Create a new trip in the database.
+    Create a new trip in the database from creation data.
     """
-    trip_dict = trip.dict()
+    # Convert the Pydantic model to a dictionary
+    trip_dict = trip_data.dict()
+
+    # Add fields not provided by the creation request
+    trip_dict["itineraries"] = []
+
+    # Now, insert the complete trip dictionary
     result = await collection.insert_one(trip_dict)
-    # It's good practice to return the created object,
-    # potentially fetching it back from the DB to confirm creation.
+    
+    # Fetch the newly created trip from the DB to return it
     created_trip = await collection.find_one({"_id": result.inserted_id})
-    return created_trip
+    return trip_serializer(created_trip)
 
 async def get_trip(collection: AsyncIOMotorCollection, trip_id: str):
     """
     Retrieve a single trip by its ID.
     """
-    # In MongoDB, the primary key is _id. If you are using a custom trip_id,
-    # you would query on that field instead. Assuming trip_id is the primary identifier.
-    return await collection.find_one({"trip_id": trip_id})
+    trip = await collection.find_one({"_id": ObjectId(trip_id)})
+    if trip:
+        return trip_serializer(trip)
+    return None
 
 async def update_trip(collection: AsyncIOMotorCollection, trip_id: str, trip_data: Trip):
     """
     Update a trip's information.
     """
     trip_dict = trip_data.dict(exclude_unset=True)
-    await collection.update_one({"trip_id": trip_id}, {"$set": trip_dict})
+    await collection.update_one({"_id": ObjectId(trip_id)}, {"$set": trip_dict})
     # Return the updated document
-    return await collection.find_one({"trip_id": trip_id})
+    updated_trip = await collection.find_one({"_id": ObjectId(trip_id)})
+    if updated_trip:
+        return trip_serializer(updated_trip)
+    return None
 
 async def delete_trip(collection: AsyncIOMotorCollection, trip_id: str):
     """
     Delete a trip from the database.
     """
-    result = await collection.delete_one({"trip_id": trip_id})
+    result = await collection.delete_one({"_id": ObjectId(trip_id)})
     # The result object contains information about the deletion,
     # like `deleted_count`. We can return a boolean or the count.
     return result.deleted_count > 0

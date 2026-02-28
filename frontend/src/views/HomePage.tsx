@@ -1,39 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Card from "../components/TripCard";
-import { HomePageViewModel } from "../viewmodels/HomePageViewModel";
 import AddTripModal from "../components/AddTripModal";
-
-interface Trip {
-  trip_id: string;
-  title: string;
-  budget: number;
-  itineraries: any[]; // Define a more specific type for itineraries if possible
-}
-
-const {} = HomePageViewModel();
+import { type Trip as ApiTrip } from "../models/api";
+import { useTrips } from "../hooks/UseTrip";
+import { useUser } from "../models/UserContext";
 
 export function HomePage() {
-  const [trips, setTrips] = useState<Trip[]>([]);
+  const { trips, createNewTrip, loading } = useTrips();
+  const { user } = useUser();
   const [showModal, setShowModal] = useState(false);
-
-  const createNewTrip = async () => {};
-  useEffect(() => {
-    const fetchTrips = async () => {
-      try {
-        const response = await fetch("/api/trips");
-        if (!response.ok) {
-          throw new Error("Failed to fetch trips");
-        }
-        const data = await response.json();
-        setTrips(data);
-      } catch (error) {
-        console.error("Error fetching trips:", error);
-      }
-    };
-
-    fetchTrips();
-  }, []);
 
   return (
     <>
@@ -55,7 +31,19 @@ export function HomePage() {
               Add Trip
             </button>
 
-            {showModal && <AddTripModal onClose={() => setShowModal(false)} />}
+            {showModal && (
+              <AddTripModal
+                onClose={() => setShowModal(false)}
+                onSave={async (tripData) => {
+                  if (user?.user_id) {
+                    await createNewTrip(tripData, user.user_id);
+                    setShowModal(false);
+                  } else {
+                    console.error("No user ID found to create trip.");
+                  }
+                }}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -63,13 +51,9 @@ export function HomePage() {
       <div className="container">
         {/* User's current trips */}
         <div className="row mb-4">
-          {trips.map((trip) => (
+          {trips.map((trip: ApiTrip) => (
             <div key={trip.trip_id} className="col-md-6">
-              <Card
-                title={trip.title}
-                date={""} // You might want to derive a date from the itineraries
-                description={`Budget: ${trip.budget}`}
-              />
+              <Card trip={trip} />
             </div>
           ))}
         </div>

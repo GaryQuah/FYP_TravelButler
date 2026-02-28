@@ -44,3 +44,38 @@ export const createUser = async (
 
   return response.json();
 };
+
+//Trip related API calls
+export interface Trip {
+  trip_id: string;
+  trip_name: string;
+  budget: number;
+  itineraries: any[]; // Consider defining a proper Itinerary type later
+  start_date: string;
+  end_date: string;
+  description: string;
+  user_ids: string[];
+}
+
+export interface TripCreationData {
+  trip_name: string;
+  start_date: string;
+  end_date: string;
+  description: string;
+  budget: number;
+  user_ids: string[];
+}
+
+export const createTrip = async (tripData: TripCreationData): Promise<Trip> => {
+  const response = await fetch(`${API_BASE_URL}/trips/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(tripData),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to create trip");
+  }
+  return response.json();
+};
