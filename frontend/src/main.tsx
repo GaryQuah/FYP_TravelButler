@@ -6,12 +6,11 @@ import App from "./App";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const OAUTH_CLIENT_ID =
-  "584798165676-9mofb589s4pm1kfihf49hidc9kjauqmn.apps.googleusercontent.com";
+const clientId = import.meta.env.VITE_OAUTH_CLIENT_ID;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId={OAUTH_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={clientId}>
       <BrowserRouter>
         <App />
       </BrowserRouter>

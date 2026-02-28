@@ -12,3 +12,7 @@ Back end instructions
 to run back end:
 `poetry run uvicorn app.main:app `
 `poetry run uvicorn app.main:app --reload`
+
+Architecture:
+
+This project uses MongoDB as its database.

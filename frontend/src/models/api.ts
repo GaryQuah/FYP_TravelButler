@@ -6,23 +6,30 @@ export interface User {
   email: string;
 }
 
-export const getUserByEmail = async (email: string): Promise<User | null> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/users/${encodeURIComponent(email)}`);
-    if (response.status === 404) {
-      return null;
-    }
-    if (!response.ok) {
-      throw new Error("Failed to fetch user");
-    }
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching user:", error);
+export const loginOrRegisterUser = async (
+  email: string,
+  name?: string
+): Promise<User | null> => {
+  const response = await fetch(`${API_BASE_URL}/users/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, name }),
+  });
+
+  if (!response.ok) {
+    console.error("Failed to login or register user");
     return null;
   }
+
+  return response.json();
 };
 
-export const createUser = async (name: string, email: string): Promise<User> => {
+export const createUser = async (
+  name: string,
+  email: string
+): Promise<User> => {
   const response = await fetch(`${API_BASE_URL}/users/`, {
     method: "POST",
     headers: {
@@ -30,9 +37,45 @@ export const createUser = async (name: string, email: string): Promise<User> => 
     },
     body: JSON.stringify({ name, email }),
   });
+
   if (!response.ok) {
     throw new Error("Failed to create user");
   }
-  const data = await response.json();
-  return data.user;
+
+  return response.json();
+};
+
+//Trip related API calls
+export interface Trip {
+  trip_id: string;
+  trip_name: string;
+  budget: number;
+  itineraries: any[]; // Consider defining a proper Itinerary type later
+  start_date: string;
+  end_date: string;
+  description: string;
+  user_ids: string[];
+}
+
+export interface TripCreationData {
+  trip_name: string;
+  start_date: string;
+  end_date: string;
+  description: string;
+  budget: number;
+  user_ids: string[];
+}
+
+export const createTrip = async (tripData: TripCreationData): Promise<Trip> => {
+  const response = await fetch(`${API_BASE_URL}/trips/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(tripData),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to create trip");
+  }
+  return response.json();
 };

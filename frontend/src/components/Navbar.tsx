@@ -1,4 +1,5 @@
 import React from "react";
+import { useUser } from "../models/UserContext";
 import { useNavigate, useLocation } from "react-router-dom";
 
 interface NavItem {
@@ -8,13 +9,14 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Home", path: "/home" },
-  { label: "My trips", path: "/trips" },
-  { label: "AI Suggestions", path: "/business" },
+  //{ label: "Add trip", path: "/trips" },
+  { label: "AI Suggestions", path: "/suggestions" },
 ];
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useUser();
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -36,6 +38,9 @@ const Navbar: React.FC = () => {
             {item.label}
           </button>
         ))}
+        <div className="me-3">
+          <span>Welcome, {user?.name}</span>
+        </div>
       </nav>
     </div>
   );

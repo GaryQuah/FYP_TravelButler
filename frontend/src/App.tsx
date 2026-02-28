@@ -7,12 +7,10 @@ import { TripsPage } from "./views/TripsPage";
 import { SuggestionsPage } from "./views/SuggestionsPage";
 
 import { UserProvider } from "./models/UserContext";
-import { Header } from "./views/Header";
 
 function App() {
   return (
     <UserProvider>
-      <Header />
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/Home" element={<HomePage />} />

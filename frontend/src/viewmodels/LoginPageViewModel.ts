@@ -1,44 +1,30 @@
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../models/UserContext";
-import { getUserByEmail, createUser } from "../models/api";
+import { loginOrRegisterUser } from "../models/api";
 
 export function LoginPageViewModel() {
   const navigate = useNavigate();
   const { setUser } = useUser();
 
   const handleGoogleLogin = async (credentialResponse: any) => {
-    if (credentialResponse.credential) {
-      const decoded: any = jwtDecode(credentialResponse.credential);
-      const email = decoded.email;
-      console.log(decoded);
+    if (!credentialResponse.credential) return;
 
-      // Check if user exists
-      const existingUser = await getUserByEmail(email);
-      if (existingUser) {
-        setUser(existingUser);
-        navigate("/Home");
-      } else {
-        // Store email for onboarding
-        localStorage.setItem("pendingEmail", email);
-        navigate("/Setup");
-      }
-    }
-  };
+    const decoded: { email: string; name?: string } =
+      jwtDecode(credentialResponse.credential);
 
-  const handleGuestLogin = async () => {
-    try {
-      const user = await createUser("guest", "guest@guest.com");
+    const user = await loginOrRegisterUser(decoded.email, decoded.name);
+
+    if (user && user.name) {
       setUser(user);
       navigate("/Home");
-    } catch (error) {
-      console.error("Failed to create guest user:", error);
-      // Maybe show error
+    } else {
+      // Handle error case where user is null
+      console.error("Login failed: no user data returned");
     }
   };
 
   return {
     handleGoogleLogin,
-    handleGuestLogin,
   };
 }
