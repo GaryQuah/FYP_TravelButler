@@ -26,6 +26,7 @@ export function HomePage() {
             </p>
             <button
               className="btn btn-primary"
+              // Show the add trip modal when the button is clicked - fill in details and add a new trip.
               onClick={() => setShowModal(true)}
             >
               Add Trip

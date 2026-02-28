@@ -1,3 +1,8 @@
+/*
+This file contains API calls related to user authentication and trip management. 
+It defines functions to login/register users, create users, and create trips. 
+TODO: create individual api files rather than bunching all api calls into one file.
+*/
 const API_BASE_URL = "http://localhost:8000";
 
 export interface User {

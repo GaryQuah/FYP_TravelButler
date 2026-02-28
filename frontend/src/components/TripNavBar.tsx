@@ -1,4 +1,4 @@
-import React from "react";
+// The navbar on the left for the trip page. It allows users to navigate between different sections of the trip page, such as itinerary and budget.
 import { useNavigate, useLocation } from "react-router-dom";
 
 interface NavItem {
@@ -11,7 +11,7 @@ const navItems: NavItem[] = [
   { label: "Budget", path: "/" },
 ];
 
-const TripNavbar: React.FC = () => {
+const TripNavbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 

@@ -1,3 +1,9 @@
+/*
+This file defines a React context for managing user authentication state across the application. 
+It provides a UserProvider component that wraps the app and manages the user state, including loading state while checking localStorage for existing user data. 
+The useUser hook allows components to easily access the user state and update it when needed.
+TODO: Is this the best way to manage user data? 
+*/
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User } from "./api";
@@ -10,9 +16,7 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export const UserProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUserState] = useState<User | null>(null);
   const [loading, setLoading] = useState(true); // Start in a loading state
 
@@ -28,7 +32,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     } finally {
       setLoading(false); // Finished loading
     }
-  }, []); // Empty dependency array means this runs only once on mount
+  }, []); // Runs only once on mount
 
   const setUser = (user: User | null) => {
     setUserState(user);

@@ -1,3 +1,7 @@
+/*
+Custom hook to manage trip data fetching and creation. 
+It provides functions to fetch the list of trips and create new trips, as well as state variables to track the list of trips and loading status.
+*/
 import { useState, useEffect } from "react";
 import {
   createTrip as apiCreateTrip,

@@ -21,6 +21,7 @@ const Card = ({ trip }: CardProps) => {
 
         <p className="card-text mb-auto">{trip.description}</p>
 
+        //TODO: Add image upload support for the trip card, and display the image here if it exists
         <a href="#" className="mt-3">
           View Trip
         </a>
