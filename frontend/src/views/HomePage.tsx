@@ -7,7 +7,7 @@ import { useTrips } from "../hooks/UseTrip";
 import { useUser } from "../models/UserContext";
 
 export function HomePage() {
-  const { trips, createNewTrip, loading } = useTrips();
+  const { trips, createNewTrip, deleteTrip, loading } = useTrips();
   const { user } = useUser();
   const [showModal, setShowModal] = useState(false);
 
@@ -54,7 +54,7 @@ export function HomePage() {
         <div className="row mb-4">
           {trips.map((trip: ApiTrip) => (
             <div key={trip.trip_id} className="col-md-6">
-              <Card trip={trip} />
+              <Card trip={trip} onDelete={deleteTrip} />
             </div>
           ))}
         </div>

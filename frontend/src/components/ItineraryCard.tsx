@@ -30,7 +30,7 @@ const ItineraryCard = ({
 
         <p className="card-text mb-auto">{description}</p>
 
-        //TODO: Add image upload support for the itinerary card, and display the image here if it exists
+        {/*TODO: Add image upload support for the trip card, and display the image here if it exists*/}
         <a href="#" className="mt-3">
           Continue reading
         </a>
