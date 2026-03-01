@@ -1,37 +1,63 @@
 import React, { useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { type TripCreationData } from "../models/api";
 
-type TripFormData = Omit<TripCreationData, "user_ids">;
+// Use a specific type for the form's internal state to handle Date objects
+type TripFormState = {
+  trip_name: string;
+  start_date: Date | null;
+  end_date: Date | null;
+  description: string;
+};
 
 interface Props {
   onClose: () => void;
-  onSave: (tripData: TripFormData) => void;
+  // The onSave prop should expect the data in the format required by the API.
+  onSave: (tripData: Omit<TripCreationData, "user_ids">) => void;
 }
 
 const AddTripModal: React.FC<Props> = ({ onClose, onSave }) => {
-  const [formData, setFormData] = useState<TripFormData>({
+  const [formData, setFormData] = useState<TripFormState>({
     trip_name: "",
-    start_date: "",
-    end_date: "",
+    start_date: null,
+    end_date: null,
     description: "",
-    budget: 0,
   });
 
-  // When there is a change in form data, update accordingly.
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      // Handle budget as a number, and all other fields as strings
-      [name]: name === "budget" ? parseFloat(value) || 0 : value,
+      [name]: value,
+    });
+  };
+
+  const handleDateChange = (
+    date: Date | null,
+    fieldName: "start_date" | "end_date",
+  ) => {
+    setFormData({
+      ...formData,
+      [fieldName]: date,
     });
   };
 
   const handleSubmit = () => {
-    onSave(formData);
-    onClose();
+    if (formData.start_date && formData.end_date) {
+      const tripDataToSave = {
+        ...formData,
+        start_date: formData.start_date.toISOString(),
+        end_date: formData.end_date.toISOString(),
+      };
+      onSave(tripDataToSave);
+      onClose();
+    } else {
+      // Optionally, handle the case where dates are not selected
+      console.error("Please select a start and end date.");
+    }
   };
 
   return (
@@ -60,20 +86,29 @@ const AddTripModal: React.FC<Props> = ({ onClose, onSave }) => {
               />
             </div>
 
-            <input
+            <DatePicker
               className="form-control mb-2"
-              name="start_date"
-              placeholder="Start Date"
-              value={formData.start_date}
-              onChange={handleChange}
+              selected={formData.start_date}
+              onChange={(date: Date | null) =>
+                handleDateChange(date, "start_date")
+              }
+              selectsStart
+              startDate={formData.start_date}
+              endDate={formData.end_date}
+              placeholderText="Start Date"
             />
 
-            <input
+            <DatePicker
               className="form-control mb-2"
-              name="end_date"
-              placeholder="End Date"
-              value={formData.end_date}
-              onChange={handleChange}
+              selected={formData.end_date}
+              onChange={(date: Date | null) =>
+                handleDateChange(date, "end_date")
+              }
+              selectsEnd
+              startDate={formData.start_date}
+              endDate={formData.end_date}
+              minDate={formData.start_date ?? undefined}
+              placeholderText="End Date"
             />
 
             <textarea

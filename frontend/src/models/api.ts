@@ -54,8 +54,8 @@ export interface Trip {
   trip_id: string;
   trip_name: string;
   budget: number;
-  start_date: string;
-  end_date: string;
+  start_date: Date;
+  end_date: Date;
   description: string;
   user_ids: string[];
 }
@@ -65,22 +65,22 @@ export interface TripCreationData {
   start_date: string;
   end_date: string;
   description: string;
-  budget: number;
+  budget?: number;
   user_ids: string[];
 }
 
 export interface Itinerary {
   id: string;
   activity_name: string;
-  start_time: string;
-  end_time: string;
+  start_time: Date;
+  end_time: Date;
   description: string;
 }
 
 export interface ItineraryCreationData {
   activity_name: string;
-  start_time: string;
-  end_time: string;
+  start_time: Date;
+  end_time: Date;
   description: string;
 }
 
@@ -116,7 +116,27 @@ export async function getTripDetails(tripId: string): Promise<Trip> {
   if (!response.ok) {
     throw new Error("Failed to fetch trip details");
   }
-  return response.json();
+  const trip = await response.json();
+  // Convert string dates to Date objects
+  return {
+    ...trip,
+    start_date: new Date(trip.start_date),
+    end_date: new Date(trip.end_date),
+  };
+}
+
+export async function getTrips(): Promise<Trip[]> {
+  const response = await fetch("/api/trips");
+  if (!response.ok) {
+    throw new Error("Failed to fetch trips");
+  }
+  const trips = await response.json();
+  // Convert string dates to Date objects
+  return trips.map((trip: any) => ({
+    ...trip,
+    start_date: new Date(trip.start_date),
+    end_date: new Date(trip.end_date),
+  }));
 }
 
 export async function getItineraries(tripId: string): Promise<Itinerary[]> {
@@ -124,7 +144,13 @@ export async function getItineraries(tripId: string): Promise<Itinerary[]> {
   if (!response.ok) {
     throw new Error("Failed to fetch itineraries");
   }
-  return response.json();
+  const itineraries = await response.json();
+  // Convert string dates to Date objects
+  return itineraries.map((itinerary: any) => ({
+    ...itinerary,
+    start_time: new Date(itinerary.start_time),
+    end_time: new Date(itinerary.end_time),
+  }));
 }
 
 export async function addItinerary(

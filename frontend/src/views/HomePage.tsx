@@ -36,11 +36,24 @@ export function HomePage() {
               <AddTripModal
                 onClose={() => setShowModal(false)}
                 onSave={async (tripData) => {
-                  if (user?.user_id) {
-                    await createNewTrip(tripData, user.user_id);
+                  if (
+                    user?.user_id &&
+                    tripData.start_date &&
+                    tripData.end_date
+                  ) {
+                    await createNewTrip(
+                      {
+                        ...tripData,
+                        start_date: tripData.start_date,
+                        end_date: tripData.end_date,
+                      },
+                      user.user_id,
+                    );
                     setShowModal(false);
                   } else {
-                    console.error("No user ID found to create trip.");
+                    console.error(
+                      "No user ID found or dates are not selected.",
+                    );
                   }
                 }}
               />

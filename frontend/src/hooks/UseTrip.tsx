@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import {
   createTrip as apiCreateTrip,
   deleteTrip as apiDeleteTrip,
+  getTrips as apiGetTrips,
   type Trip,
   type TripCreationData,
 } from "../models/api";
@@ -17,8 +18,7 @@ export function useTrips() {
   const fetchTrips = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/trips");
-      const data = await response.json();
+      const data = await apiGetTrips();
       setTrips(data);
     } catch (error) {
       console.error("Failed to fetch trips:", error);

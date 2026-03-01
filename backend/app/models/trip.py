@@ -1,6 +1,6 @@
 from typing import Optional
 from app.models.itinerary import Itinerary
-
+from datetime import date
 from pydantic import BaseModel, Field
 
 class Trip(BaseModel):
@@ -9,8 +9,8 @@ class Trip(BaseModel):
     itineraries: Optional[list[Itinerary]] = Field(None)
     budget: float
     trip_name: str
-    start_date: str
-    end_date: str
+    start_date: date
+    end_date: date
     description: str
 
 class TripCreationRequest(BaseModel):
@@ -18,5 +18,5 @@ class TripCreationRequest(BaseModel):
     start_date: str
     end_date: str
     description: str
-    budget: float
+    budget: float = 0.0
     user_ids: list[str]

@@ -1,17 +1,26 @@
-// A modal is a popup window that appears on top of the current page, allowing for user interaction without navigating away
 import React, { useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { type ItineraryCreationData } from "../models/api";
+
+// Define a type for the form's internal state to allow for null dates
+type ItineraryFormState = {
+  activity_name: string;
+  start_time: Date | null;
+  end_time: Date | null;
+  description: string;
+};
 
 interface Props {
   onClose: () => void;
   onSave: (itineraryData: ItineraryCreationData) => void;
 }
 
-const AddItineraryModal = ({ onClose, onSave }: Props) => {
-  const [formData, setFormData] = useState<ItineraryCreationData>({
+const AddItineraryModal: React.FC<Props> = ({ onClose, onSave }) => {
+  const [formData, setFormData] = useState<ItineraryFormState>({
     activity_name: "",
-    start_time: "",
-    end_time: "",
+    start_time: null,
+    end_time: null,
     description: "",
   });
 
@@ -24,8 +33,24 @@ const AddItineraryModal = ({ onClose, onSave }: Props) => {
     });
   };
 
+  const handleDateChange = (
+    date: Date | null,
+    fieldName: "start_time" | "end_time",
+  ) => {
+    setFormData({
+      ...formData,
+      [fieldName]: date,
+    });
+  };
+
   const handleSubmit = () => {
-    onSave(formData);
+    // Ensure that start_time and end_time are not null before saving
+    if (formData.start_time && formData.end_time) {
+      onSave(formData as ItineraryCreationData);
+      onClose(); // Close the modal on successful save
+    } else {
+      console.error("Please select a start and end time.");
+    }
   };
 
   return (
@@ -47,20 +72,26 @@ const AddItineraryModal = ({ onClose, onSave }: Props) => {
               onChange={handleChange}
             />
 
-            <input
+            <DatePicker
               className="form-control mb-2"
-              name="start_time"
-              placeholder="Start Time"
-              value={formData.start_time}
-              onChange={handleChange}
+              selected={formData.start_time}
+              onChange={(date: Date | null) =>
+                handleDateChange(date, "start_time")
+              }
+              showTimeSelect
+              dateFormat="Pp"
+              placeholderText="Start Time"
             />
 
-            <input
+            <DatePicker
               className="form-control mb-2"
-              name="end_time"
-              placeholder="End Time"
-              value={formData.end_time}
-              onChange={handleChange}
+              selected={formData.end_time}
+              onChange={(date: Date | null) =>
+                handleDateChange(date, "end_time")
+              }
+              showTimeSelect
+              dateFormat="Pp"
+              placeholderText="End Time"
             />
 
             <textarea

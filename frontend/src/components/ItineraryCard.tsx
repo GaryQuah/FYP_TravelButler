@@ -1,12 +1,8 @@
 interface ItineraryCardProps {
-  // title: string;
-  // date: string;
-  // description: string;
   activity_name: string;
-  start_time: string;
-  end_time: string;
+  start_time: Date;
+  end_time: Date;
   description: string;
-  //image: string;
 }
 
 const ItineraryCard = ({
@@ -15,6 +11,13 @@ const ItineraryCard = ({
   end_time,
   description,
 }: ItineraryCardProps) => {
+  // Formatting the date and time for display
+  const formatTime = (date: Date) =>
+    new Date(date).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
   return (
     <div className="card mb-4 shadow-sm h-100">
       <div className="card-body d-flex flex-column">
@@ -25,7 +28,7 @@ const ItineraryCard = ({
         </h3>
 
         <div className="mb-2 text-muted">
-          {start_time} - {end_time}
+          {formatTime(start_time)} - {formatTime(end_time)}
         </div>
 
         <p className="card-text mb-auto">{description}</p>
