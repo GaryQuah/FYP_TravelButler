@@ -8,6 +8,7 @@ from app.services.trip_service import (
     get_trip,
     update_trip,
     get_all_trips,
+    add_user_to_trip_by_email,
 )
  
 router = APIRouter(prefix="/api/trips", tags=["trips"])
@@ -15,6 +16,9 @@ router = APIRouter(prefix="/api/trips", tags=["trips"])
 #Retrieve all the trips collection from the app state and return it for use in the route handlers through dependency injection
 def get_trips_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.trips_collection
+
+def get_users_collection(request: Request) -> AsyncIOMotorCollection:
+    return request.app.users_collection
  
 @router.get("/")
 async def get_all_trips_route(trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):

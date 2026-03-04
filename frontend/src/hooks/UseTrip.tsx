@@ -7,6 +7,7 @@ import {
   createTrip as apiCreateTrip,
   deleteTrip as apiDeleteTrip,
   getTrips as apiGetTrips,
+  inviteUserToTrip as apiInviteUserToTrip,
   type Trip,
   type TripCreationData,
 } from "../models/api";
@@ -53,7 +54,6 @@ export function useTrips() {
       );
     } catch (error) {
       console.error("Failed to delete trip:", error);
-      // Optionally, show an error message to the user
     }
   };
 
@@ -65,12 +65,22 @@ export function useTrips() {
     return trips.find((trip) => trip.trip_id === tripId);
   };
 
+  const inviteUserToTrip = async (tripId: string, email: string) => {
+    try {
+      await apiInviteUserToTrip(tripId, email);
+    } catch (error) {
+      console.error("Failed to invite user:", error);
+      throw error;
+    }
+  };
+
   return {
     trips,
     loading,
     createNewTrip,
     deleteTrip,
     getTripById,
+    inviteUserToTrip,
     refreshTrips: fetchTrips,
   };
 }

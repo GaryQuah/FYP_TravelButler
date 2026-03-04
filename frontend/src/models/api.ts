@@ -28,6 +28,24 @@ export const loginOrRegisterUser = async (
   }
 
   return response.json();
+}
+
+export async function inviteUserToTrip(
+  tripId: string,
+  email: string,
+): Promise<void> {
+  const response = await fetch(`/api/trips/${tripId}/invite`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json();
+    throw new Error(errorBody.message || "Failed to invite user");
+  }
 };
 
 export const createUser = async (

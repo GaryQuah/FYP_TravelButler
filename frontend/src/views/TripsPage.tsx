@@ -4,22 +4,27 @@ import Navbar from "../components/Navbar";
 import TripNavbar from "../components/TripNavBar";
 import ItineraryCard from "../components/ItineraryCard";
 import AddItineraryModal from "../components/AddItineraryModal";
+import AddUserModal from "../components/AddUserModal";
 import { useItineraries } from "../hooks/UseItineraries";
-import { useTrips } from "../hooks/UseTrip"; // We need trip details
+import { useTrips } from "../hooks/UseTrip";
 import { type ItineraryCreationData, type Trip } from "../models/api";
 
 export function TripsPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const { itineraries, loading, error, addItinerary } = useItineraries(tripId);
-  const { getTripById } = useTrips(); // Assuming useTrips has a function to get a single trip
+  const { getTripById, inviteUserToTrip } = useTrips();
   const [tripDetails, setTripDetails] = useState<Trip | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [addUserError, setAddUserError] = useState<string | null>(null);
+
+  const [tripUserNames, setTripUserNames] = useState<string[]>([]);
 
   useEffect(() => {
     if (tripId && getTripById) {
       const fetchTripDetails = () => {
         const details = getTripById(tripId);
-        setTripDetails(details || null); // Handle case where details might be undefined
+        setTripDetails(details || null);
       };
       fetchTripDetails();
     }
@@ -28,6 +33,17 @@ export function TripsPage() {
   const handleSaveItinerary = async (itineraryData: ItineraryCreationData) => {
     await addItinerary(itineraryData);
     setShowModal(false);
+  };
+
+  const handleAddUser = async (email: string) => {
+    if (!tripId) return;
+    try {
+      await inviteUserToTrip(tripId, email);
+      setShowAddUserModal(false);
+      setAddUserError(null);
+    } catch (error: any) {
+      setAddUserError(error.message || "Failed to add user.");
+    }
   };
 
   return (
@@ -51,12 +67,26 @@ export function TripsPage() {
                 >
                   Add Itinerary
                 </button>
+                <button
+                  className="btn btn-secondary ms-2"
+                  onClick={() => setShowAddUserModal(true)}
+                >
+                  Add User
+                </button>
               </div>
 
               {showModal && (
                 <AddItineraryModal
                   onClose={() => setShowModal(false)}
                   onSave={handleSaveItinerary}
+                />
+              )}
+
+              {showAddUserModal && (
+                <AddUserModal
+                  onClose={() => setShowAddUserModal(false)}
+                  onAddUser={handleAddUser}
+                  error={addUserError}
                 />
               )}
 
