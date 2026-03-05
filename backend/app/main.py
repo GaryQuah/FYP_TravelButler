@@ -12,7 +12,6 @@ from app.db.mongo import lifespan
 
 app = FastAPI(lifespan=lifespan, debug=DEBUG)
 
-
 # CORS configuration to allow requests from the frontend on localhost:5173
 app.add_middleware(
     CORSMiddleware,

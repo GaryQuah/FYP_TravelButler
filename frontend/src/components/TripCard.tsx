@@ -41,7 +41,7 @@ const Card = ({ trip, onDelete }: CardProps) => {
         <p className="card-text mb-auto">{trip.description}</p>
 
         {/*TODO: Add image upload support for the trip card, and display the image here if it exists*/}
-        <Link to={`/trips/${trip.trip_id}`} className="mt-3 align-self-start">
+        <a href="#" className="mt-3 align-self-start">
           View Trip
         </Link>
       </div>

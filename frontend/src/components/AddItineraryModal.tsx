@@ -1,3 +1,4 @@
+// A modal is a popup window that appears on top of the current page, allowing for user interaction without navigating away
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -16,8 +17,8 @@ interface Props {
   onSave: (itineraryData: ItineraryCreationData) => void;
 }
 
-const AddItineraryModal: React.FC<Props> = ({ onClose, onSave }) => {
-  const [formData, setFormData] = useState<ItineraryFormState>({
+const AddItineraryModal = ({ onClose }: Props) => {
+  const [formData, setFormData] = useState({
     activity_name: "",
     start_time: null,
     end_time: null,
