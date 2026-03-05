@@ -143,6 +143,14 @@ export async function getTripDetails(tripId: string): Promise<Trip> {
   };
 }
 
+export async function getTripMembers(tripId: string): Promise<User[]> {
+  const response = await fetch(`/api/trips/${tripId}/members`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch trip members");
+  }
+  return response.json();
+}
+
 export async function getTrips(): Promise<Trip[]> {
   const response = await fetch("/api/trips");
   if (!response.ok) {

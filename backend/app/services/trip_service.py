@@ -1,8 +1,7 @@
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.trip import Trip, TripCreationRequest
 from bson import ObjectId
-from app.services.user_service import get_user_by_email
-
+from app.services.user_service import get_user_by_email, get_users_by_ids
 def trip_serializer(trip) -> dict:
     """
     Serializes a trip document from MongoDB into a dictionary,
@@ -54,7 +53,18 @@ async def get_trip(collection: AsyncIOMotorCollection, trip_id: str):
     trip = await collection.find_one({"_id": ObjectId(trip_id)})
     if trip:
         return trip_serializer(trip)
+        
     return None
+
+async def get_trip_members(trips_collection: AsyncIOMotorCollection, users_collection: AsyncIOMotorCollection, trip_id: str):
+    """
+    Retrieve all members for a specific trip.
+    """
+    trip = await trips_collection.find_one({"_id": ObjectId(trip_id)})
+    if not trip or "user_ids" not in trip:
+        return []
+    users = await get_users_by_ids(users_collection, trip["user_ids"])
+    return users
 
 async def update_trip(collection: AsyncIOMotorCollection, trip_id: str, trip_data: Trip):
     """
@@ -84,7 +94,7 @@ async def add_user_to_trip_by_email(trips_collection: AsyncIOMotorCollection, us
         return None  
 
     user_id = user["user_id"]
-
+    
     result = await trips_collection.update_one(
         {"_id": ObjectId(trip_id)},
         {"$addToSet": {"user_ids": user_id}}  # Use $addToSet to avoid duplicate IDs

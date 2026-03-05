@@ -6,30 +6,27 @@ import ItineraryCard from "../components/ItineraryCard";
 import AddItineraryModal from "../components/AddItineraryModal";
 import AddUserModal from "../components/AddUserModal";
 import { useItineraries } from "../hooks/UseItineraries";
-import { useTrips } from "../hooks/UseTrip";
-import { type ItineraryCreationData, type Trip } from "../models/api";
+import { useTripDetails } from "../hooks/useTripDetails";
+import { inviteUserToTrip, type ItineraryCreationData } from "../models/api";
 
 export function TripsPage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { itineraries, loading, error, addItinerary, deleteItinerary } =
-    useItineraries(tripId);
-  const { getTripById, inviteUserToTrip } = useTrips();
-  const [tripDetails, setTripDetails] = useState<Trip | null>(null);
+  const {
+    trip,
+    members,
+    loading: tripLoading,
+    error: tripError,
+  } = useTripDetails(tripId);
+  const {
+    itineraries,
+    loading: itinerariesLoading,
+    error: itinerariesError,
+    addItinerary,
+    deleteItinerary,
+  } = useItineraries(tripId);
   const [showModal, setShowModal] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [addUserError, setAddUserError] = useState<string | null>(null);
-
-  const [tripUserNames, setTripUserNames] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (tripId && getTripById) {
-      const fetchTripDetails = () => {
-        const details = getTripById(tripId);
-        setTripDetails(details || null);
-      };
-      fetchTripDetails();
-    }
-  }, [tripId, getTripById]);
 
   const handleSaveItinerary = async (itineraryData: ItineraryCreationData) => {
     await addItinerary(itineraryData);
@@ -47,55 +44,83 @@ export function TripsPage() {
     }
   };
 
+  if (tripLoading) {
+    return <div>Loading trip details...</div>;
+  }
+
+  if (tripError) {
+    return <div>{tripError}</div>;
+  }
+
+  if (!trip) {
+    return <div>Trip not found.</div>;
+  }
+
   return (
     <>
       <Navbar />
       <div className="d-flex">
         <TripNavbar />
         <div className="container p-4">
-          {loading && <p>Loading itinerary...</p>}
-          {error && <p className="text-danger">{error}</p>}
-          {tripDetails && (
-            <>
-              <div className="p-4 p-md-5 mb-4 text-white rounded bg-dark">
-                <h1 className="display-5 fst-italic">
-                  {tripDetails.trip_name}
-                </h1>
-                <p className="lead my-3">{tripDetails.description}</p>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => setShowModal(true)}
-                >
-                  Add Itinerary
-                </button>
-                <button
-                  className="btn btn-secondary ms-2"
-                  onClick={() => setShowAddUserModal(true)}
-                >
-                  Add User
-                </button>
+          <div className="row mb-4">
+            <div className="col-md-8">
+              <div className="p-4 p-md-5 text-white rounded bg-dark h-100 d-flex flex-column">
+                <div className="flex-grow-1">
+                  <h1 className="display-5 fst-italic">{trip.trip_name}</h1>
+                  <p className="lead my-3">{trip.description}</p>
+                </div>
+                <div>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setShowModal(true)}
+                  >
+                    Add Itinerary
+                  </button>
+                  <button
+                    className="btn btn-secondary ms-2"
+                    onClick={() => setShowAddUserModal(true)}
+                  >
+                    Add User
+                  </button>
+                </div>
               </div>
-
-              {showModal && (
-                <AddItineraryModal
-                  onClose={() => setShowModal(false)}
-                  onSave={handleSaveItinerary}
-                />
+            </div>
+            <div className="col-md-4">
+              <h2>Trip Members</h2>
+              <ul className="list-group">
+                {members.map((member) => (
+                  <li key={member.user_id} className="list-group-item">
+                    {member.name} ({member.email})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          {showModal && (
+            <AddItineraryModal
+              onClose={() => setShowModal(false)}
+              onSave={handleSaveItinerary}
+            />
+          )}
+          {showAddUserModal && (
+            <AddUserModal
+              onClose={() => setShowAddUserModal(false)}
+              onAddUser={handleAddUser}
+              error={addUserError}
+            />
+          )}
+          <div className="row">
+            <div className="col-12">
+              <h2>Itinerary</h2>
+              {itinerariesLoading && <p>Loading itinerary...</p>}
+              {itinerariesError && (
+                <p className="text-danger">{itinerariesError}</p>
               )}
-
-              {showAddUserModal && (
-                <AddUserModal
-                  onClose={() => setShowAddUserModal(false)}
-                  onAddUser={handleAddUser}
-                  error={addUserError}
-                />
-              )}
-
               <div className="row">
                 {(() => {
                   if (!itineraries || itineraries.length === 0) {
                     return (
-                      !loading && (
+                      !itinerariesLoading && (
                         <p>No itinerary items found. Add one to get started!</p>
                       )
                     );
@@ -147,8 +172,8 @@ export function TripsPage() {
                   });
                 })()}
               </div>
-            </>
-          )}
+            </div>
+          </div>
         </div>
       </div>
     </>

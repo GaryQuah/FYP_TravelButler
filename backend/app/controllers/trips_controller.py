@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Body, HTTPException, status, Depends, Request
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.trip import Trip, TripCreationRequest
+from pydantic import BaseModel
+
+class InviteRequest(BaseModel):
+    email: str
 from app.models.itinerary import Itinerary
+from app.models.user import User
 from app.services.trip_service import (
     create_trip,
     delete_trip,
@@ -9,6 +14,7 @@ from app.services.trip_service import (
     update_trip,
     get_all_trips,
     add_user_to_trip_by_email,
+    get_trip_members,
 )
  
 router = APIRouter(prefix="/api/trips", tags=["trips"])
@@ -32,7 +38,7 @@ async def create_new_trip(trip_data: TripCreationRequest, trips_collection: Asyn
     return await create_trip(trips_collection, trip_data)
  
  
-@router.get("/{trip_id}")
+@router.get("/{trip_id}", response_model=Trip)
 async def get_trip_by_id(trip_id: str, trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):
     trip = await get_trip(trips_collection, trip_id)
     if not trip:
@@ -66,3 +72,31 @@ async def add_new_itinerary_to_trip(
     if not new_itinerary:
         raise HTTPException(status_code=404, detail="Trip not found or itinerary could not be added")
     return new_itinerary
+
+
+@router.get("/{trip_id}/members", response_model=list[User])
+async def get_members_for_trip(
+    trip_id: str,
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
+):
+    """
+    Get all members for a specific trip.
+    """
+    members = await get_trip_members(trips_collection, users_collection, trip_id)
+    return members
+
+
+@router.post("/{trip_id}/invite", response_model=Trip)
+async def invite_user_to_trip(
+    trip_id: str,
+    request: InviteRequest,
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
+):
+    updated_trip = await add_user_to_trip_by_email(
+        trips_collection, users_collection, trip_id, request.email
+    )
+    if not updated_trip:
+        raise HTTPException(status_code=404, detail="User or trip not found")
+    return updated_trip
