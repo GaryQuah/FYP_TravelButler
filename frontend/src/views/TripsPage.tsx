@@ -1,143 +1,179 @@
-import { HomePageViewModel } from "../viewmodels/HomePageViewModel";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import TripNavbar from "../components/TripNavBar";
 import ItineraryCard from "../components/ItineraryCard";
 import AddItineraryModal from "../components/AddItineraryModal";
-//TODO: Migrate these static data into the database & import from there
-const cardsData = [
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-  {
-    id: 1,
-    activity_name: "BBQ",
-    start_time: "1pm",
-    end_time: "4pm",
-    description: "BBQ at East coast park.",
-  },
-];
+import AddUserModal from "../components/AddUserModal";
+import { useItineraries } from "../hooks/UseItineraries";
+import { useTripDetails } from "../hooks/useTripDetails";
+import { inviteUserToTrip, type ItineraryCreationData } from "../models/api";
 
 export function TripsPage() {
-  const {} = HomePageViewModel();
+  const { tripId } = useParams<{ tripId: string }>();
+  const {
+    trip,
+    members,
+    loading: tripLoading,
+    error: tripError,
+  } = useTripDetails(tripId);
+  const {
+    itineraries,
+    loading: itinerariesLoading,
+    error: itinerariesError,
+    addItinerary,
+    deleteItinerary,
+  } = useItineraries(tripId);
   const [showModal, setShowModal] = useState(false);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [addUserError, setAddUserError] = useState<string | null>(null);
+
+  const handleSaveItinerary = async (itineraryData: ItineraryCreationData) => {
+    await addItinerary(itineraryData);
+    setShowModal(false);
+  };
+
+  const handleAddUser = async (email: string) => {
+    if (!tripId) return;
+    try {
+      await inviteUserToTrip(tripId, email);
+      setShowAddUserModal(false);
+      setAddUserError(null);
+    } catch (error: any) {
+      setAddUserError(error.message || "Failed to add user.");
+    }
+  };
+
+  if (tripLoading) {
+    return <div>Loading trip details...</div>;
+  }
+
+  if (tripError) {
+    return <div>{tripError}</div>;
+  }
+
+  if (!trip) {
+    return <div>Trip not found.</div>;
+  }
 
   return (
     <>
-      {/* TOP NAVBAR */}
       <Navbar />
-
-      {/* BELOW NAVBAR: Sidebar + Content */}
       <div className="d-flex">
-        {/* LEFT SIDEBAR */}
         <TripNavbar />
-
-        {/* RIGHT CONTENT */}
-        <div>
-          <>
-            <button
-              className="btn btn-primary"
-              onClick={() => setShowModal(true)}
-            >
-              Add Itinerary
-            </button>
-
-            {showModal && (
-              <AddItineraryModal onClose={() => setShowModal(false)} />
-            )}
-          </>
-
-          <div className="container">
-            <p className="lead my-3">01/01/2001</p>
-            <div className="container">
-              {/* User's current trips */}
-              <div className="row mb-4">
-                {cardsData.map((card) => (
-                  <div key={card.id} className="col-md-6">
-                    <ItineraryCard
-                      activity_name={card.activity_name}
-                      start_time={card.start_time}
-                      end_time={card.end_time}
-                      description={card.description}
-                    />
-                  </div>
+        <div className="container p-4">
+          <div className="row mb-4">
+            <div className="col-md-8">
+              <div className="p-4 p-md-5 text-white rounded bg-dark h-100 d-flex flex-column">
+                <div className="flex-grow-1">
+                  <h1 className="display-5 fst-italic">{trip.trip_name}</h1>
+                  <p className="lead my-3">{trip.description}</p>
+                </div>
+                <div>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setShowModal(true)}
+                  >
+                    Add Itinerary
+                  </button>
+                  <button
+                    className="btn btn-secondary ms-2"
+                    onClick={() => setShowAddUserModal(true)}
+                  >
+                    Add User
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <h2>Trip Members</h2>
+              <ul className="list-group">
+                {members.map((member) => (
+                  <li key={member.user_id} className="list-group-item">
+                    {member.name} ({member.email})
+                  </li>
                 ))}
+              </ul>
+            </div>
+          </div>
+          {showModal && (
+            <AddItineraryModal
+              onClose={() => setShowModal(false)}
+              onSave={handleSaveItinerary}
+            />
+          )}
+          {showAddUserModal && (
+            <AddUserModal
+              onClose={() => setShowAddUserModal(false)}
+              onAddUser={handleAddUser}
+              error={addUserError}
+            />
+          )}
+          <div className="row">
+            <div className="col-12">
+              <h2>Itinerary</h2>
+              {itinerariesLoading && <p>Loading itinerary...</p>}
+              {itinerariesError && (
+                <p className="text-danger">{itinerariesError}</p>
+              )}
+              <div className="row">
+                {(() => {
+                  if (!itineraries || itineraries.length === 0) {
+                    return (
+                      !itinerariesLoading && (
+                        <p>No itinerary items found. Add one to get started!</p>
+                      )
+                    );
+                  }
+
+                  const sortedItineraries = [...itineraries].sort(
+                    (a, b) =>
+                      new Date(a.start_time).getTime() -
+                      new Date(b.start_time).getTime(),
+                  );
+
+                  let lastDate: string | null = null;
+
+                  return sortedItineraries.map((item) => {
+                    const itemDate = new Date(
+                      item.start_time,
+                    ).toLocaleDateString(undefined, {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    });
+
+                    const showHeader = itemDate !== lastDate;
+                    if (showHeader) {
+                      lastDate = itemDate;
+                    }
+
+                    return (
+                      <React.Fragment key={item.id}>
+                        {showHeader && (
+                          <div className="col-12 mt-4">
+                            <h2>{itemDate}</h2>
+                            <hr />
+                          </div>
+                        )}
+                        <div className="col-md-6 mb-4">
+                          <ItineraryCard
+                            id={item.id}
+                            activity_name={item.activity_name}
+                            start_time={item.start_time}
+                            end_time={item.end_time}
+                            description={item.description}
+                            onDelete={deleteItinerary}
+                          />
+                        </div>
+                      </React.Fragment>
+                    );
+                  });
+                })()}
               </div>
             </div>
           </div>
-          <div className="container">
-            <p className="lead my-3">02/01/2001</p>
-            <div className="container">
-              {/* User's current trips */}
-              <div className="row mb-4">
-                {cardsData.map((card) => (
-                  <div key={card.id} className="col-md-6">
-                    <ItineraryCard
-                      activity_name={card.activity_name}
-                      start_time={card.start_time}
-                      end_time={card.end_time}
-                      description={card.description}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="container">
-            <p className="lead my-3">03/01/2001</p>
-            <div className="container">
-              {/* User's current trips */}
-              <div className="row mb-4">
-                {cardsData.map((card) => (
-                  <div key={card.id} className="col-md-6">
-                    <ItineraryCard
-                      activity_name={card.activity_name}
-                      start_time={card.start_time}
-                      end_time={card.end_time}
-                      description={card.description}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <footer className="py-4 text-center border-top mt-5">
-            <a href="#">Back to top</a>
-          </footer>
         </div>
       </div>
     </>

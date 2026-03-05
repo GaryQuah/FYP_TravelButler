@@ -61,3 +61,12 @@ async def find_or_create_user(users_collection, email: str, name: str | None = N
     result = await users_collection.insert_one(new_user_data)
     new_user = await users_collection.find_one({"_id": result.inserted_id})
     return user_serializer(new_user)
+
+async def get_users_by_ids(users_collection, user_ids: list[str]):
+    """
+    Retrieve multiple users by a list of their document IDs.
+    """
+    user_object_ids = [ObjectId(user_id) for user_id in user_ids]
+    users_cursor = users_collection.find({"_id": {"$in": user_object_ids}})
+    users = await users_cursor.to_list(length=len(user_ids))
+    return [user_serializer(user) for user in users]

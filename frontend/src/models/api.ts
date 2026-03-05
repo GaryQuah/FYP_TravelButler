@@ -13,9 +13,9 @@ export interface User {
 
 export const loginOrRegisterUser = async (
   email: string,
-  name?: string
+  name?: string,
 ): Promise<User | null> => {
-  const response = await fetch(`${API_BASE_URL}/users/login`, {
+  const response = await fetch(`/api/users/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -29,13 +29,31 @@ export const loginOrRegisterUser = async (
   }
 
   return response.json();
+}
+
+export async function inviteUserToTrip(
+  tripId: string,
+  email: string,
+): Promise<void> {
+  const response = await fetch(`/api/trips/${tripId}/invite`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json();
+    throw new Error(errorBody.message || "Failed to invite user");
+  }
 };
 
 export const createUser = async (
   name: string,
-  email: string
+  email: string,
 ): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/users/`, {
+  const response = await fetch(`/api/users/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -55,9 +73,8 @@ export interface Trip {
   trip_id: string;
   trip_name: string;
   budget: number;
-  itineraries: any[]; // Consider defining a proper Itinerary type later
-  start_date: string;
-  end_date: string;
+  start_date: Date;
+  end_date: Date;
   description: string;
   user_ids: string[];
 }
@@ -67,8 +84,23 @@ export interface TripCreationData {
   start_date: string;
   end_date: string;
   description: string;
-  budget: number;
+  budget?: number;
   user_ids: string[];
+}
+
+export interface Itinerary {
+  id: string;
+  activity_name: string;
+  start_time: Date;
+  end_time: Date;
+  description: string;
+}
+
+export interface ItineraryCreationData {
+  activity_name: string;
+  start_time: Date;
+  end_time: Date;
+  description: string;
 }
 
 export const createTrip = async (tripData: TripCreationData): Promise<Trip> => {

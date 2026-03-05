@@ -1,4 +1,5 @@
 import { type Trip as ApiTrip } from "../models/api";
+import { Link } from "react-router-dom";
 
 interface CardProps {
   trip: ApiTrip;
@@ -42,7 +43,7 @@ const Card = ({ trip, onDelete }: CardProps) => {
         {/*TODO: Add image upload support for the trip card, and display the image here if it exists*/}
         <a href="#" className="mt-3 align-self-start">
           View Trip
-        </a>
+        </Link>
       </div>
     </div>
   );
