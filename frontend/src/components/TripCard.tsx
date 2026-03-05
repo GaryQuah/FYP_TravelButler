@@ -23,9 +23,12 @@ const Card = ({ trip, onDelete }: CardProps) => {
       <div className="card-body d-flex flex-column">
         <div className="d-flex justify-content-between align-items-start">
           <h3 className="mb-0">
-            <a className="text-dark text-decoration-none" href="#">
+            <Link
+              to={`/trips/${trip.trip_id}`}
+              className="text-dark text-decoration-none"
+            >
               {trip.trip_name}
-            </a>
+            </Link>
           </h3>
           <button
             className="btn btn-sm btn-outline-danger"
@@ -41,7 +44,10 @@ const Card = ({ trip, onDelete }: CardProps) => {
         <p className="card-text mb-auto">{trip.description}</p>
 
         {/*TODO: Add image upload support for the trip card, and display the image here if it exists*/}
-        <a href="#" className="mt-3 align-self-start">
+        <Link
+          to={`/trips/${trip.trip_id}`}
+          className="btn btn-outline-primary mt-3 align-self-start"
+        >
           View Trip
         </Link>
       </div>

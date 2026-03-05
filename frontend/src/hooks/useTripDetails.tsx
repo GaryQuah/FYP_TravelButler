@@ -38,5 +38,21 @@ export function useTripDetails(tripId: string | undefined) {
     fetchDetails();
   }, [tripId]);
 
-  return { trip, members, loading, error };
+  const refresh = async () => {
+    if (!tripId) return;
+    setLoading(true);
+    try {
+      const tripDetails = await getTripDetails(tripId);
+      setTrip(tripDetails);
+      const tripMembers = await getTripMembers(tripId);
+      setMembers(tripMembers);
+    } catch (e) {
+      setError("Failed to reload trip details.");
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { trip, members, loading, error, refresh };
 }

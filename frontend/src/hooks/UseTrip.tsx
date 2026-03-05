@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import {
   createTrip as apiCreateTrip,
   deleteTrip as apiDeleteTrip,
+  getTrips as apiGetTrips,
   type Trip,
   type TripCreationData,
 } from "../models/api";

@@ -16,6 +16,7 @@ export function TripsPage() {
     members,
     loading: tripLoading,
     error: tripError,
+    refresh: refreshTripDetails,
   } = useTripDetails(tripId);
   const {
     itineraries,
@@ -39,6 +40,7 @@ export function TripsPage() {
       await inviteUserToTrip(tripId, email);
       setShowAddUserModal(false);
       setAddUserError(null);
+      refreshTripDetails(); // Refresh the trip details and members
     } catch (error: any) {
       setAddUserError(error.message || "Failed to add user.");
     }
