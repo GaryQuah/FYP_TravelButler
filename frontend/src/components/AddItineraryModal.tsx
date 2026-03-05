@@ -43,11 +43,27 @@ const AddItineraryModal: React.FC<Props> = ({ onClose, onSave }) => {
     });
   };
 
+  const formatToLocalISOString = (date: Date) => {
+    const pad = (num: number) => num.toString().padStart(2, "0");
+    const year = date.getFullYear();
+    const month = pad(date.getMonth() + 1);
+    const day = pad(date.getDate());
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  };
+
   const handleSubmit = () => {
     // Ensure that start_time and end_time are not null before saving
     if (formData.start_time && formData.end_time) {
-      onSave(formData as ItineraryCreationData);
-      onClose(); // Close the modal on successful save
+      const itineraryData = {
+        ...formData,
+        start_time: formatToLocalISOString(formData.start_time),
+        end_time: formatToLocalISOString(formData.end_time),
+      };
+      onSave(itineraryData as any);
+      onClose();
     } else {
       console.error("Please select a start and end time.");
     }

@@ -8,6 +8,7 @@ import AddUserModal from "../components/AddUserModal";
 import { useItineraries } from "../hooks/UseItineraries";
 import { useTripDetails } from "../hooks/useTripDetails";
 import { inviteUserToTrip, type ItineraryCreationData } from "../models/api";
+import { formatFullDateTime } from "../utils/dateUtils";
 
 export function TripsPage() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -69,6 +70,10 @@ export function TripsPage() {
               <div className="p-4 p-md-5 text-white rounded bg-dark h-100 d-flex flex-column">
                 <div className="flex-grow-1">
                   <h1 className="display-5 fst-italic">{trip.trip_name}</h1>
+                  <p className="mb-3">
+                    {formatFullDateTime(trip.start_date)} -{" "}
+                    {formatFullDateTime(trip.end_date)}
+                  </p>
                   <p className="lead my-3">{trip.description}</p>
                 </div>
                 <div>
