@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import TripNavbar from "../components/TripNavBar";
@@ -11,7 +11,8 @@ import { type ItineraryCreationData, type Trip } from "../models/api";
 
 export function TripsPage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { itineraries, loading, error, addItinerary } = useItineraries(tripId);
+  const { itineraries, loading, error, addItinerary, deleteItinerary } =
+    useItineraries(tripId);
   const { getTripById, inviteUserToTrip } = useTrips();
   const [tripDetails, setTripDetails] = useState<Trip | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -91,20 +92,60 @@ export function TripsPage() {
               )}
 
               <div className="row">
-                {itineraries && itineraries.length > 0
-                  ? itineraries.map((item) => (
-                      <div key={item.id} className="col-md-6 mb-4">
-                        <ItineraryCard
-                          activity_name={item.activity_name}
-                          start_time={item.start_time}
-                          end_time={item.end_time}
-                          description={item.description}
-                        />
-                      </div>
-                    ))
-                  : !loading && (
-                      <p>No itinerary items found. Add one to get started!</p>
-                    )}
+                {(() => {
+                  if (!itineraries || itineraries.length === 0) {
+                    return (
+                      !loading && (
+                        <p>No itinerary items found. Add one to get started!</p>
+                      )
+                    );
+                  }
+
+                  const sortedItineraries = [...itineraries].sort(
+                    (a, b) =>
+                      new Date(a.start_time).getTime() -
+                      new Date(b.start_time).getTime(),
+                  );
+
+                  let lastDate: string | null = null;
+
+                  return sortedItineraries.map((item) => {
+                    const itemDate = new Date(
+                      item.start_time,
+                    ).toLocaleDateString(undefined, {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    });
+
+                    const showHeader = itemDate !== lastDate;
+                    if (showHeader) {
+                      lastDate = itemDate;
+                    }
+
+                    return (
+                      <React.Fragment key={item.id}>
+                        {showHeader && (
+                          <div className="col-12 mt-4">
+                            <h2>{itemDate}</h2>
+                            <hr />
+                          </div>
+                        )}
+                        <div className="col-md-6 mb-4">
+                          <ItineraryCard
+                            id={item.id}
+                            activity_name={item.activity_name}
+                            start_time={item.start_time}
+                            end_time={item.end_time}
+                            description={item.description}
+                            onDelete={deleteItinerary}
+                          />
+                        </div>
+                      </React.Fragment>
+                    );
+                  });
+                })()}
               </div>
             </>
           )}

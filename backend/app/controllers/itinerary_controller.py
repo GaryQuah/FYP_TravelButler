@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.itinerary import Itinerary, ItineraryCreationRequest
-from app.services.itinerary_service import create_itinerary, get_itineraries_for_trip
+from app.services.itinerary_service import (
+    create_itinerary,
+    get_itineraries_for_trip,
+    delete_itinerary,
+)
 
 router = APIRouter(prefix="/api/itineraries", tags=["itineraries"])
 
@@ -32,3 +36,20 @@ async def get_all_itineraries_for_trip(
     """
     itineraries = await get_itineraries_for_trip(itineraries_collection, trip_id)
     return itineraries
+
+
+@router.delete("/{trip_id}/{itinerary_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_itinerary(
+    trip_id: str,
+    itinerary_id: str,
+    itineraries_collection: AsyncIOMotorCollection = Depends(
+        get_itineraries_collection
+    ),
+):
+    """
+    Delete an itinerary item from a trip.
+    """
+    success = await delete_itinerary(itineraries_collection, trip_id, itinerary_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Itinerary not found")
+    return

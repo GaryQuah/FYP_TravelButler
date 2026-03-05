@@ -37,3 +37,15 @@ async def get_itineraries_for_trip(collection: AsyncIOMotorCollection, trip_id: 
     async for itinerary in cursor:
         itineraries.append(itinerary_serializer(itinerary))
     return itineraries
+
+
+async def delete_itinerary(
+    collection: AsyncIOMotorCollection, trip_id: str, itinerary_id: str
+) -> bool:
+    """
+    Delete an itinerary item from the database.
+    """
+    result = await collection.delete_one(
+        {"_id": ObjectId(itinerary_id), "trip_id": trip_id}
+    )
+    return result.deleted_count > 0

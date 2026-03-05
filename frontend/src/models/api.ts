@@ -188,3 +188,16 @@ export async function addItinerary(
   }
   return response.json();
 }
+
+export async function deleteItinerary(
+  tripId: string,
+  itineraryId: string
+): Promise<void> {
+  const response = await fetch(`/api/itineraries/${tripId}/${itineraryId}`, {
+    method: "DELETE",
+  });
+ 
+  if (!response.ok) {
+    throw new Error("Failed to delete itinerary");
+  }
+}

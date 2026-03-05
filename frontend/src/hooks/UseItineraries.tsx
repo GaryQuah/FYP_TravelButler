@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   getItineraries,
   addItinerary as apiAddItinerary,
+  deleteItinerary as apiDeleteItinerary,
   type Itinerary,
   type ItineraryCreationData,
 } from "../models/api";
@@ -39,9 +40,23 @@ export function useItineraries(tripId: string | undefined) {
     }
   };
 
+  const deleteItinerary = async (itineraryId: string) => {
+    if (!tripId) return;
+
+    try {
+      await apiDeleteItinerary(tripId, itineraryId);
+      setItineraries((prevItineraries) =>
+        prevItineraries.filter((itinerary) => itinerary.id !== itineraryId),
+      );
+    } catch (e) {
+      console.error("Failed to delete itinerary:", e);
+      // Optionally, set an error state to show in the UI
+    }
+  };
+
   useEffect(() => {
     fetchItineraries();
   }, [fetchItineraries]);
 
-  return { itineraries, loading, error, addItinerary };
+  return { itineraries, loading, error, addItinerary, deleteItinerary };
 }
