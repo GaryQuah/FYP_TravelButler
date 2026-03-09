@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import Navbar from "../../components/Navbar";
-import TripNavbar from "../../components/TripNavBar";
-import ItineraryCard from "../../components/ItineraryCard";
-import AddItineraryModal from "../../components/AddItineraryModal";
-import AddUserModal from "../../components/AddUserModal";
+import Navbar from "../../components/navigation/Navbar";
+import TripNavbar from "../../components/navigation/TripNavBar";
+import ItineraryCard from "../../components/cards/ItineraryCard";
+import AddItineraryModal from "../../components/modals/AddItineraryModal";
+import AddUserModal from "../../components/modals/AddUserModal";
 import { useItineraries } from "../../hooks/UseItineraries";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { inviteUserToTrip, type ItineraryCreationData } from "../../models/api";

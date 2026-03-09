@@ -1,6 +1,6 @@
 import { Outlet, useParams } from "react-router-dom";
-import Navbar from "../../components/Navbar";
-import TripNavbar from "../../components/TripNavBar";
+import Navbar from "../../components/navigation/Navbar";
+import TripNavbar from "../../components/navigation/TripNavBar";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { formatFullDateTime } from "../../utils/dateUtils";
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Navbar from "../components/Navbar";
-import Card from "../components/TripCard";
-import AddTripModal from "../components/AddTripModal";
+import Navbar from "../components/navigation/Navbar";
+import Card from "../components/cards/TripCard";
+import AddTripModal from "../components/modals/AddTripModal";
 import { type Trip as ApiTrip } from "../models/api";
 import { useTrips } from "../hooks/UseTrip";
 import { useUser } from "../models/UserContext";
@@ -41,14 +41,7 @@ export function HomePage() {
                     tripData.start_date &&
                     tripData.end_date
                   ) {
-                    await createNewTrip(
-                      {
-                        ...tripData,
-                        start_date: tripData.start_date,
-                        end_date: tripData.end_date,
-                      },
-                      user.user_id,
-                    );
+                    await createNewTrip(tripData, user.user_id);
                     setShowModal(false);
                   } else {
                     console.error(
