@@ -7,8 +7,9 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Itinerary", path: "/" },
-  { label: "Budget", path: "/" },
+  { label: "Itinerary", path: "itinerary" },
+  { label: "Budget", path: "budget" },
+  { label: "Trip Chat", path: "chat" },
 ];
 
 const TripNavbar = () => {
@@ -25,7 +26,7 @@ const TripNavbar = () => {
           key={item.label}
           onClick={() => navigate(item.path)}
           className={`btn text-start mb-2 ${
-            location.pathname === item.path
+            location.pathname.endsWith(item.path)
               ? "fw-bold btn-dark"
               : "btn-outline-secondary"
           }`}

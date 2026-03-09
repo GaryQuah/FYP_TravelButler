@@ -24,14 +24,7 @@ const Card = ({ trip, onDelete }: CardProps) => {
     <div className="card mb-4 shadow-sm h-100">
       <div className="card-body d-flex flex-column">
         <div className="d-flex justify-content-between align-items-start">
-          <h3 className="mb-0">
-            <Link
-              to={`/trips/${trip.trip_id}`}
-              className="text-dark text-decoration-none"
-            >
-              {trip.trip_name}
-            </Link>
-          </h3>
+          <h3 className="mb-0">{trip.trip_name}</h3>
           <button
             className="btn btn-sm btn-outline-danger"
             onClick={handleDelete}
@@ -47,7 +40,7 @@ const Card = ({ trip, onDelete }: CardProps) => {
 
         {/*TODO: Add image upload support for the trip card, and display the image here if it exists*/}
         <Link
-          to={`/trips/${trip.trip_id}`}
+          to={`/trips/${trip.trip_id}/itinerary`}
           className="btn btn-outline-primary mt-3 align-self-start"
         >
           View Trip
