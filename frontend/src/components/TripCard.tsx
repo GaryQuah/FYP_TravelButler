@@ -40,7 +40,7 @@ const Card = ({ trip, onDelete }: CardProps) => {
 
         {/*TODO: Add image upload support for the trip card, and display the image here if it exists*/}
         <Link
-          to={`/trips/${trip.trip_id}/itinerary`}
+          to={`/trip/${trip.trip_id}/itinerary`}
           className="btn btn-outline-primary mt-3 align-self-start"
         >
           View Trip

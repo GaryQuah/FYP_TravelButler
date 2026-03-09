@@ -14,4 +14,5 @@ Request: Belongs to starlette package. Represents an HTTP request. Contains form
 
 AsyncIOMotorCollection: This is the collection object used to interact with the MongoDB database. Prevents blocking the event loops.
 
+Outlet: Allows for rendering of reusable parent objects such as navbars and headers before rendering child objects. Makes layouts modular and scalable.
 # Backend

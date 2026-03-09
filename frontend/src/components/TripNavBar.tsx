@@ -1,5 +1,4 @@
-// The navbar on the left for the trip page. It allows users to navigate between different sections of the trip page, such as itinerary and budget.
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 
 interface NavItem {
   label: string;
@@ -15,6 +14,7 @@ const navItems: NavItem[] = [
 const TripNavbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { tripId } = useParams();
 
   return (
     <div
@@ -24,7 +24,7 @@ const TripNavbar = () => {
       {navItems.map((item) => (
         <button
           key={item.label}
-          onClick={() => navigate(item.path)}
+          onClick={() => navigate(`/trip/${tripId}/${item.path}`)}
           className={`btn text-start mb-2 ${
             location.pathname.endsWith(item.path)
               ? "fw-bold btn-dark"

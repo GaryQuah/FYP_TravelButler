@@ -3,8 +3,14 @@ import { Routes, Route } from "react-router-dom";
 import { LoginPage } from "./views/LoginPage";
 import { HomePage } from "./views/HomePage";
 import { OnboardingPage } from "./views/OnboardingPage";
-import { TripsPage } from "./views/TripsPage";
 import { SuggestionsPage } from "./views/SuggestionsPage";
+
+import {
+  TripLayout,
+  TripChatPage,
+  TripItineraryPage,
+  TripBudgetPage,
+} from "./views/Trip";
 
 import { UserProvider } from "./models/UserContext";
 
@@ -15,8 +21,15 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/Home" element={<HomePage />} />
         <Route path="/Setup" element={<OnboardingPage />} />
-        <Route path="/trips/:tripId/*" element={<TripsPage />} />
         <Route path="/Suggestions" element={<SuggestionsPage />} />
+
+        {/* Trip routes */}
+        <Route path="/trip/:tripId" element={<TripLayout />}>
+          <Route index element={<TripItineraryPage />} />
+          <Route path="itinerary" element={<TripItineraryPage />} />
+          <Route path="chat" element={<TripChatPage />} />
+          <Route path="budget" element={<TripBudgetPage />} />
+        </Route>
       </Routes>
     </UserProvider>
   );
