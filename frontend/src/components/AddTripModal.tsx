@@ -95,6 +95,8 @@ const AddTripModal: React.FC<Props> = ({ onClose, onSave }) => {
               selectsStart
               startDate={formData.start_date}
               endDate={formData.end_date}
+              showTimeSelect
+              dateFormat="Pp"
               placeholderText="Start Date"
             />
 
@@ -108,6 +110,8 @@ const AddTripModal: React.FC<Props> = ({ onClose, onSave }) => {
               startDate={formData.start_date}
               endDate={formData.end_date}
               minDate={formData.start_date ?? undefined}
+              showTimeSelect
+              dateFormat="Pp"
               placeholderText="End Date"
             />
 

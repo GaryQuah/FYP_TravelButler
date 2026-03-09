@@ -1,3 +1,5 @@
+import { formatTime } from "../utils/dateUtils";
+
 interface ItineraryCardProps {
   id: string;
   activity_name: string;
@@ -15,12 +17,11 @@ const ItineraryCard = ({
   description,
   onDelete,
 }: ItineraryCardProps) => {
-  // Formatting the date and time for display
-  const formatTime = (date: Date) =>
-    new Date(date).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const handleDelete = () => {
+    if (window.confirm(`Are you sure you want to delete "${activity_name}"?`)) {
+      onDelete(id);
+    }
+  };
 
   return (
     <div className="card mb-4 shadow-sm h-100">
@@ -33,7 +34,7 @@ const ItineraryCard = ({
           </h3>
           <button
             className="btn btn-sm btn-outline-danger"
-            onClick={() => onDelete(id)}
+            onClick={handleDelete}
             aria-label={`Delete itinerary ${activity_name}`}
           >
             &times;
