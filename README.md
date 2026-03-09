@@ -16,4 +16,4 @@ Architecture:
 
 This project uses MongoDB as its database.
 
-[Check out my learning notes](learning.md)
+[Check out my learning notes](LEARNING.md)
