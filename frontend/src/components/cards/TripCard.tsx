@@ -1,6 +1,6 @@
-import { type Trip as ApiTrip } from "../models/api";
+import { type Trip as ApiTrip } from "../../models/api";
 import { Link } from "react-router-dom";
-import { formatFullDateTime } from "../utils/dateUtils";
+import { formatFullDateTime } from "../../utils/dateUtils";
 
 interface CardProps {
   trip: ApiTrip;
