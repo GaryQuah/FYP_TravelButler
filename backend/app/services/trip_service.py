@@ -31,12 +31,13 @@ def trip_serializer(trip) -> dict:
         "chat": serialized_chat,
     }
 
-async def get_all_trips(collection: AsyncIOMotorCollection):
+async def get_all_trips(collection: AsyncIOMotorCollection, user_id: str):
     """
-    Retrieve all trips from the database.
+    Retrieve all trips for a specific user from the database.
     """
     trips = []
-    cursor = collection.find({})
+    # Find trips where the user_id is in the user_ids array
+    cursor = collection.find({"user_ids": user_id})
     async for trip in cursor:
         trips.append(trip_serializer(trip))
     return trips

@@ -18,8 +18,11 @@ export function useTrips() {
   const fetchTrips = async () => {
     setLoading(true);
     try {
-      const data = await apiGetTrips();
-      setTrips(data);
+      const user = JSON.parse(window.localStorage.getItem("user") || "null");
+      if (user && user.user_id) {
+        const data = await apiGetTrips(user.user_id);
+        setTrips(data);
+      }
     } catch (error) {
       console.error("Failed to fetch trips:", error);
     } finally {

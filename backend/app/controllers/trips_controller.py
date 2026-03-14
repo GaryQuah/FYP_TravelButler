@@ -11,6 +11,7 @@ class ChatMessage(BaseModel):
     message: str
 from app.models.itinerary import Itinerary
 from app.models.user import User
+from app.dependencies import get_current_user_id
 from app.services.trip_service import (
     create_trip,
     delete_trip,
@@ -32,10 +33,13 @@ def get_users_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.users_collection
  
 @router.get("/")
-async def get_all_trips_route(trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):
-    trips = await get_all_trips(trips_collection)
+async def get_all_trips_route(
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    user_id: str = Depends(get_current_user_id),
+):
+    trips = await get_all_trips(trips_collection, user_id)
     if not trips:
-        raise HTTPException(status_code=404, detail="No trips found")
+        return []
     return trips
  
 @router.post("/", status_code=status.HTTP_201_CREATED)

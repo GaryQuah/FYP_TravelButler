@@ -153,8 +153,12 @@ export async function getTripMembers(tripId: string): Promise<User[]> {
   return response.json();
 }
 
-export async function getTrips(): Promise<Trip[]> {
-  const response = await fetch("/api/trips");
+export async function getTrips(userId: string): Promise<Trip[]> {
+  const response = await fetch("/api/trips", {
+    headers: {
+      "X-User-Id": userId,
+    },
+  });
   if (!response.ok) {
     throw new Error("Failed to fetch trips");
   }
