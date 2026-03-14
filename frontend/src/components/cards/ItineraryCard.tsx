@@ -1,4 +1,4 @@
-import { formatTime } from "../utils/dateUtils";
+import { formatTime } from "../../utils/dateUtils";
 
 interface ItineraryCardProps {
   id: string;
