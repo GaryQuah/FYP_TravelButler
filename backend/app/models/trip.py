@@ -12,6 +12,7 @@ class Trip(BaseModel):
     start_date: datetime
     end_date: datetime
     description: str
+    chat: Optional[list[dict[str, str]]] = Field(None)
 
 class TripCreationRequest(BaseModel):
     trip_name: str

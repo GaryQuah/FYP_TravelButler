@@ -5,6 +5,10 @@ from pydantic import BaseModel
 
 class InviteRequest(BaseModel):
     email: str
+
+class ChatMessage(BaseModel):
+    user_id: str
+    message: str
 from app.models.itinerary import Itinerary
 from app.models.user import User
 from app.services.trip_service import (
@@ -15,6 +19,7 @@ from app.services.trip_service import (
     get_all_trips,
     add_user_to_trip_by_email,
     get_trip_members,
+    add_chat_message,
 )
  
 router = APIRouter(prefix="/api/trips", tags=["trips"])
@@ -99,4 +104,17 @@ async def invite_user_to_trip(
     )
     if not updated_trip:
         raise HTTPException(status_code=404, detail="User or trip not found")
+    return updated_trip
+
+@router.post("/{trip_id}/chat", status_code=status.HTTP_201_CREATED)
+async def add_chat_message_route(
+    trip_id: str,
+    chat_message: ChatMessage,
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+):
+    updated_trip = await add_chat_message(
+        trips_collection, trip_id, chat_message.user_id, chat_message.message
+    )
+    if not updated_trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
     return updated_trip

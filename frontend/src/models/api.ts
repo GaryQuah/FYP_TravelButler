@@ -77,6 +77,7 @@ export interface Trip {
   end_date: Date;
   description: string;
   user_ids: string[];
+  chat: { user_id: string; message: string; timestamp: string }[];
 }
 
 export interface TripCreationData {
@@ -209,4 +210,23 @@ export async function deleteItinerary(
   if (!response.ok) {
     throw new Error("Failed to delete itinerary");
   }
+}
+
+export async function addChatMessage(
+  tripId: string,
+  userId: string,
+  message: string
+): Promise<Trip> {
+  const response = await fetch(`/api/trips/${tripId}/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ user_id: userId, message }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to add chat message");
+  }
+  return response.json();
 }
