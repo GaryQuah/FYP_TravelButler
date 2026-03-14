@@ -136,3 +136,18 @@ async def add_chat_message(collection: AsyncIOMotorCollection, trip_id: str, use
 
     updated_trip = await collection.find_one({"_id": ObjectId(trip_id)})
     return trip_serializer(updated_trip)
+
+async def clear_chat(collection: AsyncIOMotorCollection, trip_id: str):
+    """
+    Clear the chat history for a trip.
+    """
+    result = await collection.update_one(
+        {"_id": ObjectId(trip_id)},
+        {"$set": {"chat": []}}
+    )
+
+    if result.matched_count == 0:
+        return None
+
+    updated_trip = await collection.find_one({"_id": ObjectId(trip_id)})
+    return trip_serializer(updated_trip)

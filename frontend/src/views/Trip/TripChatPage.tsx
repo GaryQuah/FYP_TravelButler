@@ -1,20 +1,25 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../models/UserContext";
 import { addChatMessage } from "../../models/api";
 
-interface Message {
-  user_id: string;
-  message: string;
-  timestamp: string;
-}
-
 export function TripChatPage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { trip, setTripDetails } = useTripDetails(tripId!);
+  const { trip, members, setTripDetails } = useTripDetails(tripId!);
   const { user } = useUser();
   const [input, setInput] = useState("");
+
+  const memberNames = useMemo(() => {
+    if (!members) return {};
+    return members.reduce(
+      (acc, member) => {
+        acc[member.user_id] = member.name;
+        return acc;
+      },
+      {} as { [key: string]: string },
+    );
+  }, [members]);
 
   const sendMessage = async () => {
     if (!input.trim() || !trip || !user) return;
@@ -58,7 +63,9 @@ export function TripChatPage() {
               }`}
               style={{ maxWidth: "60%" }}
             >
-              <div className="small fw-bold">{msg.user_id}</div>
+              <div className="small fw-bold">
+                {memberNames[msg.user_id] || msg.user_id}
+              </div>
               <div>{msg.message}</div>
               <div className="text-end small opacity-75">
                 {new Date(msg.timestamp).toLocaleTimeString([], {

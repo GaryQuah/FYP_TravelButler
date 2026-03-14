@@ -15,4 +15,7 @@ Request: Belongs to starlette package. Represents an HTTP request. Contains form
 AsyncIOMotorCollection: This is the collection object used to interact with the MongoDB database. Prevents blocking the event loops.
 
 Outlet: Allows for rendering of reusable parent objects such as navbars and headers before rendering child objects. Makes layouts modular and scalable.
+
+useMemo: React hook that memoizes the result of a function. Only recomputes the value when one of the dependencies changes.
+
 # Backend

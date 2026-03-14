@@ -21,6 +21,7 @@ from app.services.trip_service import (
     add_user_to_trip_by_email,
     get_trip_members,
     add_chat_message,
+    clear_chat,
 )
  
 router = APIRouter(prefix="/api/trips", tags=["trips"])
@@ -119,6 +120,16 @@ async def add_chat_message_route(
     updated_trip = await add_chat_message(
         trips_collection, trip_id, chat_message.user_id, chat_message.message
     )
+    if not updated_trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return updated_trip
+
+@router.delete("/{trip_id}/chat", response_model=Trip)
+async def clear_chat_route(
+    trip_id: str,
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+):
+    updated_trip = await clear_chat(trips_collection, trip_id)
     if not updated_trip:
         raise HTTPException(status_code=404, detail="Trip not found")
     return updated_trip

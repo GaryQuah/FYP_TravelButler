@@ -12,45 +12,34 @@ export function useTripDetails(tripId: string | undefined) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!tripId) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchDetails = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const tripDetails = await getTripDetails(tripId);
-        setTrip(tripDetails);
-
-        const tripMembers = await getTripMembers(tripId);
-        setMembers(tripMembers);
-      } catch (e) {
-        setError("Failed to load trip details.");
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDetails();
-  }, [tripId]);
-
-  const refresh = async () => {
-    if (!tripId) return;
+  const fetchDetails = async (currentTripId: string) => {
     setLoading(true);
+    setError(null);
     try {
-      const tripDetails = await getTripDetails(tripId);
+      const tripDetails = await getTripDetails(currentTripId);
       setTrip(tripDetails);
-      const tripMembers = await getTripMembers(tripId);
+
+      const tripMembers = await getTripMembers(currentTripId);
       setMembers(tripMembers);
     } catch (e) {
-      setError("Failed to reload trip details.");
+      setError("Failed to load trip details.");
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (tripId) {
+      fetchDetails(tripId);
+    } else {
+      setLoading(false);
+    }
+  }, [tripId]);
+
+  const refresh = () => {
+    if (tripId) {
+      fetchDetails(tripId);
     }
   };
 
