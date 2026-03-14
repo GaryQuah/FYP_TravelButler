@@ -54,5 +54,9 @@ export function useTripDetails(tripId: string | undefined) {
     }
   };
 
-  return { trip, members, loading, error, refresh };
+  const setTripDetails = (newTrip: Trip) => {
+    setTrip(newTrip);
+  };
+
+  return { trip, members, loading, error, refresh, setTripDetails };
 }
