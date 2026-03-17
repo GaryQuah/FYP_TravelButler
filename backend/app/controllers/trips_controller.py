@@ -5,8 +5,13 @@ from pydantic import BaseModel
 
 class InviteRequest(BaseModel):
     email: str
+
+class ChatMessage(BaseModel):
+    user_id: str
+    message: str
 from app.models.itinerary import Itinerary
 from app.models.user import User
+from app.dependencies import get_current_user_id
 from app.services.trip_service import (
     create_trip,
     delete_trip,
@@ -15,6 +20,8 @@ from app.services.trip_service import (
     get_all_trips,
     add_user_to_trip_by_email,
     get_trip_members,
+    add_chat_message,
+    clear_chat,
 )
  
 router = APIRouter(prefix="/api/trips", tags=["trips"])
@@ -27,10 +34,13 @@ def get_users_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.users_collection
  
 @router.get("/")
-async def get_all_trips_route(trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):
-    trips = await get_all_trips(trips_collection)
+async def get_all_trips_route(
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    user_id: str = Depends(get_current_user_id),
+):
+    trips = await get_all_trips(trips_collection, user_id)
     if not trips:
-        raise HTTPException(status_code=404, detail="No trips found")
+        return []
     return trips
  
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -99,4 +109,27 @@ async def invite_user_to_trip(
     )
     if not updated_trip:
         raise HTTPException(status_code=404, detail="User or trip not found")
+    return updated_trip
+
+@router.post("/{trip_id}/chat", status_code=status.HTTP_201_CREATED)
+async def add_chat_message_route(
+    trip_id: str,
+    chat_message: ChatMessage,
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+):
+    updated_trip = await add_chat_message(
+        trips_collection, trip_id, chat_message.user_id, chat_message.message
+    )
+    if not updated_trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return updated_trip
+
+@router.delete("/{trip_id}/chat", response_model=Trip)
+async def clear_chat_route(
+    trip_id: str,
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+):
+    updated_trip = await clear_chat(trips_collection, trip_id)
+    if not updated_trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
     return updated_trip

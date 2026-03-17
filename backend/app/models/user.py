@@ -3,7 +3,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class User(BaseModel):
-    user_id: str = Field(exclude=True)
+    user_id: Optional[str] = None
     name: str
     email: EmailStr
 

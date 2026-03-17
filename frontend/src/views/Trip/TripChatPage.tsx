@@ -1,44 +1,40 @@
-import { useState } from "react";
-
-interface Message {
-  id: number;
-  sender: string;
-  text: string;
-  time: string;
-}
+import { useState, useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { useTripDetails } from "../../hooks/useTripDetails";
+import { useUser } from "../../models/UserContext";
+import { addChatMessage, type ChatMessage } from "../../api";
 
 export function TripChatPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      sender: "Alice",
-      text: "Hey! Are we meeting at the airport?",
-      time: "10:00",
-    },
-    {
-      id: 2,
-      sender: "You",
-      text: "Yes, 7am should be fine.",
-      time: "10:02",
-    },
-  ]);
+  const { tripId } = useParams<{ tripId: string }>();
+  const { trip, members, setTripDetails } = useTripDetails(tripId!);
+  const { user } = useUser();
   const [input, setInput] = useState("");
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
+  const memberNames = useMemo(() => {
+    if (!members) return {};
+    return members.reduce(
+      (acc, member) => {
+        acc[member.user_id] = member.name;
+        return acc;
+      },
+      {} as { [key: string]: string },
+    );
+  }, [members]);
 
-    const newMessage: Message = {
-      id: Date.now(),
-      sender: "You",
-      text: input,
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
+  const sendMessage = async () => {
+    if (!input.trim() || !trip || !user) return;
 
-    setMessages([...messages, newMessage]);
-    setInput("");
+    try {
+      const updatedTrip = await addChatMessage(
+        trip.trip_id,
+        user.user_id,
+        input,
+      );
+      setTripDetails(updatedTrip);
+      setInput("");
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
   };
 
   return (
@@ -50,26 +46,33 @@ export function TripChatPage() {
         className="flex-grow-1 border rounded p-3 mb-3 overflow-auto"
         style={{ maxHeight: "60vh" }}
       >
-        {messages.map((msg) => (
+        {trip?.chat.map((msg: ChatMessage) => (
           <div
-            key={msg.id}
+            key={`${msg.timestamp}-${msg.user_id}`}
             className={`mb-3 d-flex ${
-              msg.sender === "You"
+              msg.user_id === user?.user_id
                 ? "justify-content-end"
                 : "justify-content-start"
             }`}
           >
             <div
               className={`p-2 rounded ${
-                msg.sender === "You"
+                msg.user_id === user?.user_id
                   ? "bg-primary text-white"
                   : "bg-light border"
               }`}
               style={{ maxWidth: "60%" }}
             >
-              <div className="small fw-bold">{msg.sender}</div>
-              <div>{msg.text}</div>
-              <div className="text-end small opacity-75">{msg.time}</div>
+              <div className="small fw-bold">
+                {memberNames[msg.user_id] || msg.user_id}
+              </div>
+              <div>{msg.message}</div>
+              <div className="text-end small opacity-75">
+                {new Date(msg.timestamp).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
             </div>
           </div>
         ))}

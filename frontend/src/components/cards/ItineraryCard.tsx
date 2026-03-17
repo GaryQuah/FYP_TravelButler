@@ -1,4 +1,4 @@
-import { formatTime } from "../utils/dateUtils";
+import { formatTime } from "../../utils/dateUtils";
 
 interface ItineraryCardProps {
   id: string;
@@ -48,9 +48,6 @@ const ItineraryCard = ({
         <p className="card-text mb-auto">{description}</p>
 
         {/*TODO: Add image upload support for the trip card, and display the image here if it exists*/}
-        <a href="#" className="mt-3">
-          Continue reading
-        </a>
       </div>
     </div>
   );

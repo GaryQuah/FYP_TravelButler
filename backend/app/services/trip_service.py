@@ -1,6 +1,7 @@
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.trip import Trip, TripCreationRequest
 from bson import ObjectId
+from datetime import datetime
 from app.services.user_service import get_user_by_email, get_users_by_ids
 def trip_serializer(trip) -> dict:
     """
@@ -8,6 +9,16 @@ def trip_serializer(trip) -> dict:
     converting the database _id to a string-based trip_id.
     Note this is due to ObjectId from MongoDB not being JSON serializable, so we convert it to a string.
     """
+    # Create a new list of chat messages with serialized timestamps
+    chat_messages = trip.get("chat", [])
+    serialized_chat = []
+    if chat_messages:
+        for message in chat_messages:
+            new_message = message.copy()
+            if 'timestamp' in new_message and isinstance(new_message['timestamp'], datetime):
+                new_message['timestamp'] = new_message['timestamp'].isoformat()
+            serialized_chat.append(new_message)
+
     return {
         "trip_id": str(trip["_id"]),
         "user_ids": trip["user_ids"],
@@ -17,14 +28,16 @@ def trip_serializer(trip) -> dict:
         "start_date": trip["start_date"],
         "end_date": trip["end_date"],
         "description": trip["description"],
+        "chat": serialized_chat,
     }
 
-async def get_all_trips(collection: AsyncIOMotorCollection):
+async def get_all_trips(collection: AsyncIOMotorCollection, user_id: str):
     """
-    Retrieve all trips from the database.
+    Retrieve all trips for a specific user from the database.
     """
     trips = []
-    cursor = collection.find({})
+    # Find trips where the user_id is in the user_ids array
+    cursor = collection.find({"user_ids": user_id})
     async for trip in cursor:
         trips.append(trip_serializer(trip))
     return trips
@@ -38,6 +51,7 @@ async def create_trip(collection: AsyncIOMotorCollection, trip_data: TripCreatio
 
     # Add fields not provided by the creation request
     trip_dict["itineraries"] = []
+    trip_dict["chat"] = []
 
     # Now, insert the complete trip dictionary
     result = await collection.insert_one(trip_dict)
@@ -104,4 +118,36 @@ async def add_user_to_trip_by_email(trips_collection: AsyncIOMotorCollection, us
         return None  
 
     updated_trip = await trips_collection.find_one({"_id": ObjectId(trip_id)})
+    return trip_serializer(updated_trip)
+
+async def add_chat_message(collection: AsyncIOMotorCollection, trip_id: str, user_id: str, message: str):
+    """
+    Add a chat message to a trip.
+    """
+    chat_message = {"user_id": user_id, "message": message, "timestamp": datetime.now()}
+
+    result = await collection.update_one(
+        {"_id": ObjectId(trip_id)},
+        {"$push": {"chat": chat_message}}
+    )
+
+    if result.matched_count == 0:
+        return None
+
+    updated_trip = await collection.find_one({"_id": ObjectId(trip_id)})
+    return trip_serializer(updated_trip)
+
+async def clear_chat(collection: AsyncIOMotorCollection, trip_id: str):
+    """
+    Clear the chat history for a trip.
+    """
+    result = await collection.update_one(
+        {"_id": ObjectId(trip_id)},
+        {"$set": {"chat": []}}
+    )
+
+    if result.matched_count == 0:
+        return None
+
+    updated_trip = await collection.find_one({"_id": ObjectId(trip_id)})
     return trip_serializer(updated_trip)
