@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 
 import { LoginPage } from "./views/LoginPage";
 import { HomePage } from "./views/HomePage";
-import { OnboardingPage } from "./views/OnboardingPage";
 import { SuggestionsPage } from "./views/SuggestionsPage";
 
 import {
@@ -21,7 +20,6 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/Home" element={<HomePage />} />
-        <Route path="/Setup" element={<OnboardingPage />} />
         <Route path="/Suggestions" element={<SuggestionsPage />} />
 
         {/* Trip routes */}
