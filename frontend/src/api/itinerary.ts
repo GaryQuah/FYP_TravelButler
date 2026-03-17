@@ -1,17 +1,4 @@
-export interface Itinerary {
-  id: string;
-  activity_name: string;
-  start_time: Date;
-  end_time: Date;
-  description: string;
-}
-
-export interface ItineraryCreationData {
-  activity_name: string;
-  start_time: Date;
-  end_time: Date;
-  description: string;
-}
+import type { Itinerary, ItineraryCreationData } from "../models";
 
 export async function getItineraries(tripId: string): Promise<Itinerary[]> {
   const response = await fetch(`/api/itineraries/${tripId}`);

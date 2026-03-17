@@ -6,7 +6,7 @@ TODO: Is this the best way to manage user data?
 */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import type { User } from "../api";
+import type { User } from "../models";
 
 interface UserContextType {
   user: User | null;

@@ -5,7 +5,8 @@ import AddItineraryModal from "../../components/modals/AddItineraryModal";
 import AddUserModal from "../../components/modals/AddUserModal";
 import { useItineraries } from "../../hooks/UseItineraries";
 import { useTripDetails } from "../../hooks/useTripDetails";
-import { inviteUserToTrip, type ItineraryCreationData } from "../../api";
+import { inviteUserToTrip } from "../../api";
+import type { ItineraryCreationData } from "../../models";
 
 export function TripItineraryPage() {
   const { tripId } = useParams<{ tripId: string }>();

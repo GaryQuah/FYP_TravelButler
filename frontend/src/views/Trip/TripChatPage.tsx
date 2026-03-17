@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../models/UserContext";
-import { addChatMessage, type ChatMessage } from "../../api";
+import { addChatMessage } from "../../api";
+import type { ChatMessage } from "../../models";
 
 export function TripChatPage() {
   const { tripId } = useParams<{ tripId: string }>();

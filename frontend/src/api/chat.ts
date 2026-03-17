@@ -1,4 +1,4 @@
-import type { Trip } from "./trip";
+import type { Trip } from "../models";
 
 export async function addChatMessage(
   tripId: string,

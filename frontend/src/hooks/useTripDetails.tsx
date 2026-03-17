@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { getTripDetails, getTripMembers, type Trip, type User } from "../api";
+import { getTripDetails, getTripMembers } from "../api";
+
+import { type Trip, type User } from "../models";
 
 export function useTripDetails(tripId: string | undefined) {
   const [trip, setTrip] = useState<Trip | null>(null);

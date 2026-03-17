@@ -1,4 +1,4 @@
-import { type Trip as ApiTrip } from "../../api";
+import { type Trip as ApiTrip } from "../../models";
 import { Link } from "react-router-dom";
 import { formatFullDateTime } from "../../utils/dateUtils";
 

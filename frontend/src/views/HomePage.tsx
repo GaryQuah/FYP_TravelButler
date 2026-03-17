@@ -2,7 +2,7 @@ import { useState } from "react";
 import Navbar from "../components/navigation/Navbar";
 import Card from "../components/cards/TripCard";
 import AddTripModal from "../components/modals/AddTripModal";
-import { type Trip as ApiTrip } from "../api";
+import { type Trip as ApiTrip } from "../models";
 import { useTrips } from "../hooks/UseTrip";
 import { useUser } from "../models/UserContext";
 

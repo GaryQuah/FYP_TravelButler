@@ -1,8 +1,4 @@
-export interface User {
-  user_id: string;
-  name: string;
-  email: string;
-}
+import type { User } from "../models";
 
 export const loginOrRegisterUser = async (
   email: string,

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { type ItineraryCreationData } from "../../api";
+import { type ItineraryCreationData } from "../../models";
 
 // Define a type for the form's internal state to allow for null dates
 type ItineraryFormState = {

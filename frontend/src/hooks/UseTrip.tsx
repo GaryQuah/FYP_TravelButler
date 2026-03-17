@@ -7,9 +7,9 @@ import {
   createTrip as apiCreateTrip,
   deleteTrip as apiDeleteTrip,
   getTrips as apiGetTrips,
-  type Trip,
-  type TripCreationData,
 } from "../api";
+
+import { type Trip, type TripCreationData } from "../models";
 
 export function useTrips() {
   const [trips, setTrips] = useState<Trip[]>([]);
