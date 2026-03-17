@@ -9,6 +9,7 @@ const navItems: NavItem[] = [
   { label: "Itinerary", path: "itinerary" },
   { label: "Budget", path: "budget" },
   { label: "Trip Chat", path: "chat" },
+  { label: "Polls", path: "poll" },
 ];
 
 const TripNavbar = () => {
