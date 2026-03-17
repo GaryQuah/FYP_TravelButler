@@ -5,7 +5,7 @@ import {
   deleteItinerary as apiDeleteItinerary,
   type Itinerary,
   type ItineraryCreationData,
-} from "../models/api";
+} from "../api";
 
 export function useItineraries(tripId: string | undefined) {
   const [itineraries, setItineraries] = useState<Itinerary[]>([]);

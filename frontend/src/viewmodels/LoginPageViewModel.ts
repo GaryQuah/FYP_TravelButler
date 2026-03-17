@@ -1,7 +1,7 @@
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../models/UserContext";
-import { loginOrRegisterUser } from "../models/api";
+import { loginOrRegisterUser } from "../api";
 
 export function LoginPageViewModel() {
   const navigate = useNavigate();

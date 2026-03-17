@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { type TripCreationData } from "../../models/api";
+import { type TripCreationData } from "../../api";
 
 // Use a specific type for the form's internal state to handle Date objects
 type TripFormState = {

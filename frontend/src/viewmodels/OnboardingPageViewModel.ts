@@ -6,7 +6,7 @@ TODO: decide if we want to bring back the onboarding page for users to customize
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../models/UserContext";
-import { createUser } from "../models/api";
+import { createUser } from "../api";
 
 export function OnboardingPageViewModel() {
   const [name, setName] = useState("");

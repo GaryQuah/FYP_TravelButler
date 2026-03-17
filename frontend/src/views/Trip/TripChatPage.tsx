@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../models/UserContext";
-import { addChatMessage } from "../../models/api";
+import { addChatMessage, type ChatMessage } from "../../api";
 
 export function TripChatPage() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -46,9 +46,9 @@ export function TripChatPage() {
         className="flex-grow-1 border rounded p-3 mb-3 overflow-auto"
         style={{ maxHeight: "60vh" }}
       >
-        {trip?.chat.map((msg, index) => (
+        {trip?.chat.map((msg: ChatMessage) => (
           <div
-            key={index}
+            key={`${msg.timestamp}-${msg.user_id}`}
             className={`mb-3 d-flex ${
               msg.user_id === user?.user_id
                 ? "justify-content-end"

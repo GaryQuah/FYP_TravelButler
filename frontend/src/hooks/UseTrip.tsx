@@ -9,7 +9,7 @@ import {
   getTrips as apiGetTrips,
   type Trip,
   type TripCreationData,
-} from "../models/api";
+} from "../api";
 
 export function useTrips() {
   const [trips, setTrips] = useState<Trip[]>([]);
