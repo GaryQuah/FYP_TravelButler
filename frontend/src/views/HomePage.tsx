@@ -5,6 +5,7 @@ import AddTripModal from "../components/modals/AddTripModal";
 import { type Trip as ApiTrip } from "../models";
 import { useTrips } from "../hooks/UseTrip";
 import { useUser } from "../models/UserContext";
+import "../assets/css/LoginPage.css";
 
 export function HomePage() {
   const { trips, createNewTrip, deleteTrip, loading } = useTrips();

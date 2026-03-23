@@ -1,11 +1,19 @@
-import type { Trip } from "../models";
+import type { Chat } from "../models/chat";
+
+export async function getChat(chatId: string): Promise<Chat> {
+  const response = await fetch(`/api/chats/${chatId}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch chat");
+  }
+  return response.json();
+}
 
 export async function addChatMessage(
-  tripId: string,
+  chatId: string,
   userId: string,
   message: string
-): Promise<Trip> {
-  const response = await fetch(`/api/trips/${tripId}/chat`, {
+): Promise<Chat> {
+  const response = await fetch(`/api/chats/${chatId}/messages`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
