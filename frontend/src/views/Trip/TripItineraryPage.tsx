@@ -23,7 +23,7 @@ export function TripItineraryPage() {
     error: itinerariesError,
     addItinerary,
     deleteItinerary,
-  } = useItineraries(tripId);
+  } = useItineraries(tripId, trip?.itinerary_ids);
   const [showModal, setShowModal] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [addUserError, setAddUserError] = useState<string | null>(null);

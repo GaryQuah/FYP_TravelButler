@@ -12,7 +12,7 @@ export interface Trip {
   end_date: Date;
   description: string;
   user_ids: string[];
-  chat: ChatMessage[];
+  itinerary_ids: string[];
 }
 
 export interface TripCreationData {

@@ -44,3 +44,23 @@ export async function deleteItinerary(
     throw new Error("Failed to delete itinerary");
   }
 }
+
+export async function getItinerariesByIds(itineraryIds: string[]): Promise<Itinerary[]> {
+  const response = await fetch(`/api/itineraries/get_by_ids`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ itinerary_ids: itineraryIds }),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch itineraries");
+  }
+  const itineraries = await response.json();
+  // Convert string dates to Date objects
+  return itineraries.map((itinerary: any) => ({
+    ...itinerary,
+    start_time: new Date(itinerary.start_time),
+    end_time: new Date(itinerary.end_time),
+  }));
+}

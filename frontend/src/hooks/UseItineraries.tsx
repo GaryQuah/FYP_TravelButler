@@ -1,24 +1,31 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  getItineraries,
+  getItinerariesByIds,
   addItinerary as apiAddItinerary,
   deleteItinerary as apiDeleteItinerary,
 } from "../api";
 
 import { type Itinerary, type ItineraryCreationData } from "../models";
 
-export function useItineraries(tripId: string | undefined) {
+export function useItineraries(
+  tripId: string | undefined,
+  itineraryIds: string[] | undefined,
+) {
   const [itineraries, setItineraries] = useState<Itinerary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchItineraries = useCallback(async () => {
-    if (!tripId) return;
+    if (!itineraryIds || itineraryIds.length === 0) {
+      setItineraries([]);
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     setError(null);
     try {
-      const itinerariesData = await getItineraries(tripId);
+      const itinerariesData = await getItinerariesByIds(itineraryIds);
       setItineraries(itinerariesData);
     } catch (e) {
       setError("Failed to load itineraries.");
@@ -26,7 +33,7 @@ export function useItineraries(tripId: string | undefined) {
     } finally {
       setLoading(false);
     }
-  }, [tripId]);
+  }, [itineraryIds]);
 
   const addItinerary = async (itineraryData: ItineraryCreationData) => {
     if (!tripId) return;

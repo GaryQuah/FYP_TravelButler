@@ -10,6 +10,9 @@ class Itinerary(BaseModel):
     end_time: datetime
     description: str
 
+class ItineraryIdsRequest(BaseModel):
+    itinerary_ids: list[str]
+
 class ItineraryCreationRequest(BaseModel):
     activity_name: str
     start_time: datetime

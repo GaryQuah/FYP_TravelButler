@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class Trip(BaseModel):
     trip_id: str
     user_ids: list[str]
-    itineraries: Optional[list[Itinerary]] = Field(None)
+    itinerary_ids: Optional[list[str]] = Field(None)
     budget: float
     trip_name: str
     start_date: datetime
