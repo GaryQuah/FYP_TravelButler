@@ -1,15 +1,24 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../models/UserContext";
-import { addChatMessage } from "../../api";
-import type { ChatMessage } from "../../models";
+import { addChatMessage, getChat } from "../../api";
+import type { ChatMessage, Chat } from "../../models";
 
 export function TripChatPage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { trip, members, setTripDetails } = useTripDetails(tripId!);
+  const { trip, members } = useTripDetails(tripId!);
   const { user } = useUser();
   const [input, setInput] = useState("");
+  const [chat, setChat] = useState<Chat | null>(null);
+
+  useEffect(() => {
+    if (trip?.chat_id) {
+      getChat(trip.chat_id)
+        .then(setChat)
+        .catch((err) => console.error("Failed to load chat:", err));
+    }
+  }, [trip?.chat_id]);
 
   const memberNames = useMemo(() => {
     if (!members) return {};
@@ -23,15 +32,15 @@ export function TripChatPage() {
   }, [members]);
 
   const sendMessage = async () => {
-    if (!input.trim() || !trip || !user) return;
+    if (!input.trim() || !trip?.chat_id || !user) return;
 
     try {
-      const updatedTrip = await addChatMessage(
-        trip.trip_id,
+      const updatedChat = await addChatMessage(
+        trip.chat_id,
         user.user_id,
         input,
       );
-      setTripDetails(updatedTrip);
+      setChat(updatedChat);
       setInput("");
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -47,7 +56,7 @@ export function TripChatPage() {
         className="flex-grow-1 border rounded p-3 mb-3 overflow-auto"
         style={{ maxHeight: "60vh" }}
       >
-        {trip?.chat.map((msg: ChatMessage) => (
+        {chat?.messages?.map((msg: ChatMessage) => (
           <div
             key={`${msg.timestamp}-${msg.user_id}`}
             className={`mb-3 d-flex ${

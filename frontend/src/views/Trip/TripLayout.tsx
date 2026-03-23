@@ -3,6 +3,7 @@ import Navbar from "../../components/navigation/Navbar";
 import TripNavbar from "../../components/navigation/TripNavBar";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { formatFullDateTime } from "../../utils/dateUtils";
+import "../../assets/css/LoginPage.css";
 
 export function TripLayout() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -29,7 +30,6 @@ export function TripLayout() {
   return (
     <>
       <Navbar />
-
       <div className="d-flex">
         <TripNavbar />
 

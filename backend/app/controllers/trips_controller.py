@@ -9,6 +9,7 @@ class InviteRequest(BaseModel):
 class ChatMessage(BaseModel):
     user_id: str
     message: str
+    
 from app.models.itinerary import Itinerary
 from app.models.user import User
 from app.dependencies import get_current_user_id
@@ -20,8 +21,6 @@ from app.services.trip_service import (
     get_all_trips,
     add_user_to_trip_by_email,
     get_trip_members,
-    add_chat_message,
-    clear_chat,
 )
  
 router = APIRouter(prefix="/api/trips", tags=["trips"])
@@ -32,6 +31,9 @@ def get_trips_collection(request: Request) -> AsyncIOMotorCollection:
 
 def get_users_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.users_collection
+
+def get_chats_collection(request: Request) -> AsyncIOMotorCollection:
+    return request.app.chats_collection
  
 @router.get("/")
 async def get_all_trips_route(
@@ -44,8 +46,8 @@ async def get_all_trips_route(
     return trips
  
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_new_trip(trip_data: TripCreationRequest, trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):
-    return await create_trip(trips_collection, trip_data)
+async def create_new_trip(trip_data: TripCreationRequest, trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection), chats_collection: AsyncIOMotorCollection = Depends(get_chats_collection)):
+    return await create_trip(trips_collection, chats_collection, trip_data)
  
  
 @router.get("/{trip_id}", response_model=Trip)
@@ -72,18 +74,6 @@ async def delete_trip_by_id(trip_id: str, trips_collection: AsyncIOMotorCollecti
     return deleted_trip
  
  
-@router.post("/{trip_id}/itineraries", status_code=status.HTTP_201_CREATED)
-async def add_new_itinerary_to_trip(
-    trip_id: str,
-    itinerary_data: Itinerary,
-    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)
-):
-    new_itinerary = await add_itinerary_to_trip(trips_collection, trip_id, itinerary_data)
-    if not new_itinerary:
-        raise HTTPException(status_code=404, detail="Trip not found or itinerary could not be added")
-    return new_itinerary
-
-
 @router.get("/{trip_id}/members", response_model=list[User])
 async def get_members_for_trip(
     trip_id: str,
@@ -109,27 +99,4 @@ async def invite_user_to_trip(
     )
     if not updated_trip:
         raise HTTPException(status_code=404, detail="User or trip not found")
-    return updated_trip
-
-@router.post("/{trip_id}/chat", status_code=status.HTTP_201_CREATED)
-async def add_chat_message_route(
-    trip_id: str,
-    chat_message: ChatMessage,
-    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
-):
-    updated_trip = await add_chat_message(
-        trips_collection, trip_id, chat_message.user_id, chat_message.message
-    )
-    if not updated_trip:
-        raise HTTPException(status_code=404, detail="Trip not found")
-    return updated_trip
-
-@router.delete("/{trip_id}/chat", response_model=Trip)
-async def clear_chat_route(
-    trip_id: str,
-    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
-):
-    updated_trip = await clear_chat(trips_collection, trip_id)
-    if not updated_trip:
-        raise HTTPException(status_code=404, detail="Trip not found")
     return updated_trip

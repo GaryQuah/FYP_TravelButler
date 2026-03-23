@@ -3,6 +3,7 @@ from app.models.trip import Trip, TripCreationRequest
 from bson import ObjectId
 from datetime import datetime
 from app.services.user_service import get_user_by_email, get_users_by_ids
+from app.services.chat_service import create_chat
 def trip_serializer(trip) -> dict:
     """
     Serializes a trip document from MongoDB into a dictionary,
@@ -10,14 +11,6 @@ def trip_serializer(trip) -> dict:
     Note this is due to ObjectId from MongoDB not being JSON serializable, so we convert it to a string.
     """
     # Create a new list of chat messages with serialized timestamps
-    chat_messages = trip.get("chat", [])
-    serialized_chat = []
-    if chat_messages:
-        for message in chat_messages:
-            new_message = message.copy()
-            if 'timestamp' in new_message and isinstance(new_message['timestamp'], datetime):
-                new_message['timestamp'] = new_message['timestamp'].isoformat()
-            serialized_chat.append(new_message)
 
     return {
         "trip_id": str(trip["_id"]),
@@ -28,7 +21,7 @@ def trip_serializer(trip) -> dict:
         "start_date": trip["start_date"],
         "end_date": trip["end_date"],
         "description": trip["description"],
-        "chat": serialized_chat,
+        "chat_id": trip.get("chat_id"),
     }
 
 async def get_all_trips(collection: AsyncIOMotorCollection, user_id: str):
@@ -42,7 +35,7 @@ async def get_all_trips(collection: AsyncIOMotorCollection, user_id: str):
         trips.append(trip_serializer(trip))
     return trips
 
-async def create_trip(collection: AsyncIOMotorCollection, trip_data: TripCreationRequest):
+async def create_trip(trips_collection: AsyncIOMotorCollection, chats_collection: AsyncIOMotorCollection, trip_data: TripCreationRequest):
     """
     Create a new trip in the database from creation data.
     """
@@ -51,13 +44,21 @@ async def create_trip(collection: AsyncIOMotorCollection, trip_data: TripCreatio
 
     # Add fields not provided by the creation request
     trip_dict["itinerary_ids"] = []
-    trip_dict["chat"] = []
-
-    # Now, insert the complete trip dictionary
-    result = await collection.insert_one(trip_dict)
     
+    # Now, insert the complete trip dictionary
+    result = await trips_collection.insert_one(trip_dict)
+    
+    # Create a chat for the new trip
+    chat_id = await create_chat(chats_collection, str(result.inserted_id))
+    
+    # Update the trip with the new chat_id
+    await trips_collection.update_one(
+        {"_id": result.inserted_id},
+        {"$set": {"chat_id": chat_id}}
+    )
+
     # Fetch the newly created trip from the DB to return it
-    created_trip = await collection.find_one({"_id": result.inserted_id})
+    created_trip = await trips_collection.find_one({"_id": result.inserted_id})
     return trip_serializer(created_trip)
 
 async def get_trip(collection: AsyncIOMotorCollection, trip_id: str):
@@ -118,36 +119,4 @@ async def add_user_to_trip_by_email(trips_collection: AsyncIOMotorCollection, us
         return None  
 
     updated_trip = await trips_collection.find_one({"_id": ObjectId(trip_id)})
-    return trip_serializer(updated_trip)
-
-async def add_chat_message(collection: AsyncIOMotorCollection, trip_id: str, user_id: str, message: str):
-    """
-    Add a chat message to a trip.
-    """
-    chat_message = {"user_id": user_id, "message": message, "timestamp": datetime.now()}
-
-    result = await collection.update_one(
-        {"_id": ObjectId(trip_id)},
-        {"$push": {"chat": chat_message}}
-    )
-
-    if result.matched_count == 0:
-        return None
-
-    updated_trip = await collection.find_one({"_id": ObjectId(trip_id)})
-    return trip_serializer(updated_trip)
-
-async def clear_chat(collection: AsyncIOMotorCollection, trip_id: str):
-    """
-    Clear the chat history for a trip.
-    """
-    result = await collection.update_one(
-        {"_id": ObjectId(trip_id)},
-        {"$set": {"chat": []}}
-    )
-
-    if result.matched_count == 0:
-        return None
-
-    updated_trip = await collection.find_one({"_id": ObjectId(trip_id)})
     return trip_serializer(updated_trip)

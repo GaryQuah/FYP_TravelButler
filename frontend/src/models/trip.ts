@@ -13,6 +13,7 @@ export interface Trip {
   description: string;
   user_ids: string[];
   itinerary_ids: string[];
+  chat_id?: string;
 }
 
 export interface TripCreationData {
