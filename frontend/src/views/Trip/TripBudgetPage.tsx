@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -56,42 +57,6 @@ export interface TripBudget {
    Mock Data
 ========================================================= */
 
-const initialData: TripBudget = {
-  id: "trip-1",
-  tripName: "Japan Trip 2026",
-  peopleCount: 4,
-
-  categories: [
-    {
-      id: "1",
-      name: "Accommodation",
-      expenses: [{ id: "a1", title: "Hotel Tokyo", amount: 1400 }],
-    },
-    {
-      id: "2",
-      name: "Transportation",
-      expenses: [{ id: "t1", title: "JR Pass", amount: 700 }],
-    },
-    {
-      id: "3",
-      name: "Food",
-      expenses: [{ id: "f1", title: "Restaurants", amount: 500 }],
-    },
-    {
-      id: "4",
-      name: "Activities",
-      expenses: [{ id: "ac1", title: "DisneySea", amount: 350 }],
-    },
-  ],
-
-  contributors: [
-    { id: "u1", name: "Gary", paidAmount: 900 },
-    { id: "u2", name: "John", paidAmount: 1300 },
-    { id: "u3", name: "Sarah", paidAmount: 600 },
-    { id: "u4", name: "Emily", paidAmount: 400 },
-  ],
-};
-
 /* =========================================================
    Colors
 ========================================================= */
@@ -110,53 +75,106 @@ const BAR_COLORS = [
 ========================================================= */
 
 export function TripBudgetPage() {
-  const [trip, setTrip] = useState<TripBudget>(initialData);
+  const [trip, setTrip] = useState<TripBudget | null>(null);
+  const { tripId } = useParams<{ tripId: string }>();
+
+  useEffect(() => {
+    const fetchTripBudget = async () => {
+      try {
+        const response = await fetch(`/api/budget/${tripId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setTrip(data);
+        } else {
+          console.error("Failed to fetch trip budget");
+        }
+      } catch (error) {
+        console.error("Error fetching trip budget:", error);
+      }
+    };
+
+    if (tripId) {
+      fetchTripBudget();
+    }
+  }, [tripId]);
 
   const [expenseInputs, setExpenseInputs] = useState<{
     [categoryId: string]: { title: string; amount: string };
   }>({});
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   /* =========================================================
      Totals
   ========================================================= */
 
   const totalTravelExpenditure = useMemo(() => {
+    if (!trip) return 0;
     return trip.categories.reduce(
       (sum, c) => sum + c.expenses.reduce((s, e) => s + e.amount, 0),
       0,
     );
-  }, [trip.categories]);
+  }, [trip]);
 
-  const amountPerPerson = totalTravelExpenditure / trip.peopleCount;
+  const amountPerPerson = useMemo(() => {
+    if (!trip || !trip.peopleCount) return 0;
+    return totalTravelExpenditure / trip.peopleCount;
+  }, [trip, totalTravelExpenditure]);
 
   const perPersonSummary = useMemo(() => {
+    if (!trip) return [];
     return trip.contributors.map((c) => ({
       ...c,
       owed: amountPerPerson - c.paidAmount,
     }));
-  }, [trip.contributors, amountPerPerson]);
+  }, [trip, amountPerPerson]);
 
   const chartData = useMemo(() => {
+    if (!trip) return [];
     return trip.categories.map((c) => ({
       name: c.name,
       total: c.expenses.reduce((s, e) => s + e.amount, 0),
     }));
-  }, [trip.categories]);
+  }, [trip]);
 
   /* =========================================================
      Actions
   ========================================================= */
 
+  const updateTripBudget = async (updatedTrip: TripBudget) => {
+    if (!trip) return;
+    try {
+      const response = await fetch(`/api/budget/${trip.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedTrip),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTrip(data);
+      } else {
+        console.error("Failed to update trip budget");
+      }
+    } catch (error) {
+      console.error("Error updating trip budget:", error);
+    }
+  };
+
   const updatePaidAmount = (id: string, value: number) => {
-    setTrip((prev) => ({
-      ...prev,
-      contributors: prev.contributors.map((c) =>
+    if (!trip) return;
+    const updatedTrip = {
+      ...trip,
+      contributors: trip.contributors.map((c) =>
         c.id === id ? { ...c, paidAmount: value } : c,
       ),
-    }));
+    };
+    updateTripBudget(updatedTrip);
   };
 
   const addExpense = (categoryId: string) => {
+    if (!trip) return;
     const input = expenseInputs[categoryId];
     if (!input?.title || !input?.amount) return;
 
@@ -166,12 +184,13 @@ export function TripBudgetPage() {
       amount: Number(input.amount),
     };
 
-    setTrip((prev) => ({
-      ...prev,
-      categories: prev.categories.map((c) =>
+    const updatedTrip = {
+      ...trip,
+      categories: trip.categories.map((c) =>
         c.id === categoryId ? { ...c, expenses: [...c.expenses, expense] } : c,
       ),
-    }));
+    };
+    updateTripBudget(updatedTrip);
 
     setExpenseInputs((p) => ({
       ...p,
@@ -179,13 +198,35 @@ export function TripBudgetPage() {
     }));
   };
 
+  const addCategory = () => {
+    if (!trip || !newCategoryName) return;
+
+    const newCategory: Category = {
+      id: crypto.randomUUID(),
+      name: newCategoryName,
+      expenses: [],
+    };
+
+    const updatedTrip = {
+      ...trip,
+      categories: [...trip.categories, newCategory],
+    };
+
+    updateTripBudget(updatedTrip);
+    setNewCategoryName(""); // Reset input field
+  };
+
   /* =========================================================
      UI
   ========================================================= */
 
+  if (!trip) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Container fluid className="py-4">
-      <h2 className="mb-3">Trip Budget Tracker</h2>
+      <h2 className="mb-3">{trip.tripName} Budget Tracker</h2>
 
       {/* =====================================================
           SUMMARY
@@ -225,8 +266,11 @@ export function TripBudgetPage() {
               <Tooltip />
 
               <Bar dataKey="total">
-                {chartData.map((_, i) => (
-                  <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />
+                {chartData.map((entry, i) => (
+                  <Cell
+                    key={`cell-${entry.name}-${i}`}
+                    fill={BAR_COLORS[i % BAR_COLORS.length]}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -284,6 +328,28 @@ export function TripBudgetPage() {
               ))}
             </tbody>
           </Table>
+        </Card.Body>
+      </Card>
+
+      {/* =====================================================
+          ADD NEW CATEGORY
+      ===================================================== */}
+
+      <Card className="mb-4">
+        <Card.Body>
+          <h4 className="mb-3">Add New Category</h4>
+          <Row>
+            <Col>
+              <Form.Control
+                placeholder="Category Name"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+              />
+            </Col>
+            <Col md="auto">
+              <Button onClick={addCategory}>Add Category</Button>
+            </Col>
+          </Row>
         </Card.Body>
       </Card>
 

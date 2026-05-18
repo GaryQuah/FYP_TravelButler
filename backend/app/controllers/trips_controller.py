@@ -34,6 +34,9 @@ def get_users_collection(request: Request) -> AsyncIOMotorCollection:
 
 def get_chats_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.chats_collection
+
+def get_budgets_collection(request: Request) -> AsyncIOMotorCollection:
+    return request.app.budgets_collection
  
 @router.get("/")
 async def get_all_trips_route(
@@ -46,8 +49,14 @@ async def get_all_trips_route(
     return trips
  
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_new_trip(trip_data: TripCreationRequest, trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection), chats_collection: AsyncIOMotorCollection = Depends(get_chats_collection)):
-    return await create_trip(trips_collection, chats_collection, trip_data)
+async def create_new_trip(
+    trip_data: TripCreationRequest, 
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection), 
+    users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
+    chats_collection: AsyncIOMotorCollection = Depends(get_chats_collection),
+    budgets_collection: AsyncIOMotorCollection = Depends(get_budgets_collection)
+):
+    return await create_trip(trips_collection, users_collection, chats_collection, budgets_collection, trip_data)
  
  
 @router.get("/{trip_id}", response_model=Trip)
