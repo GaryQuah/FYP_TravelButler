@@ -22,7 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Define routers here
+# Routers
 app.include_router(user_router)
 app.include_router(trips_router)
 app.include_router(itinerary_router)
