@@ -15,4 +15,5 @@ USER_COLLECTION = os.environ.get("USER_COLLECTION", "users")
 TRIP_COLLECTION = os.environ.get("TRIP_COLLECTION", "trips")
 ITINERARY_COLLECTION = os.environ.get("ITINERARY_COLLECTION", "itineraries")
 CHAT_COLLECTION = os.environ.get("CHATS_COLLECTION", "chats")
+BUDGET_COLLECTION = os.environ.get("BUDGET_COLLECTION", "budgets")
 DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"}

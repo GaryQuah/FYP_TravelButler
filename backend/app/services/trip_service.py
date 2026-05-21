@@ -35,7 +35,7 @@ async def get_all_trips(collection: AsyncIOMotorCollection, user_id: str):
         trips.append(trip_serializer(trip))
     return trips
 
-async def create_trip(trips_collection: AsyncIOMotorCollection, chats_collection: AsyncIOMotorCollection, trip_data: TripCreationRequest):
+async def create_trip(trips_collection: AsyncIOMotorCollection, users_collection: AsyncIOMotorCollection, chats_collection: AsyncIOMotorCollection, budgets_collection: AsyncIOMotorCollection, trip_data: TripCreationRequest):
     """
     Create a new trip in the database from creation data.
     """
@@ -47,15 +47,33 @@ async def create_trip(trips_collection: AsyncIOMotorCollection, chats_collection
     
     # Now, insert the complete trip dictionary
     result = await trips_collection.insert_one(trip_dict)
+    trip_id = str(result.inserted_id)
     
     # Create a chat for the new trip
-    chat_id = await create_chat(chats_collection, str(result.inserted_id))
+    chat_id = await create_chat(chats_collection, trip_id)
     
     # Update the trip with the new chat_id
     await trips_collection.update_one(
         {"_id": result.inserted_id},
         {"$set": {"chat_id": chat_id}}
     )
+
+    # Fetch user details to create contributors list
+    users = await get_users_by_ids(users_collection, trip_data.user_ids)
+    contributors = [
+        {"id": user["user_id"], "name": user["name"], "paidAmount": 0}
+        for user in users
+    ]
+
+    # Create a default budget for the new trip
+    default_budget = {
+        "id": trip_id,
+        "tripName": trip_data.trip_name,
+        "peopleCount": len(trip_data.user_ids),
+        "categories": [],
+        "contributors": contributors,
+    }
+    await budgets_collection.insert_one(default_budget)
 
     # Fetch the newly created trip from the DB to return it
     created_trip = await trips_collection.find_one({"_id": result.inserted_id})
@@ -92,11 +110,29 @@ async def update_trip(collection: AsyncIOMotorCollection, trip_id: str, trip_dat
         return trip_serializer(updated_trip)
     return None
 
-async def delete_trip(collection: AsyncIOMotorCollection, trip_id: str):
+async def delete_trip(
+    trips_collection: AsyncIOMotorCollection,
+    budgets_collection: AsyncIOMotorCollection,
+    chats_collection: AsyncIOMotorCollection,
+    trip_id: str,
+):
     """
-    Delete a trip from the database.
+    Delete a trip and its associated budget and chat from the database.
     """
-    result = await collection.delete_one({"_id": ObjectId(trip_id)})
+    # First, find the trip to get its chat_id
+    trip = await trips_collection.find_one({"_id": ObjectId(trip_id)})
+    if not trip:
+        return False  # Trip not found
+
+    # Delete the associated budget
+    await budgets_collection.delete_one({"id": trip_id})
+
+    # Delete the associated chat if a chat_id exists
+    if "chat_id" in trip and trip["chat_id"]:
+        await chats_collection.delete_one({"_id": ObjectId(trip["chat_id"])})
+
+    # Finally, delete the trip itself
+    result = await trips_collection.delete_one({"_id": ObjectId(trip_id)})
     return result.deleted_count > 0
 
 
