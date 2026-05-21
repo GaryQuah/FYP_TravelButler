@@ -110,11 +110,29 @@ async def update_trip(collection: AsyncIOMotorCollection, trip_id: str, trip_dat
         return trip_serializer(updated_trip)
     return None
 
-async def delete_trip(collection: AsyncIOMotorCollection, trip_id: str):
+async def delete_trip(
+    trips_collection: AsyncIOMotorCollection,
+    budgets_collection: AsyncIOMotorCollection,
+    chats_collection: AsyncIOMotorCollection,
+    trip_id: str,
+):
     """
-    Delete a trip from the database.
+    Delete a trip and its associated budget and chat from the database.
     """
-    result = await collection.delete_one({"_id": ObjectId(trip_id)})
+    # First, find the trip to get its chat_id
+    trip = await trips_collection.find_one({"_id": ObjectId(trip_id)})
+    if not trip:
+        return False  # Trip not found
+
+    # Delete the associated budget
+    await budgets_collection.delete_one({"id": trip_id})
+
+    # Delete the associated chat if a chat_id exists
+    if "chat_id" in trip and trip["chat_id"]:
+        await chats_collection.delete_one({"_id": ObjectId(trip["chat_id"])})
+
+    # Finally, delete the trip itself
+    result = await trips_collection.delete_one({"_id": ObjectId(trip_id)})
     return result.deleted_count > 0
 
 

@@ -76,8 +76,15 @@ async def update_trip_by_id(trip_id: str, trip: Trip, trips_collection: AsyncIOM
  
  
 @router.delete("/{trip_id}")
-async def delete_trip_by_id(trip_id: str, trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):
-    deleted_trip = await delete_trip(trips_collection, trip_id)
+async def delete_trip_by_id(
+    trip_id: str,
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    budgets_collection: AsyncIOMotorCollection = Depends(get_budgets_collection),
+    chats_collection: AsyncIOMotorCollection = Depends(get_chats_collection),
+):
+    deleted_trip = await delete_trip(
+        trips_collection, budgets_collection, chats_collection, trip_id
+    )
     if not deleted_trip:
         raise HTTPException(status_code=404, detail="Trip not found")
     return deleted_trip
