@@ -26,11 +26,18 @@ export function HomePage() {
               Plan, collaborate with friends, and explore smarter ✈️
             </p>
             <button
-              className="btn btn-primary"
+              className="btn btn-primary me-2"
               // Show the add trip modal when the button is clicked - fill in details and add a new trip.
               onClick={() => setShowModal(true)}
             >
               Add Trip
+            </button>
+            <button
+              className="btn btn-primary me-2"
+              // Show the add trip modal when the button is clicked - fill in details and add a new trip.
+              onClick={() => setShowModal(true)}
+            >
+              Availability tracker
             </button>
 
             {showModal && (
