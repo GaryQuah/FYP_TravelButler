@@ -11,7 +11,13 @@ export const createTrip = async (tripData: TripCreationData): Promise<Trip> => {
   if (!response.ok) {
     throw new Error("Failed to create trip");
   }
-  return response.json();
+  const newTrip = await response.json();
+  // Convert string dates to Date objects
+  return {
+    ...newTrip,
+    start_date: new Date(newTrip.start_date),
+    end_date: new Date(newTrip.end_date),
+  };
 };
 
 export async function deleteTrip(tripId: string): Promise<void> {

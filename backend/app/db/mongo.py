@@ -1,11 +1,13 @@
 from contextlib import asynccontextmanager
 
 from motor.motor_asyncio import AsyncIOMotorClient
+import app.config as config
+from app.config import DATABASE_NAME, MONGO_URL, USER_COLLECTION, TRIP_COLLECTION, ITINERARY_COLLECTION, CHAT_COLLECTION, BUDGET_COLLECTION, AVAILABILITY_COLLECTION
 
-from app.config import DATABASE_NAME, MONGO_URL, USER_COLLECTION, TRIP_COLLECTION, ITINERARY_COLLECTION, CHAT_COLLECTION, BUDGET_COLLECTION
-
-#TODO: add auto handling of collection checking instead of hardcoding if possible.x
-collections_to_check = ["users", "events", "itineraries", "trips", "chats", "budgets"]
+collections_to_check = []
+for name, value in vars(config).items():
+    if name.endswith("_COLLECTION"):
+        collections_to_check.append(value)
 
 @asynccontextmanager
 async def lifespan(app):
@@ -21,6 +23,7 @@ async def lifespan(app):
     app.itineraries_collection = db[ITINERARY_COLLECTION]
     app.chats_collection = db[CHAT_COLLECTION]
     app.budgets_collection = db[BUDGET_COLLECTION]
+    app.availability_collection = db[AVAILABILITY_COLLECTION]
 
     #Check for collections in use
     existing_collections = await db.list_collection_names()

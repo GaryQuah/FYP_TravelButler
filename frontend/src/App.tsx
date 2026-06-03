@@ -21,7 +21,7 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/Home" element={<HomePage />} />
         <Route path="/Suggestions" element={<SuggestionsPage />} />
-        <Route path="/Availability" element={<AvailabilityPage />} />
+        <Route path="/availability/:trackerId" element={<AvailabilityPage />} />
 
         {/* Trip routes */}
         <Route path="/trip/:tripId" element={<TripLayout />}>

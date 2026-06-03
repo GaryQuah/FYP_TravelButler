@@ -1,26 +1,32 @@
 import { Outlet, useParams } from "react-router-dom";
 import Navbar from "../../components/navigation/Navbar";
 import TripNavbar from "../../components/navigation/TripNavBar";
-import { useTripDetails } from "../../hooks/useTripDetails";
+import {
+  useTripDetails,
+  TripDetailsProvider,
+} from "../../hooks/useTripDetails";
 import { formatFullDateTime } from "../../utils/dateUtils";
 import "../../assets/css/LoginPage.css";
 
 export function TripLayout() {
   const { tripId } = useParams<{ tripId: string }>();
 
-  const {
-    trip,
-    members,
-    loading: tripLoading,
-    error: tripError,
-  } = useTripDetails(tripId);
+  return (
+    <TripDetailsProvider tripId={tripId}>
+      <TripLayoutContent />
+    </TripDetailsProvider>
+  );
+}
 
-  if (tripLoading) {
+function TripLayoutContent() {
+  const { trip, members, loading, error } = useTripDetails();
+
+  if (loading) {
     return <div>Loading trip details...</div>;
   }
 
-  if (tripError) {
-    return <div>{tripError}</div>;
+  if (error) {
+    return <div>{error}</div>;
   }
 
   if (!trip) {

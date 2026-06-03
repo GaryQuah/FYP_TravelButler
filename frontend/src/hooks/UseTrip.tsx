@@ -32,18 +32,20 @@ export function useTrips() {
 
   const createNewTrip = async (
     tripData: Omit<TripCreationData, "user_ids">,
-    userId: string,
-  ) => {
+    userIds: string[],
+  ): Promise<Trip | null> => {
     try {
       const completeTripData: TripCreationData = {
         ...tripData,
-        user_ids: [userId],
+        user_ids: userIds,
       };
-      await apiCreateTrip(completeTripData);
+      const newTrip = await apiCreateTrip(completeTripData);
       // Refresh the list after creation
       fetchTrips();
+      return newTrip;
     } catch (error) {
       console.error("Failed to create trip:", error);
+      return null;
     }
   };
 

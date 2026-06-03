@@ -15,14 +15,15 @@ interface Props {
   onClose: () => void;
   // The onSave prop should expect the data in the format required by the API.
   onSave: (tripData: Omit<TripCreationData, "user_ids">) => void;
+  initialData?: Partial<TripFormState>;
 }
 
-const AddTripModal: React.FC<Props> = ({ onClose, onSave }) => {
+const AddTripModal: React.FC<Props> = ({ onClose, onSave, initialData }) => {
   const [formData, setFormData] = useState<TripFormState>({
-    trip_name: "",
-    start_date: null,
-    end_date: null,
-    description: "",
+    trip_name: initialData?.trip_name || "",
+    start_date: initialData?.start_date || null,
+    end_date: initialData?.end_date || null,
+    description: initialData?.description || "",
   });
 
   const handleChange = (

@@ -70,3 +70,13 @@ async def get_users_by_ids(users_collection, user_ids: list[str]):
     users_cursor = users_collection.find({"_id": {"$in": user_object_ids}})
     users = await users_cursor.to_list(length=len(user_ids))
     return [user_serializer(user) for user in users]
+
+
+async def get_user_by_id(users_collection, user_id: str):
+    """
+    Retrieve a single user by their document ID.
+    """
+    user = await users_collection.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        return None
+    return user_serializer(user)
