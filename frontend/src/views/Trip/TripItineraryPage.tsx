@@ -12,11 +12,10 @@ export function TripItineraryPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const {
     trip,
-    members,
     loading: tripLoading,
     error: tripError,
     refresh: refreshTripDetails,
-  } = useTripDetails(tripId);
+  } = useTripDetails();
   const {
     itineraries,
     loading: itinerariesLoading,

@@ -10,6 +10,7 @@ from app.controllers.trips_controller import router as trips_router
 from app.controllers.itinerary_controller import router as itinerary_router
 from app.controllers.chat_controller import router as chat_router
 from app.controllers.budget_controller import router as budget_router
+from app.controllers.availability_tracker_controller import router as availability_router
 from app.db.mongo import lifespan
 
 app = FastAPI(lifespan=lifespan, debug=DEBUG)
@@ -29,6 +30,7 @@ app.include_router(trips_router)
 app.include_router(itinerary_router)
 app.include_router(chat_router)
 app.include_router(budget_router)
+app.include_router(availability_router)
 
 
 def main():

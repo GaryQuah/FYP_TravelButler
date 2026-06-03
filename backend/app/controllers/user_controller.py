@@ -8,6 +8,7 @@ from app.services.user_service import (
     get_user_by_email,
     update_user,
     find_or_create_user,
+    get_user_by_id,
 )
 from pydantic import BaseModel
 
@@ -49,6 +50,22 @@ async def get_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+
+@router.get("/{user_id}", response_model=User)
+async def get_user_by_id_route(
+    user_id: str,
+    db: AsyncIOMotorCollection = Depends(get_users_collection),
+):
+    # ... inside the new get_user_by_id_route function ...
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    return user
+
 
 
 @router.put("/{user_id}")

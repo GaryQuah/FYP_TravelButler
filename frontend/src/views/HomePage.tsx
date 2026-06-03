@@ -6,11 +6,59 @@ import { type Trip as ApiTrip } from "../models";
 import { useTrips } from "../hooks/UseTrip";
 import { useUser } from "../models/UserContext";
 import "../assets/css/LoginPage.css";
+import { useAvailabilityTrackers } from "../hooks/useAvailabilityTrackers";
+import AvailabilityTrackerCard from "../components/cards/AvailabilityTrackerCard";
+import AvailabilityTrackerModal from "../components/modals/AvailabilityTrackerModal";
 
 export function HomePage() {
-  const { trips, createNewTrip, deleteTrip, loading } = useTrips();
+  const {
+    trips,
+    createNewTrip,
+    deleteTrip,
+    loading: tripsLoading,
+  } = useTrips();
+  const {
+    trackers,
+    loading: trackersLoading,
+    refetchTrackers,
+  } = useAvailabilityTrackers();
   const { user } = useUser();
-  const [showModal, setShowModal] = useState(false);
+  const [showTripModal, setShowTripModal] = useState(false);
+  const [showTrackerModal, setShowTrackerModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("availability");
+
+  const handleCreateTracker = async (trackerData: { name: string }) => {
+    if (!user) {
+      alert("You must be logged in to create a tracker.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/availability-trackers/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": user.user_id,
+        },
+        body: JSON.stringify({
+          name: trackerData.name,
+          user_ids: [user.user_id],
+        }),
+      });
+
+      if (response.ok) {
+        alert("Availability tracker created successfully");
+        refetchTrackers(); // Refetch trackers to show the new one
+        setShowTrackerModal(false);
+      } else {
+        alert("Failed to create availability tracker");
+        setShowTrackerModal(false);
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+      alert("An error occurred while creating the tracker.");
+    }
+  };
 
   return (
     <>
@@ -26,24 +74,29 @@ export function HomePage() {
               Plan, collaborate with friends, and explore smarter ✈️
             </p>
             <button
-              className="btn btn-primary"
-              // Show the add trip modal when the button is clicked - fill in details and add a new trip.
-              onClick={() => setShowModal(true)}
+              className="btn btn-primary me-2"
+              onClick={() => setShowTripModal(true)}
             >
               Add Trip
             </button>
+            <button
+              className="btn btn-primary me-2"
+              onClick={() => setShowTrackerModal(true)}
+            >
+              Add Availability Tracker
+            </button>
 
-            {showModal && (
+            {showTripModal && (
               <AddTripModal
-                onClose={() => setShowModal(false)}
+                onClose={() => setShowTripModal(false)}
                 onSave={async (tripData) => {
                   if (
                     user?.user_id &&
                     tripData.start_date &&
                     tripData.end_date
                   ) {
-                    await createNewTrip(tripData, user.user_id);
-                    setShowModal(false);
+                    await createNewTrip(tripData, [user.user_id]);
+                    setShowTripModal(false);
                   } else {
                     console.error(
                       "No user ID found or dates are not selected.",
@@ -52,18 +105,68 @@ export function HomePage() {
                 }}
               />
             )}
+
+            {showTrackerModal && (
+              <AvailabilityTrackerModal
+                onClose={() => setShowTrackerModal(false)}
+                onSave={handleCreateTracker}
+              />
+            )}
           </div>
         </div>
       </div>
 
       <div className="container">
-        {/* User's current trips */}
-        <div className="row mb-4">
-          {trips.map((trip: ApiTrip) => (
-            <div key={trip.trip_id} className="col-md-6">
-              <Card trip={trip} onDelete={deleteTrip} />
+        <ul className="nav nav-tabs">
+          <li className="nav-item">
+            <a
+              className={`nav-link ${activeTab === "trips" ? "active" : ""}`}
+              onClick={() => setActiveTab("trips")}
+              href="#"
+            >
+              Trip Cards
+            </a>
+          </li>
+          <li className="nav-item">
+            <a
+              className={`nav-link ${
+                activeTab === "availability" ? "active" : ""
+              }`}
+              onClick={() => setActiveTab("availability")}
+              href="#"
+            >
+              Availability Cards
+            </a>
+          </li>
+        </ul>
+
+        <div className="tab-content mt-3">
+          {activeTab === "trips" && (
+            <div className="row mb-4">
+              {tripsLoading ? (
+                <p>Loading trips...</p>
+              ) : (
+                trips.map((trip: ApiTrip) => (
+                  <div key={trip.trip_id} className="col-md-6">
+                    <Card trip={trip} onDelete={deleteTrip} />
+                  </div>
+                ))
+              )}
             </div>
-          ))}
+          )}
+          {activeTab === "availability" && (
+            <div className="row mb-4">
+              {trackersLoading ? (
+                <p>Loading availability trackers...</p>
+              ) : (
+                trackers.map((tracker) => (
+                  <div key={tracker.id} className="col-md-6">
+                    <AvailabilityTrackerCard tracker={tracker} />
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
       </div>
 

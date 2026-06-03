@@ -1,9 +1,33 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { getTripDetails, getTripMembers } from "../api";
+import type { Trip, User } from "../models";
 
-import { type Trip, type User } from "../models";
+// Create a context for trip details
+const TripDetailsContext = createContext<ReturnType<
+  typeof useProvideTripDetails
+> | null>(null);
 
-export function useTripDetails(tripId: string | undefined) {
+export const useTripDetails = () => {
+  const context = useContext(TripDetailsContext);
+  if (!context) {
+    throw new Error("useTripDetails must be used within a TripDetailsProvider");
+  }
+  return context;
+};
+
+export const TripDetailsProvider: React.FC<{
+  tripId: string | undefined;
+  children: React.ReactNode;
+}> = ({ tripId, children }) => {
+  const tripDetails = useProvideTripDetails(tripId);
+  return (
+    <TripDetailsContext.Provider value={tripDetails}>
+      {children}
+    </TripDetailsContext.Provider>
+  );
+};
+
+function useProvideTripDetails(tripId: string | undefined) {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [members, setMembers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
