@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# MongoDB connection settings and collection names
 MONGO_URL = os.environ["MONGO_URL"]
 DATABASE_NAME = os.environ.get("DATABASE_NAME", "travelmate_db")
 USER_COLLECTION = os.environ.get("USER_COLLECTION", "users")
@@ -16,5 +17,6 @@ TRIP_COLLECTION = os.environ.get("TRIP_COLLECTION", "trips")
 ITINERARY_COLLECTION = os.environ.get("ITINERARY_COLLECTION", "itineraries")
 CHAT_COLLECTION = os.environ.get("CHATS_COLLECTION", "chats")
 BUDGET_COLLECTION = os.environ.get("BUDGET_COLLECTION", "budgets")
-AVAILABILITY_COLLECTION = os.environ.get("AVAILABILITY_COLLECTION", "availability")
+AVAILABILITY_COLLECTION = os.environ.get("AVAILABILITY_COLLECTION", "availability") 
+POLL_COLLECTION = os.environ.get("POLL_COLLECTION", "polls")
 DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"}
