@@ -4,6 +4,7 @@ import { LoginPage } from "./views/LoginPage";
 import { HomePage } from "./views/HomePage";
 import { SuggestionsPage } from "./views/SuggestionsPage";
 import AvailabilityPage from "./views/AvailabilityPage";
+import { SettingsPage } from "./views/SettingsPage";
 import {
   TripLayout,
   TripChatPage,
@@ -22,6 +23,7 @@ function App() {
         <Route path="/Home" element={<HomePage />} />
         <Route path="/Suggestions" element={<SuggestionsPage />} />
         <Route path="/availability/:trackerId" element={<AvailabilityPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
 
         {/* Trip routes */}
         <Route path="/trip/:tripId" element={<TripLayout />}>

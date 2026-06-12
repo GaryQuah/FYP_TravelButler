@@ -5,7 +5,11 @@ import AddItineraryModal from "../../components/modals/AddItineraryModal";
 import AddUserModal from "../../components/modals/AddUserModal";
 import { useItineraries } from "../../hooks/UseItineraries";
 import { useTripDetails } from "../../hooks/useTripDetails";
-import { inviteUserToTrip } from "../../api";
+import {
+  inviteUserToTrip,
+  exportItinerariesToCalendar,
+  getGoogleCalendarStatus,
+} from "../../api";
 import type { ItineraryCreationData } from "../../models";
 
 export function TripItineraryPage() {
@@ -26,6 +30,9 @@ export function TripItineraryPage() {
   const [showModal, setShowModal] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [addUserError, setAddUserError] = useState<string | null>(null);
+  const [googleConnected, setGoogleConnected] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   const handleSaveItinerary = async (itineraryData: ItineraryCreationData) => {
     await addItinerary(itineraryData);
@@ -52,6 +59,38 @@ export function TripItineraryPage() {
     return <div>{tripError}</div>;
   }
 
+  useEffect(() => {
+    checkGoogleCalendarStatus();
+  }, []);
+
+  const checkGoogleCalendarStatus = async () => {
+    try {
+      const status = await getGoogleCalendarStatus();
+      setGoogleConnected(status.connected);
+    } catch (err) {
+      console.error("Failed to check Google Calendar status:", err);
+    }
+  };
+
+  const handleExportEntireTrip = async () => {
+    if (!itineraries || itineraries.length === 0) return;
+
+    setExportLoading(true);
+    setExportMessage(null);
+
+    try {
+      const itineraryIds = itineraries.map((item) => item.id);
+      const result = await exportItinerariesToCalendar(itineraryIds);
+      setExportMessage(
+        `${result.message} ${result.created_events.length} events created.`,
+      );
+    } catch (err: any) {
+      setExportMessage(`Export failed: ${err.message}`);
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   if (!trip) {
     return <div>Trip not found.</div>;
   }
@@ -68,6 +107,30 @@ export function TripItineraryPage() {
         >
           Add User
         </button>
+        {googleConnected && itineraries && itineraries.length > 0 && (
+          <button
+            className="btn btn-success ms-2"
+            onClick={handleExportEntireTrip}
+            disabled={exportLoading}
+          >
+            {exportLoading
+              ? "Exporting..."
+              : "Export Entire Trip to Google Calendar"}
+          </button>
+        )}
+        {exportMessage && (
+          <div
+            className={`mt-2 alert ${exportMessage.includes("failed") ? "alert-danger" : "alert-success"}`}
+          >
+            {exportMessage}
+          </div>
+        )}
+        {!googleConnected && (
+          <div className="mt-2 alert alert-info">
+            <a href="/settings">Connect your Google Calendar</a> in settings to
+            export itineraries.
+          </div>
+        )}
       </div>
       {showModal && (
         <AddItineraryModal
@@ -138,6 +201,7 @@ export function TripItineraryPage() {
                         end_time={item.end_time}
                         description={item.description}
                         onDelete={deleteItinerary}
+                        googleConnected={googleConnected}
                       />
                     </div>
                   </React.Fragment>

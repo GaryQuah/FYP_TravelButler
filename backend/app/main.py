@@ -12,6 +12,7 @@ from app.controllers.chat_controller import router as chat_router
 from app.controllers.budget_controller import router as budget_router
 from app.controllers.availability_tracker_controller import router as availability_router
 from app.controllers.poll_controller import router as poll_router
+from app.controllers.google_calendar_controller import router as google_calendar_router
 from app.db.mongo import lifespan
 
 app = FastAPI(lifespan=lifespan, debug=DEBUG)
@@ -33,6 +34,7 @@ app.include_router(chat_router)
 app.include_router(budget_router)
 app.include_router(availability_router)
 app.include_router(poll_router)
+app.include_router(google_calendar_router)
 
 
 def main():
