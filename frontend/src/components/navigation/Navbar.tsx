@@ -1,5 +1,6 @@
 // The main navigation bar at the top of the page. It allows users to navigate between different pages of the application, such as home and AI suggestions.
 import React from "react";
+import "./Navbar.css";
 import { useUser } from "../../models/UserContext";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -10,8 +11,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Home", path: "/home" },
-  //{ label: "Add trip", path: "/trips" },
   { label: "AI Suggestions", path: "/suggestions" },
+  { label: "Settings", path: "/settings" },
 ];
 
 const Navbar: React.FC = () => {
@@ -25,23 +26,28 @@ const Navbar: React.FC = () => {
 
   return (
     <div className="py-2 mb-3 border-bottom">
-      <nav className="nav d-flex justify-content-between flex-wrap">
-        {navItems.map((item) => (
-          <button
-            key={item.path}
-            onClick={() => handleNavigation(item.path)}
-            className={`btn btn-link text-decoration-none ${
-              location.pathname === item.path
-                ? "fw-bold text-dark"
-                : "text-muted"
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-        <div className="me-3">
+      <nav className="d-flex align-items-center">
+        <div className="ms-3">
           <span>Welcome, {user?.name}</span>
         </div>
+
+        <div className="d-flex gap-2 mx-auto">
+          {navItems.map((item) => (
+            <button
+              key={item.path}
+              onClick={() => handleNavigation(item.path)}
+              className={`nav-btn btn btn-link text-decoration-none ${
+                location.pathname === item.path
+                  ? "fw-bold text-dark"
+                  : "text-muted"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="me-3" style={{ width: "120px" }} />
       </nav>
     </div>
   );

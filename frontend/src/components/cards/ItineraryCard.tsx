@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { formatTime } from "../../utils/dateUtils";
+import { createSingleCalendarEvent } from "../../api";
 
 interface ItineraryCardProps {
   id: string;
@@ -7,6 +9,7 @@ interface ItineraryCardProps {
   end_time: Date;
   description: string;
   onDelete: (itineraryId: string) => void;
+  googleConnected?: boolean;
 }
 
 const ItineraryCard = ({
@@ -16,10 +19,41 @@ const ItineraryCard = ({
   end_time,
   description,
   onDelete,
+  googleConnected = false,
 }: ItineraryCardProps) => {
+  const [addingToCalendar, setAddingToCalendar] = useState(false);
+  const [added, setAdded] = useState(false);
+
   const handleDelete = () => {
     if (window.confirm(`Are you sure you want to delete "${activity_name}"?`)) {
       onDelete(id);
+    }
+  };
+
+  const handleAddToCalendar = async () => {
+    if (!googleConnected) return;
+
+    setAddingToCalendar(true);
+    try {
+      const eventData = {
+        summary: activity_name,
+        description: description,
+        start: {
+          dateTime: new Date(start_time).toISOString(),
+          timeZone: "Asia/Singapore",
+        },
+        end: {
+          dateTime: new Date(end_time).toISOString(),
+          timeZone: "Asia/Singapore",
+        },
+      };
+
+      await createSingleCalendarEvent(eventData);
+      setAdded(true);
+    } catch (error) {
+      console.error("Failed to add to calendar:", error);
+    } finally {
+      setAddingToCalendar(false);
     }
   };
 
@@ -46,6 +80,22 @@ const ItineraryCard = ({
         </div>
 
         <p className="card-text mb-auto">{description}</p>
+
+        {googleConnected && (
+          <div className="mt-3">
+            {added ? (
+              <span className="badge bg-success">Added to Calendar</span>
+            ) : (
+              <button
+                className="btn btn-sm btn-outline-primary"
+                onClick={handleAddToCalendar}
+                disabled={addingToCalendar}
+              >
+                {addingToCalendar ? "Adding..." : "Add to Google Calendar"}
+              </button>
+            )}
+          </div>
+        )}
 
         {/*TODO: Add image upload support for the trip card, and display the image here if it exists*/}
       </div>

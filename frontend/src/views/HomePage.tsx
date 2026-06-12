@@ -62,10 +62,8 @@ export function HomePage() {
 
   return (
     <>
+      <Navbar />
       <div className="container">
-        {/* Navigation */}
-        <Navbar />
-
         {/*Main text section */}
         <div className="p-4 p-md-5 mb-4 text-white rounded bg-dark">
           <div className="col-md-6 px-0">
