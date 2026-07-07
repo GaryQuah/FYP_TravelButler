@@ -10,6 +10,8 @@ import {
   exportItinerariesToCalendar,
   getGoogleCalendarStatus,
 } from "../../api";
+import { analyzeDescription } from "../../api/gemini.ts";
+import { addExpenditure } from "../../api/budget.ts";
 import type { ItineraryCreationData } from "../../models";
 
 export function TripItineraryPage() {
@@ -33,10 +35,35 @@ export function TripItineraryPage() {
   const [googleConnected, setGoogleConnected] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [expenditure, setExpenditure] = useState<{
+    amount: number;
+    item: string;
+    category: string;
+  } | null>(null);
 
   const handleSaveItinerary = async (itineraryData: ItineraryCreationData) => {
     await addItinerary(itineraryData);
     setShowModal(false);
+    if (itineraryData.description) {
+      try {
+        const result = await analyzeDescription(itineraryData.description);
+        if (result && result.expenditure) {
+          setExpenditure(result.expenditure);
+          setShowConfirmation(true);
+        }
+      } catch (error) {
+        console.error("Failed to analyze description:", error);
+      }
+    }
+  };
+
+  const handleConfirmAddExpenditure = async () => {
+    if (expenditure && tripId) {
+      await addExpenditure(tripId, expenditure);
+      setShowConfirmation(false);
+      setExpenditure(null);
+    }
   };
 
   const handleAddUser = async (email: string) => {
@@ -145,6 +172,39 @@ export function TripItineraryPage() {
           error={addUserError}
         />
       )}
+
+      {showConfirmation && expenditure && (
+        <div
+          className="modal d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog">
+            <div className="modal-content p-3">
+              <h5>Add to Budget?</h5>
+              <p>
+                Would you like to add an expenditure of {expenditure.amount} for
+                "{expenditure.item}" under the category "{expenditure.category}"
+                to your budget?
+              </p>
+              <div className="d-flex justify-content-end">
+                <button
+                  className="btn btn-secondary me-2"
+                  onClick={() => setShowConfirmation(false)}
+                >
+                  No
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleConfirmAddExpenditure}
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="row">
         <div className="col-12">
           {itinerariesLoading && <p>Loading itinerary...</p>}

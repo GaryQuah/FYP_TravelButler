@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from motor.motor_asyncio import AsyncIOMotorCollection
-from app.models.budget import TripBudget
-from app.services.budget_service import get_budget, update_budget
+from app.models.budget import TripBudget, Expenditure
+from app.services.budget_service import get_budget, update_budget, add_expenditure
 from app.services.trip_service import get_trip as get_trip_details
 
-router = APIRouter(prefix="/api/budget", tags=["budget"])
+router = APIRouter(tags=["budget"])
 
 def get_budgets_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.budgets_collection
@@ -12,7 +12,18 @@ def get_budgets_collection(request: Request) -> AsyncIOMotorCollection:
 def get_trips_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.trips_collection
 
-@router.get("/{trip_id}", response_model=TripBudget)
+@router.post("/api/trips/{trip_id}/budget", response_model=Expenditure)
+async def add_expenditure_route(
+    trip_id: str,
+    expenditure: Expenditure,
+    budgets_collection: AsyncIOMotorCollection = Depends(get_budgets_collection),
+):
+    new_expenditure = await add_expenditure(budgets_collection, trip_id, expenditure)
+    if not new_expenditure:
+        raise HTTPException(status_code=404, detail="Budget not found, cannot add expenditure")
+    return new_expenditure
+
+@router.get("/api/budget/{trip_id}", response_model=TripBudget)
 async def get_budget_route(
     trip_id: str,
     budgets_collection: AsyncIOMotorCollection = Depends(get_budgets_collection),
@@ -36,7 +47,7 @@ async def get_budget_route(
         return default_budget
     return budget
 
-@router.put("/{trip_id}", response_model=TripBudget)
+@router.put("/api/budget/{trip_id}", response_model=TripBudget)
 async def update_budget_route(
     trip_id: str,
     budget_data: TripBudget,

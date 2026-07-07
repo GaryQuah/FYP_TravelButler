@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import { getTripBudget } from "../../api/budget";
 import {
   BarChart,
   Bar,
@@ -80,22 +81,16 @@ export function TripBudgetPage() {
 
   useEffect(() => {
     const fetchTripBudget = async () => {
+      if (!tripId) return;
       try {
-        const response = await fetch(`/api/budget/${tripId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setTrip(data);
-        } else {
-          console.error("Failed to fetch trip budget");
-        }
+        const data = await getTripBudget(tripId);
+        setTrip(data);
       } catch (error) {
         console.error("Error fetching trip budget:", error);
       }
     };
 
-    if (tripId) {
-      fetchTripBudget();
-    }
+    fetchTripBudget();
   }, [tripId]);
 
   const [expenseInputs, setExpenseInputs] = useState<{
