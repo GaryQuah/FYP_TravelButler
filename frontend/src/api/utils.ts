@@ -14,13 +14,21 @@ const getAuthToken = (): string | null => {
 
 export const post = async (url: string, body: any) => {
   const token = getAuthToken();
+
+  const isFormData = body instanceof FormData;
+
+  const headers: HeadersInit = {
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
+
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
-    body: JSON.stringify(body),
+    headers,
+    body: isFormData ? body : JSON.stringify(body),
   });
 
   if (!response.ok) {

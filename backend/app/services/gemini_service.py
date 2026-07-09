@@ -1,6 +1,6 @@
 import os
 import json
-from typing import Optional, List
+from typing import Optional
 
 from google import genai
 from google.genai import types
@@ -20,7 +20,7 @@ class GeminiService:
         print(response)
     """
 
-    DEFAULT_MODEL = "gemini-2.5-flash"
+    DEFAULT_MODEL = "models/gemini-2.5-flash"
 
     def __init__(
         self,
@@ -37,6 +37,15 @@ class GeminiService:
 
         self.client = genai.Client(api_key=self.api_key)
         self.model = model
+
+    def list_models(self):
+        """
+        Print all available Gemini models.
+        """
+        print("Available Gemini models:\n")
+
+        for model in self.client.models.list():
+            print(model.name)
 
     def generate_text(
         self,
@@ -62,15 +71,15 @@ class GeminiService:
         )
 
         return response.text
-    
+
     def extract_budget_items(
-    self,
-    user_input: str,
-    temperature: float = 0.2
-    ) -> str:
+        self,
+        user_input: str,
+        temperature: float = 0.2
+    ) -> dict:
         """
         Extract budget-related items from free-form text.
-        Returns a JSON string.
+        Returns a dictionary.
         """
 
         prompt = f"""
@@ -81,15 +90,15 @@ class GeminiService:
 
         Instructions:
         1. Identify the first expense mentioned with a specific monetary amount.
-        2. For this expense, determine:
-        - item: a short title or name for the expense (e.g., "Dinner at restaurant", "Souvenir").
-        - amount: the numeric amount as a float.
-        - category: a short descriptive category (e.g., Food, Transport, Accommodation, Entertainment, Shopping, Miscellaneous).
-        3. If no specific item name is mentioned, create a reasonable one from the context.
-        4. Remove currency symbols and return only the numeric value for the amount.
-        5. Return ONLY a single valid JSON object. Do not return a list.
-        6. Do not include explanations, markdown, or additional text.
-        7. If no expense is found, return an empty JSON object.
+        2. Determine:
+            - item
+            - amount
+            - category
+        3. If no item name is mentioned, infer one from the context.
+        4. Remove currency symbols.
+        5. Return ONLY valid JSON.
+        6. Do not include markdown or explanations.
+        7. If no expense exists, return {{}}.
 
         Expected format:
 
@@ -101,13 +110,98 @@ class GeminiService:
             }}
         }}
         """
-        
-        response_text = self.generate_text(prompt=prompt, temperature=temperature)
-        
+
+        response_text = self.generate_text(
+            prompt=prompt,
+            temperature=temperature
+        )
+
         try:
-            # Clean the response to ensure it's valid JSON
-            clean_response = response_text.strip().replace("```json", "").replace("```", "").strip()
+            clean_response = (
+                response_text
+                .strip()
+                .replace("```json", "")
+                .replace("```", "")
+                .strip()
+            )
+
             return json.loads(clean_response)
+
         except json.JSONDecodeError:
-            # If parsing fails, return an empty dict or handle the error as needed
+            return {}
+
+    def extract_receipt(
+        self,
+        file_bytes: bytes,
+        mime_type: str,
+        temperature: float = 0.2
+    ) -> dict:
+        """
+        Extract expenditure information from a receipt image.
+        Returns a dictionary.
+        """
+
+        prompt = """
+        Analyze this receipt image.
+
+        Extract:
+        - Merchant name
+        - Total amount
+        - Category
+
+        Instructions:
+
+        1. Use the merchant/store name as the item.
+        2. Use the FINAL TOTAL shown on the receipt.
+        3. Categorize into ONE of:
+            - Food
+            - Transport
+            - Accommodation
+            - Shopping
+            - Entertainment
+            - Utilities
+            - Miscellaneous
+        4. Return ONLY valid JSON.
+        5. Do not include markdown or explanations.
+        6. If the receipt cannot be read, return {}.
+
+        Expected format:
+
+        {
+            "expenditure": {
+                "item": "Starbucks",
+                "amount": 25.50,
+                "category": "Food"
+            }
+        }
+        """
+
+        contents = [
+            prompt,
+            types.Part.from_bytes(
+                data=file_bytes,
+                mime_type=mime_type,
+            ),
+        ]
+
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=contents,
+            config=types.GenerateContentConfig(
+                temperature=temperature,
+            ),
+        )
+
+        try:
+            clean_response = (
+                response.text
+                .strip()
+                .replace("```json", "")
+                .replace("```", "")
+                .strip()
+            )
+
+            return json.loads(clean_response)
+
+        except (json.JSONDecodeError, AttributeError):
             return {}
