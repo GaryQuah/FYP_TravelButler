@@ -25,7 +25,8 @@ export function HomePage() {
   const { user } = useUser();
   const [showTripModal, setShowTripModal] = useState(false);
   const [showTrackerModal, setShowTrackerModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("availability");
+  // Set to "trips" by default, so the Trip Cards tab is active when the page loads, optionally set to "availability"
+  const [activeTab, setActiveTab] = useState("trips");
 
   const handleCreateTracker = async (trackerData: { name: string }) => {
     if (!user) {

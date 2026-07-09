@@ -1,6 +1,11 @@
 from pydantic import BaseModel, Field
 from typing import List
 
+class Expenditure(BaseModel):
+    amount: float
+    item: str
+    category: str
+
 class ExpenseItem(BaseModel):
     id: str = Field(..., alias="id")
     title: str = Field(..., alias="title")

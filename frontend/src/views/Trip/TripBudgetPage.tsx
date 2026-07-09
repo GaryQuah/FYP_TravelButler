@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { getTripBudget } from "../../api/budget";
 import {
   BarChart,
   Bar,
@@ -21,7 +22,9 @@ import {
   Tabs,
   Tab,
   Table,
+  Modal,
 } from "react-bootstrap";
+import { analyzeReceipt } from "../../api/gemini";
 
 /* =========================================================
    Models
@@ -77,25 +80,23 @@ const BAR_COLORS = [
 export function TripBudgetPage() {
   const [trip, setTrip] = useState<TripBudget | null>(null);
   const { tripId } = useParams<{ tripId: string }>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [receiptData, setReceiptData] = useState<any>(null);
+  const [editableReceipt, setEditableReceipt] = useState<any>(null);
 
   useEffect(() => {
     const fetchTripBudget = async () => {
+      if (!tripId) return;
       try {
-        const response = await fetch(`/api/budget/${tripId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setTrip(data);
-        } else {
-          console.error("Failed to fetch trip budget");
-        }
+        const data = await getTripBudget(tripId);
+        setTrip(data);
       } catch (error) {
         console.error("Error fetching trip budget:", error);
       }
     };
 
-    if (tripId) {
-      fetchTripBudget();
-    }
+    fetchTripBudget();
   }, [tripId]);
 
   const [expenseInputs, setExpenseInputs] = useState<{
@@ -214,6 +215,73 @@ export function TripBudgetPage() {
 
     updateTripBudget(updatedTrip);
     setNewCategoryName(""); // Reset input field
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const data = await analyzeReceipt(file);
+        setReceiptData(data);
+        setEditableReceipt(data.expenditure);
+        setShowModal(true);
+      } catch (error) {
+        console.error("Error analyzing receipt:", error);
+      }
+    }
+  };
+
+  const handleSaveExpense = () => {
+    if (!trip || !editableReceipt) return;
+
+    const { item, amount, category } = editableReceipt;
+
+    let updatedTrip = { ...trip };
+    let categoryId = updatedTrip.categories.find(
+      (c) => c.name === category,
+    )?.id;
+
+    if (!categoryId) {
+      const newCategory: Category = {
+        id: crypto.randomUUID(),
+        name: category,
+        expenses: [],
+      };
+      updatedTrip = {
+        ...updatedTrip,
+        categories: [...updatedTrip.categories, newCategory],
+      };
+      categoryId = newCategory.id;
+    }
+
+    const expense: ExpenseItem = {
+      id: crypto.randomUUID(),
+      title: item,
+      amount: Number(amount),
+    };
+
+    updatedTrip = {
+      ...updatedTrip,
+      categories: updatedTrip.categories.map((c) =>
+        c.id === categoryId ? { ...c, expenses: [...c.expenses, expense] } : c,
+      ),
+    };
+
+    updateTripBudget(updatedTrip);
+
+    setShowModal(false);
+    setReceiptData(null);
+    setEditableReceipt(null);
+  };
+
+  const handleModalInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditableReceipt((prev: any) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   /* =========================================================
@@ -337,7 +405,7 @@ export function TripBudgetPage() {
 
       <Card className="mb-4">
         <Card.Body>
-          <h4 className="mb-3">Add New Category</h4>
+          <h4 className="mb-3">Add New Category or Upload Receipt</h4>
           <Row>
             <Col>
               <Form.Control
@@ -348,6 +416,21 @@ export function TripBudgetPage() {
             </Col>
             <Col md="auto">
               <Button onClick={addCategory}>Add Category</Button>
+            </Col>
+            <Col md="auto">
+              <Button
+                variant="success"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Upload Receipt
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+                accept="image/*"
+              />
             </Col>
           </Row>
         </Card.Body>
@@ -425,6 +508,53 @@ export function TripBudgetPage() {
           </Tab>
         ))}
       </Tabs>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Expense</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {editableReceipt && (
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Item</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="item"
+                  value={editableReceipt.item}
+                  onChange={handleModalInputChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Amount</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="amount"
+                  value={editableReceipt.amount}
+                  onChange={handleModalInputChange}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Category</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="category"
+                  value={editableReceipt.category}
+                  onChange={handleModalInputChange}
+                />
+              </Form.Group>
+            </Form>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSaveExpense}>
+            Save Expense
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }
