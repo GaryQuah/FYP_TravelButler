@@ -5,13 +5,32 @@ import "../../assets/css/TripCard.css";
 
 interface Props {
   tracker: AvailabilityTracker;
+  onDelete: (trackerId: string) => void;
 }
-const AvailabilityTrackerCard: React.FC<Props> = ({ tracker }) => {
+const AvailabilityTrackerCard: React.FC<Props> = ({ tracker, onDelete }) => {
+  const handleDelete = () => {
+    if (window.confirm(`Are you sure you want to delete "${tracker.name}"?`)) {
+      onDelete(tracker.id);
+    }
+  };
+
   return (
-    <div className="card mb-3">
-      <div className="card-body">
-        <h5 className="card-title">{tracker.name}</h5>
-        <Link to={`/availability/${tracker.id}`} className="btn btn-primary">
+    <div className="card mb-4 shadow-sm h-100">
+      <div className="card-body d-flex flex-column">
+        <div className="d-flex justify-content-between align-items-start">
+          <h3 className="mb-0">{tracker.name}</h3>
+          <button
+            className="btn btn-sm btn-outline-danger"
+            onClick={handleDelete}
+            aria-label={`Delete tracker ${tracker.name}`}
+          >
+            <i className="bi bi-trash3"></i>
+          </button>
+        </div>
+        <Link
+          to={`/availability/${tracker.id}`}
+          className="btn btn-outline-primary mt-3 align-self-start"
+        >
           View
         </Link>
       </div>

@@ -5,6 +5,7 @@ import AddTripModal from "../components/modals/AddTripModal";
 import { type Trip as ApiTrip } from "../models";
 import { useTrips } from "../hooks/UseTrip";
 import { useUser } from "../models/UserContext";
+import { deleteAvailabilityTracker } from "../api/availability";
 import { useAvailabilityTrackers } from "../hooks/useAvailabilityTrackers";
 import AvailabilityTrackerCard from "../components/cards/AvailabilityTrackerCard";
 import AvailabilityTrackerModal from "../components/modals/AvailabilityTrackerModal";
@@ -28,6 +29,16 @@ export function HomePage() {
   const [showTrackerModal, setShowTrackerModal] = useState(false);
   // Set to "trips" by default, so the Trip Cards tab is active when the page loads, optionally set to "availability"
   const [activeTab, setActiveTab] = useState("trips");
+
+  const handleDeleteTracker = async (trackerId: string) => {
+    try {
+      await deleteAvailabilityTracker(trackerId);
+      refetchTrackers();
+    } catch (error) {
+      console.error("Failed to delete tracker:", error);
+      alert("Failed to delete tracker.");
+    }
+  };
 
   const handleCreateTracker = async (trackerData: { name: string }) => {
     if (!user) {
@@ -154,7 +165,7 @@ export function HomePage() {
 
         <div className="tab-content mt-3">
           {activeTab === "trips" && (
-            <div className="row mb-4">
+            <div className="row gy-4 mb-4">
               {tripsLoading ? (
                 <p>Loading trips...</p>
               ) : (
@@ -167,13 +178,16 @@ export function HomePage() {
             </div>
           )}
           {activeTab === "availability" && (
-            <div className="row mb-4">
+            <div className="row gy-4 mb-4">
               {trackersLoading ? (
                 <p>Loading availability trackers...</p>
               ) : (
                 trackers.map((tracker) => (
                   <div key={tracker.id} className="col-md-6">
-                    <AvailabilityTrackerCard tracker={tracker} />
+                    <AvailabilityTrackerCard
+                      tracker={tracker}
+                      onDelete={handleDeleteTracker}
+                    />
                   </div>
                 ))
               )}
