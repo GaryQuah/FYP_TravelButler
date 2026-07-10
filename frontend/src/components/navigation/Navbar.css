@@ -35,6 +35,8 @@
     padding:14px 0;
 }
 
+
+
 /* ===========================
    Brand
 =========================== */
@@ -137,31 +139,27 @@
    Welcome
 =========================== */
 
-.welcome-section{
-
-    display:flex;
-
-    flex-direction:column;
-
-    align-items:flex-end;
+.welcome-section {
+    width: 200px;         
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;   
 }
 
-.welcome-section small{
-
-    color:#64748b;
-
-    font-size:1rem;
-
-    font-weight:600;
+.welcome-text,
+.welcome-name {
+    width: 100%;
 }
 
-.welcome-section div{
+.welcome-text {
+    color: #64748b;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
 
-    color:#0f172a;
-
-    font-weight:700;
-
-    font-size:1rem;
+.welcome-name {
+    margin-top: 4px;
+    font-weight: 700;
 }
 
 /* ===========================

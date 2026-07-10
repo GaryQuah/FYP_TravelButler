@@ -1,4 +1,5 @@
 import { GoogleLogin } from "@react-oauth/google";
+import WelcomeTypewriter from "../components/WelcomeTypewriter";
 import { LoginPageViewModel } from "../viewmodels/LoginPageViewModel";
 import "../assets/css/LoginPage.css";
 import backgroundImage from "../assets/images/loginpage/background.jpg";
@@ -58,7 +59,8 @@ export function LoginPage() {
         <div className="login-card">
           <div className="text-center">
             <h2 className="fw-bold">
-              Welcome Back{lastUserName ? `, ${lastUserName}` : ""}
+              <WelcomeTypewriter />
+              {lastUserName ? `, ${lastUserName}` : ""}
             </h2>
 
             <p className="text-muted mb-4">

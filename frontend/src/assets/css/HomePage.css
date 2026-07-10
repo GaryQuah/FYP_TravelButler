@@ -30,3 +30,11 @@
     padding: 10px 20px;
     font-size: 1.1rem;
   }
+
+.nav-link {
+  transition: background-color 0.3s ease;
+}
+
+.nav-link:hover {
+  background-color: #ececec;
+}

@@ -2,6 +2,7 @@ import React from "react";
 import "./Navbar.css";
 import { useUser } from "../../models/UserContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import WelcomeTypewriter from "../WelcomeTypewriter.tsx";
 
 interface NavItem {
   label: string;
@@ -61,9 +62,11 @@ const Navbar: React.FC = () => {
 
         {/* Right */}
         <div className="welcome-section">
-          <small>Welcome back</small>
+          <div className="welcome-text">
+            <WelcomeTypewriter />
+          </div>
 
-          <div>{user?.name}</div>
+          <div className="welcome-name">{user?.name}</div>
         </div>
       </nav>
     </header>

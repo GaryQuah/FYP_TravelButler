@@ -1,0 +1,22 @@
+.typewriter {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.cursor {
+    display: inline-block;
+    width: 1ch;
+    margin-left: 2px;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+
+    50.01%, 100% {
+        opacity: 0;
+    }
+}
