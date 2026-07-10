@@ -1,7 +1,7 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { LoginPageViewModel } from "../viewmodels/LoginPageViewModel";
 import "../assets/css/LoginPage.css";
-import backgroundImage from "../assets/login/background.jpg";
+import backgroundImage from "../assets/images/loginpage/background.jpg";
 
 export function LoginPage() {
   const { handleGoogleLogin, lastUserName } = LoginPageViewModel();
