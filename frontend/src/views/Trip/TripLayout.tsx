@@ -7,6 +7,7 @@ import {
 } from "../../hooks/useTripDetails";
 import { formatFullDateTime } from "../../utils/dateUtils";
 import "../../assets/css/LoginPage.css";
+import homeBanner from "../../assets/images/dashboard/sunset.jpg";
 
 export function TripLayout() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -43,15 +44,34 @@ function TripLayoutContent() {
           {/* Trip header */}
           <div className="row mb-4">
             <div className="col-md-8">
-              <div className="p-4 text-white rounded bg-dark h-100 d-flex flex-column">
-                <h1 className="display-5 fst-italic">{trip.trip_name}</h1>
-
-                <p className="mb-3">
-                  {formatFullDateTime(trip.start_date)} -{" "}
-                  {formatFullDateTime(trip.end_date)}
-                </p>
-
-                <p className="lead">{trip.description}</p>
+              <div
+                className="p-4 text-white rounded h-100 d-flex flex-column"
+                style={{
+                  backgroundImage: `url(${homeBanner})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  position: "relative",
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    borderRadius: "inherit",
+                  }}
+                ></div>
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  <h1 className="display-5 fst-italic">{trip.trip_name}</h1>
+                  <p className="mb-3">
+                    {formatFullDateTime(trip.start_date)} -{" "}
+                    {formatFullDateTime(trip.end_date)}
+                  </p>
+                  <p className="lead">{trip.description}</p>
+                </div>
               </div>
             </div>
 
