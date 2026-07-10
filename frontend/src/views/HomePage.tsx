@@ -5,10 +5,11 @@ import AddTripModal from "../components/modals/AddTripModal";
 import { type Trip as ApiTrip } from "../models";
 import { useTrips } from "../hooks/UseTrip";
 import { useUser } from "../models/UserContext";
-import "../assets/css/LoginPage.css";
 import { useAvailabilityTrackers } from "../hooks/useAvailabilityTrackers";
 import AvailabilityTrackerCard from "../components/cards/AvailabilityTrackerCard";
 import AvailabilityTrackerModal from "../components/modals/AvailabilityTrackerModal";
+import "../assets/css/HomePage.css";
+import homeBanner from "../assets/images/dashboard/sunset.jpg";
 
 export function HomePage() {
   const {
@@ -66,22 +67,32 @@ export function HomePage() {
       <Navbar />
       <div className="container">
         {/*Main text section */}
-        <div className="p-4 p-md-5 mb-4 text-white rounded bg-dark">
-          <div className="col-md-6 px-0">
-            <h1 className="display-5 fst-italic">Welcome to TravelMate</h1>
-            <p className="lead my-3">
+        <div
+          className="home-banner mb-4"
+          style={{ backgroundImage: `url(${homeBanner})` }}
+        >
+          <div className="home-banner-overlay"></div>
+
+          <div className="home-banner-content">
+            <h1 className="display-4 fw-bold">Welcome to TravelMate</h1>
+
+            <p className="lead mb-4">
               Plan, collaborate with friends, and explore smarter ✈️
             </p>
+
             <button
-              className="btn btn-primary me-2"
+              className="btn btn-primary me-3"
               onClick={() => setShowTripModal(true)}
             >
+              <i className="bi bi-plus-circle me-2"></i>
               Add Trip
             </button>
+
             <button
-              className="btn btn-primary me-2"
+              className="btn btn-light"
               onClick={() => setShowTrackerModal(true)}
             >
+              <i className="bi bi-calendar3 me-2"></i>
               Add Availability Tracker
             </button>
 
@@ -123,6 +134,7 @@ export function HomePage() {
               onClick={() => setActiveTab("trips")}
               href="#"
             >
+              <i className="bi bi-airplane"></i>
               Trip Cards
             </a>
           </li>
@@ -134,6 +146,7 @@ export function HomePage() {
               onClick={() => setActiveTab("availability")}
               href="#"
             >
+              <i className="bi bi-calendar-check me-2"></i>
               Availability Cards
             </a>
           </li>

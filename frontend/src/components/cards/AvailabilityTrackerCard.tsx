@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { type AvailabilityTracker } from "../../models/availability_tracker";
+import "../../assets/css/TripCard.css";
 
 interface Props {
   tracker: AvailabilityTracker;

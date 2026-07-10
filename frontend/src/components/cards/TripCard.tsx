@@ -1,6 +1,7 @@
 import { type Trip as ApiTrip } from "../../models";
 import { Link } from "react-router-dom";
 import { formatFullDateTime } from "../../utils/dateUtils";
+import "../../assets/css/TripCard.css";
 
 interface CardProps {
   trip: ApiTrip;
@@ -30,7 +31,7 @@ const Card = ({ trip, onDelete }: CardProps) => {
             onClick={handleDelete}
             aria-label={`Delete trip ${trip.trip_name}`}
           >
-            &times;
+            <i className="bi bi-trash3"></i>
           </button>
         </div>
 
