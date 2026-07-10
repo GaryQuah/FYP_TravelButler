@@ -126,13 +126,13 @@ export function TripItineraryPage() {
     <>
       <div>
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          Add Itinerary
+          <i className="bi bi-plus-circle me-2"></i>Add Itinerary
         </button>
         <button
           className="btn btn-secondary ms-2"
           onClick={() => setShowAddUserModal(true)}
         >
-          Add User
+          <i className="bi bi-person-plus me-2"></i>Add User
         </button>
         {googleConnected && itineraries && itineraries.length > 0 && (
           <button
@@ -140,9 +140,14 @@ export function TripItineraryPage() {
             onClick={handleExportEntireTrip}
             disabled={exportLoading}
           >
-            {exportLoading
-              ? "Exporting..."
-              : "Export Entire Trip to Google Calendar"}
+            {exportLoading ? (
+              "Exporting..."
+            ) : (
+              <>
+                <i className="bi bi-calendar-plus me-2"></i>
+                Export Entire Trip to Google Calendar
+              </>
+            )}
           </button>
         )}
         {exportMessage && (

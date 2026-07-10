@@ -415,14 +415,16 @@ export function TripBudgetPage() {
               />
             </Col>
             <Col md="auto">
-              <Button onClick={addCategory}>Add Category</Button>
+              <Button onClick={addCategory}>
+                <i className="bi bi-plus-circle me-2"></i>Add Category
+              </Button>
             </Col>
             <Col md="auto">
               <Button
                 variant="success"
                 onClick={() => fileInputRef.current?.click()}
               >
-                Upload Receipt
+                <i className="bi bi-upload me-2"></i>Upload Receipt
               </Button>
               <input
                 type="file"
@@ -481,7 +483,7 @@ export function TripBudgetPage() {
 
                   <Col md="auto">
                     <Button onClick={() => addExpense(category.id)}>
-                      Add Expense
+                      <i className="bi bi-plus me-2"></i>Add Expense
                     </Button>
                   </Col>
                 </Row>
