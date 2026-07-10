@@ -1,3 +1,211 @@
-.nav-btn.text-muted:hover {
-  color: #002fff 
+:root{
+
+    --primary:#60a5fa;
+    --secondary:#67e8f9;
+
+    --gradient:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--secondary)
+        );
+}
+
+/* ===========================
+   Navbar
+=========================== */
+
+.navbar-container{
+
+    position:sticky;
+
+    top:0;
+
+    z-index:1000;
+
+    background:rgba(255,255,255,.92);
+
+    backdrop-filter:blur(14px);
+
+    border-bottom:1px solid #e5e7eb;
+
+    box-shadow:
+        0 4px 15px rgba(15,23,42,.05);
+
+    padding:14px 0;
+}
+
+/* ===========================
+   Brand
+=========================== */
+
+.navbar-brand-custom{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    font-size:1.5rem;
+
+    font-weight:800;
+
+    color:#0f172a;
+}
+
+.navbar-brand-custom i{
+
+    font-size:2rem;
+
+    background:var(--gradient);
+
+    -webkit-background-clip:text;
+
+    -webkit-text-fill-color:transparent;
+}
+
+/* ===========================
+   Navigation
+=========================== */
+
+.navbar-links{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:16px;
+}
+
+.nav-btn{
+
+    border:none;
+
+    background:none;
+
+    display:flex;
+
+    align-items:center;
+
+    padding:11px 20px;
+
+    border-radius:14px;
+
+    color:#334155;
+
+    font-size:.97rem;
+
+    font-weight:700;
+
+    transition:
+        all .25s ease;
+
+    cursor:pointer;
+}
+
+.nav-btn i{
+
+    font-size:1rem;
+}
+
+.nav-btn:hover{
+
+    color:#2563eb;
+
+    background:#eff6ff;
+
+    transform:translateY(-2px);
+}
+
+.nav-btn.active{
+
+    color:white;
+
+    background:var(--gradient);
+
+    box-shadow:
+        0 10px 20px rgba(96,165,250,.35);
+}
+
+.nav-btn.active:hover{
+
+    color:white;
+}
+
+/* ===========================
+   Welcome
+=========================== */
+
+.welcome-section{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:flex-end;
+}
+
+.welcome-section small{
+
+    color:#64748b;
+
+    font-size:.78rem;
+
+    font-weight:600;
+}
+
+.welcome-section div{
+
+    color:#0f172a;
+
+    font-weight:700;
+
+    font-size:1rem;
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media(max-width:992px){
+
+    .navbar-brand-custom span{
+
+        display:none;
+    }
+
+    .navbar-links{
+
+        gap:8px;
+    }
+
+    .nav-btn{
+
+        padding:10px 14px;
+
+        font-size:.9rem;
+    }
+}
+
+@media(max-width:768px){
+
+    .navbar-container nav{
+
+        flex-direction:column;
+
+        gap:15px;
+    }
+
+    .welcome-section{
+
+        align-items:center;
+    }
+
+    .navbar-links{
+
+        flex-wrap:wrap;
+
+        justify-content:center;
+    }
 }

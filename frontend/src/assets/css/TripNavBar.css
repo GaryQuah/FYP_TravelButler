@@ -1,0 +1,192 @@
+:root {
+
+    --primary:#60a5fa;
+    --secondary:#67e8f9;
+
+    --gradient:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--secondary)
+        );
+}
+
+/* ============================
+   Sidebar
+============================ */
+
+.trip-sidebar{
+
+    width:260px;
+
+    min-height:100vh;
+
+    padding:28px 20px;
+
+    background:white;
+
+    border-right:1px solid #e5e7eb;
+
+    box-shadow:
+        4px 0 20px rgba(15,23,42,.05);
+
+    display:flex;
+
+    flex-direction:column;
+}
+
+/* ============================
+   Logo
+============================ */
+
+.trip-sidebar-brand{
+
+    margin-bottom:40px;
+
+    text-align:center;
+}
+
+.trip-sidebar-brand i{
+
+    font-size:3rem;
+
+    background:var(--gradient);
+
+    -webkit-background-clip:text;
+
+    -webkit-text-fill-color:transparent;
+}
+
+.trip-sidebar-brand h5{
+
+    margin-top:12px;
+
+    font-weight:800;
+
+    color:#0f172a;
+}
+
+.trip-sidebar-brand small{
+
+    color:#64748b;
+
+    font-weight:600;
+}
+
+/* ============================
+   Navigation
+============================ */
+
+.trip-sidebar-links{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+}
+
+.trip-nav-btn{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    border:none;
+
+    background:none;
+
+    width:100%;
+
+    padding:14px 18px;
+
+    border-radius:16px;
+
+    color:#334155;
+
+    font-size:.98rem;
+
+    font-weight:700;
+
+    transition:
+        all .25s ease;
+
+    cursor:pointer;
+}
+
+.trip-nav-btn i{
+
+    font-size:1.15rem;
+
+    width:24px;
+
+    text-align:center;
+}
+
+.trip-nav-btn:hover{
+
+    background:#eff6ff;
+
+    color:#2563eb;
+
+    transform:translateX(5px);
+}
+
+.trip-nav-btn.active{
+
+    background:var(--gradient);
+
+    color:white;
+
+    box-shadow:
+        0 10px 20px rgba(96,165,250,.35);
+}
+
+.trip-nav-btn.active:hover{
+
+    color:white;
+
+    transform:translateX(5px);
+}
+
+/* ============================
+   Responsive
+============================ */
+
+@media(max-width:992px){
+
+    .trip-sidebar{
+
+        width:220px;
+    }
+}
+
+@media(max-width:768px){
+
+    .trip-sidebar{
+
+        width:80px;
+
+        padding:20px 12px;
+    }
+
+    .trip-sidebar-brand h5,
+    .trip-sidebar-brand small,
+    .trip-nav-btn span{
+
+        display:none;
+    }
+
+    .trip-nav-btn{
+
+        justify-content:center;
+    }
+
+    .trip-nav-btn i{
+
+        margin:0;
+    }
+
+}

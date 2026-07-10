@@ -1,4 +1,3 @@
-// The main navigation bar at the top of the page. It allows users to navigate between different pages of the application, such as home and AI suggestions.
 import React from "react";
 import "./Navbar.css";
 import { useUser } from "../../models/UserContext";
@@ -7,12 +6,25 @@ import { useNavigate, useLocation } from "react-router-dom";
 interface NavItem {
   label: string;
   path: string;
+  icon: string;
 }
 
 const navItems: NavItem[] = [
-  { label: "Home", path: "/home" },
-  { label: "AI Suggestions", path: "/suggestions" },
-  { label: "Settings", path: "/settings" },
+  {
+    label: "Home",
+    path: "/home",
+    icon: "bi-house-door-fill",
+  },
+  // {
+  //   label: "AI Suggestions",
+  //   path: "/suggestions",
+  //   icon: "bi-stars",
+  // },
+  {
+    label: "Settings",
+    path: "/settings",
+    icon: "bi-gear-fill",
+  },
 ];
 
 const Navbar: React.FC = () => {
@@ -20,36 +32,41 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const { user } = useUser();
 
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
-
   return (
-    <div className="py-2 mb-3 border-bottom">
-      <nav className="d-flex align-items-center">
-        <div className="ms-3">
-          <span>Welcome, {user?.name}</span>
+    <header className="navbar-container">
+      <nav className="container-fluid px-5 d-flex align-items-center justify-content-between">
+        {/* Left */}
+        <div className="navbar-brand-custom">
+          <i className="bi bi-airplane-engines-fill"></i>
+
+          <span>TravelMate</span>
         </div>
 
-        <div className="d-flex gap-2 mx-auto">
+        {/* Centre */}
+        <div className="navbar-links">
           {navItems.map((item) => (
             <button
               key={item.path}
-              onClick={() => handleNavigation(item.path)}
-              className={`nav-btn btn btn-link text-decoration-none ${
-                location.pathname === item.path
-                  ? "fw-bold text-dark"
-                  : "text-muted"
+              onClick={() => navigate(item.path)}
+              className={`nav-btn ${
+                location.pathname === item.path ? "active" : ""
               }`}
             >
+              <i className={`bi ${item.icon} me-2`}></i>
+
               {item.label}
             </button>
           ))}
         </div>
 
-        <div className="me-3" style={{ width: "120px" }} />
+        {/* Right */}
+        <div className="welcome-section">
+          <small>Welcome back</small>
+
+          <div>{user?.name}</div>
+        </div>
       </nav>
-    </div>
+    </header>
   );
 };
 
