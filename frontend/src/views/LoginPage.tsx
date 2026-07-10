@@ -4,11 +4,11 @@ import "../assets/css/LoginPage.css";
 import backgroundImage from "../assets/login/background.jpg";
 
 export function LoginPage() {
-  const { handleGoogleLogin } = LoginPageViewModel();
+  const { handleGoogleLogin, lastUserName } = LoginPageViewModel();
 
   return (
     <div className="login-page">
-      {/* ================= LEFT ================= */}
+      {/* Left Region*/}
       <div className="login-left">
         <img
           src={backgroundImage}
@@ -18,9 +18,9 @@ export function LoginPage() {
 
         <div className="login-overlay"></div>
 
-        <div className="container h-100">
-          <div className="row h-100 align-items-center">
-            <div className="col-lg-9">
+        <div className="container pt-5">
+          <div className="row justify-content-center">
+            <div className="col-lg-10 col-xl-9">
               <div className="hero-content">
                 {/* Logo */}
                 <div className="d-flex align-items-center mb-4">
@@ -39,18 +39,12 @@ export function LoginPage() {
                     Travel <span className="gradient-text">together.</span>
                   </h1>
                 </div>
-
+                <div className="hero-divider"></div>
                 {/* Description */}
                 <p className="hero-description">
                   TravelMate is an AI-powered collaborative travel planner
                   designed for groups. Build itineraries, manage budgets,
                   organize activities and make travelling together effortless.
-                </p>
-
-                <div className="hero-divider"></div>
-
-                <p className="hero-subtitle">
-                  Everything your group needs in one place.
                 </p>
               </div>
             </div>
@@ -63,7 +57,9 @@ export function LoginPage() {
         {/* Login Card */}
         <div className="login-card">
           <div className="text-center">
-            <h2 className="fw-bold">Welcome Back</h2>
+            <h2 className="fw-bold">
+              Welcome Back{lastUserName ? `, ${lastUserName}` : ""}
+            </h2>
 
             <p className="text-muted mb-4">
               Sign in to continue planning your next adventure.
