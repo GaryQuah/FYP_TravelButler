@@ -1,41 +1,330 @@
-.login-gradient-bg {
-  height: 100vh; /* full viewport height */
-  width: 100%;
-  background: linear-gradient(-45deg, #74b5ff, #fad0c4, #a18cd1, #fbc2eb);
-  background-size: 400% 400%;
-  animation: gradientScroll 15s ease infinite;
+/* ===========================
+   Page Layout
+=========================== */
+
+.login-page {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
 }
 
-.general-gradient-bg {
-  height: 100vh; /* full viewport height */
-  width: 100%;
-  background: linear-gradient(-45deg, #ffffff, #d3f8ff, #e4d8ff);
-  background-size: 400% 400%;
-  animation: gradientScroll 15s ease infinite;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* ===========================
+   Left Side
+=========================== */
+
+.login-left {
+  position: relative;
+  width: 45%;
+  overflow: hidden;
 }
 
-@keyframes gradientScroll {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+.login-background-image {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
 }
+
+.login-overlay {
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    135deg,
+    rgba(10, 18, 35, 0.88),
+    rgba(20, 45, 70, 0.75)
+  );
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+
+  margin-top: 8rem;
+  padding-left: 2rem;
+
+  color: white;
+}
+
+.hero-logo {
+  font-size: 3rem;
+  color: #67e8f9;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #67e8f9, #60a5fa);
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-title h1 {
+  line-height: 1.05;
+}
+
+.hero-description {
+  max-width: 520px;
+
+  font-size: 1.15rem;
+
+  line-height: 1.8;
+
+  color: rgba(255, 255, 255, 0.8);
+
+  margin-bottom: 2rem;
+}
+
+.hero-divider {
+  width: 90px;
+  height: 4px;
+
+  background: linear-gradient(
+    90deg,
+    #67e8f9,
+    #60a5fa
+  );
+
+  border-radius: 100px;
+
+  margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+  color: rgba(255,255,255,.65);
+
+  font-size: .95rem;
+
+  letter-spacing: 1px;
+
+  text-transform: uppercase;
+}
+
+/* ===========================
+   Right Side
+=========================== */
+
+.login-right {
+  width: 55%;
+
+  background: linear-gradient(
+    -45deg,
+    #ffffff,
+    #eef9ff,
+    #f4efff
+  );
+
+  background-size: 400% 400%;
+
+  animation: gradientScroll 15s ease infinite;
+
+  padding: 60px;
+
+  overflow-y: auto;
+}
+
+/* ===========================
+   Login Card
+=========================== */
 
 .login-card {
-  padding: 2rem;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 0.75rem;
-  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.2);
-  text-align: center;
+    background: white;
+    border-radius: 24px;
+
+    padding: 20px 40px;
+
+    box-shadow: 0 10px 35px rgba(0,0,0,.08);
+
+    margin-bottom: 40px;
+}
+
+.login-logo{
+
+    font-size:3.5rem;
+
+    color:#4f8ef7;
+}
+
+.login-card h2{
+
+    margin-bottom:.75rem;
+}
+
+.login-card .btn{
+
+    height:48px;
+}
+
+/* ===========================
+   Feature Section
+=========================== */
+
+.features-section{
+
+    margin-top:10px;
+}
+
+.features-section h3{
+
+    color:#212529;
+}
+
+/* ===========================
+   Feature Grid
+=========================== */
+
+.feature-card{
+
+    display:flex;
+
+    align-items:flex-start;
+
+    gap:16px;
+
+    height:100%;
+
+    padding:20px;
+
+    background:white;
+
+    border-radius:18px;
+
+    box-shadow:
+        0 6px 18px rgba(0,0,0,.05);
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
+}
+
+.feature-card:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:
+        0 15px 30px rgba(0,0,0,.12);
+}
+
+.feature-icon{
+
+    width:54px;
+    height:54px;
+
+    flex-shrink:0;
+
+    border-radius:14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #60a5fa,
+            #67e8f9
+        );
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    color:white;
+
+    font-size:1.4rem;
+}
+
+.feature-card h6{
+
+    font-weight:700;
+
+    margin-bottom:6px;
+}
+
+.feature-card p{
+
+    margin:0;
+
+    color:#6c757d;
+
+    font-size:.92rem;
+
+    line-height:1.45;
+}
+
+/* ===========================
+   Animation
+=========================== */
+
+@keyframes gradientScroll {
+
+    0%{
+        background-position:0% 50%;
+    }
+
+    50%{
+        background-position:100% 50%;
+    }
+
+    100%{
+        background-position:0% 50%;
+    }
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width: 992px){
+
+    .login-page{
+
+        flex-direction:column;
+    }
+
+    .login-left{
+
+        width:100%;
+        height:45vh;
+    }
+
+    .login-right{
+
+        width:100%;
+
+        padding:30px;
+    }
+
+    .hero-content{
+
+        margin-top:4rem;
+
+        padding-left:1rem;
+    }
+
+    .display-4{
+
+        font-size:2.4rem;
+    }
+
+    .hero-description{
+
+        font-size:1rem;
+    }
+
+}
+
+@media (max-width:768px){
+
+    .feature-card{
+
+        padding:16px;
+    }
+
+    .login-card{
+
+        padding:30px;
+    }
+
 }
