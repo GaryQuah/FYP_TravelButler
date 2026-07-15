@@ -2,10 +2,13 @@ import { useState } from "react";
 import Navbar from "../components/navigation/Navbar";
 import Card from "../components/cards/TripCard";
 import AddTripModal from "../components/modals/AddTripModal";
-import { type Trip as ApiTrip } from "../models";
+import {
+  type Trip as ApiTrip,
+  type AvailabilityTracker,
+  type TripCreationData,
+} from "../models";
 import { useTrips } from "../hooks/UseTrip";
 import { useUser } from "../models/UserContext";
-import { deleteAvailabilityTracker } from "../api/availability";
 import { useAvailabilityTrackers } from "../hooks/useAvailabilityTrackers";
 import AvailabilityTrackerCard from "../components/cards/AvailabilityTrackerCard";
 import AvailabilityTrackerModal from "../components/modals/AvailabilityTrackerModal";
@@ -17,23 +20,53 @@ export function HomePage() {
     trips,
     createNewTrip,
     deleteTrip,
+    updateTrip,
     loading: tripsLoading,
   } = useTrips();
   const {
     trackers,
     loading: trackersLoading,
     refetchTrackers,
+    deleteTracker,
+    updateTracker,
   } = useAvailabilityTrackers();
   const { user } = useUser();
   const [showTripModal, setShowTripModal] = useState(false);
   const [showTrackerModal, setShowTrackerModal] = useState(false);
-  // Set to "trips" by default, so the Trip Cards tab is active when the page loads, optionally set to "availability"
   const [activeTab, setActiveTab] = useState("trips");
+  const [editingTrip, setEditingTrip] = useState<ApiTrip | null>(null);
+  const [editingTracker, setEditingTracker] =
+    useState<AvailabilityTracker | null>(null);
+
+  const handleEditTrip = (trip: ApiTrip) => {
+    setEditingTrip(trip);
+    setShowTripModal(true);
+  };
+
+  const handleUpdateTrip = async (tripData: Partial<TripCreationData>) => {
+    if (!editingTrip) return;
+    await updateTrip(editingTrip.trip_id, tripData);
+    setShowTripModal(false);
+    setEditingTrip(null);
+  };
+
+  const handleEditTracker = (tracker: AvailabilityTracker) => {
+    setEditingTracker(tracker);
+    setShowTrackerModal(true);
+  };
+
+  const handleUpdateTracker = async (
+    trackerData: { name: string },
+    trackerId: string,
+  ) => {
+    await updateTracker(trackerId, trackerData);
+    setShowTrackerModal(false);
+    setEditingTracker(null);
+  };
 
   const handleDeleteTracker = async (trackerId: string) => {
     try {
-      await deleteAvailabilityTracker(trackerId);
-      refetchTrackers();
+      await deleteTracker(trackerId);
     } catch (error) {
       console.error("Failed to delete tracker:", error);
       alert("Failed to delete tracker.");
@@ -61,7 +94,7 @@ export function HomePage() {
 
       if (response.ok) {
         alert("Availability tracker created successfully");
-        refetchTrackers(); // Refetch trackers to show the new one
+        refetchTrackers();
         setShowTrackerModal(false);
       } else {
         alert("Failed to create availability tracker");
@@ -77,64 +110,83 @@ export function HomePage() {
     <>
       <Navbar />
       <div className="container">
-        {/*Main text section */}
         <div
           className="home-banner mb-4"
           style={{ backgroundImage: `url(${homeBanner})` }}
         >
           <div className="home-banner-overlay"></div>
-
           <div className="home-banner-content">
             <h1 className="display-4 fw-bold">Welcome to TravelMate</h1>
-
             <p className="lead mb-4">
               Plan, collaborate with friends, and explore smarter ✈️
             </p>
-
             <button
               className="btn btn-primary me-3"
-              onClick={() => setShowTripModal(true)}
+              onClick={() => {
+                setEditingTrip(null);
+                setShowTripModal(true);
+              }}
             >
               <i className="bi bi-plus-circle me-2"></i>
               Add Trip
             </button>
-
             <button
               className="btn btn-light"
-              onClick={() => setShowTrackerModal(true)}
+              onClick={() => {
+                setEditingTracker(null);
+                setShowTrackerModal(true);
+              }}
             >
               <i className="bi bi-calendar3 me-2"></i>
               Add Availability Tracker
             </button>
-
-            {showTripModal && (
-              <AddTripModal
-                onClose={() => setShowTripModal(false)}
-                onSave={async (tripData) => {
-                  if (
-                    user?.user_id &&
-                    tripData.start_date &&
-                    tripData.end_date
-                  ) {
-                    await createNewTrip(tripData, [user.user_id]);
-                    setShowTripModal(false);
-                  } else {
-                    console.error(
-                      "No user ID found or dates are not selected.",
-                    );
-                  }
-                }}
-              />
-            )}
-
-            {showTrackerModal && (
-              <AvailabilityTrackerModal
-                onClose={() => setShowTrackerModal(false)}
-                onSave={handleCreateTracker}
-              />
-            )}
           </div>
         </div>
+
+        {showTripModal && (
+          <AddTripModal
+            onClose={() => setShowTripModal(false)}
+            onSave={async (tripData) => {
+              if (editingTrip) {
+                await handleUpdateTrip(tripData);
+              } else if (user?.user_id) {
+                const fullTripData = {
+                  ...tripData,
+                  user_ids: [user.user_id],
+                };
+                await createNewTrip(fullTripData, [user.user_id]);
+              }
+              setShowTripModal(false);
+            }}
+            initialData={
+              editingTrip
+                ? {
+                    ...editingTrip,
+                    start_date: editingTrip.start_date
+                      ? new Date(editingTrip.start_date)
+                      : null,
+                    end_date: editingTrip.end_date
+                      ? new Date(editingTrip.end_date)
+                      : null,
+                  }
+                : undefined
+            }
+          />
+        )}
+
+        {showTrackerModal && (
+          <AvailabilityTrackerModal
+            onClose={() => setShowTrackerModal(false)}
+            onSave={async (trackerData, trackerId) => {
+              if (trackerId) {
+                await handleUpdateTracker(trackerData, trackerId);
+              } else {
+                await handleCreateTracker(trackerData);
+              }
+            }}
+            initialData={editingTracker ?? undefined}
+          />
+        )}
       </div>
 
       <div className="container">
@@ -171,7 +223,11 @@ export function HomePage() {
               ) : (
                 trips.map((trip: ApiTrip) => (
                   <div key={trip.trip_id} className="col-md-6">
-                    <Card trip={trip} onDelete={deleteTrip} />
+                    <Card
+                      trip={trip}
+                      onDelete={deleteTrip}
+                      onEdit={handleEditTrip}
+                    />
                   </div>
                 ))
               )}
@@ -183,10 +239,11 @@ export function HomePage() {
                 <p>Loading availability trackers...</p>
               ) : (
                 trackers.map((tracker) => (
-                  <div key={tracker.id} className="col-md-6">
+                  <div key={tracker.tracker_id} className="col-md-6">
                     <AvailabilityTrackerCard
                       tracker={tracker}
                       onDelete={handleDeleteTracker}
+                      onEdit={handleEditTracker}
                     />
                   </div>
                 ))
@@ -196,7 +253,6 @@ export function HomePage() {
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="py-4 text-center border-top mt-5">
         <a href="#">Back to top</a>
       </footer>

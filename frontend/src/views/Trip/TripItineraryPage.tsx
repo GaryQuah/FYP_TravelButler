@@ -12,7 +12,7 @@ import {
 } from "../../api";
 import { analyzeDescription } from "../../api/gemini.ts";
 import { addExpenditure } from "../../api/budget.ts";
-import type { ItineraryCreationData } from "../../models";
+import type { Itinerary, ItineraryCreationData } from "../../models";
 
 export function TripItineraryPage() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -28,6 +28,7 @@ export function TripItineraryPage() {
     error: itinerariesError,
     addItinerary,
     deleteItinerary,
+    updateItinerary,
   } = useItineraries(tripId, trip?.itinerary_ids);
   const [showModal, setShowModal] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -41,6 +42,17 @@ export function TripItineraryPage() {
     item: string;
     category: string;
   } | null>(null);
+  const [editingItinerary, setEditingItinerary] = useState<Itinerary | null>(
+    null,
+  );
+
+  const handleEditItinerary = (itineraryId: string) => {
+    const itineraryToEdit = itineraries.find((item) => item.id === itineraryId);
+    if (itineraryToEdit) {
+      setEditingItinerary(itineraryToEdit);
+      setShowModal(true);
+    }
+  };
 
   const handleSaveItinerary = async (itineraryData: ItineraryCreationData) => {
     await addItinerary(itineraryData);
@@ -56,6 +68,15 @@ export function TripItineraryPage() {
         console.error("Failed to analyze description:", error);
       }
     }
+  };
+
+  const handleUpdateItinerary = async (
+    itineraryData: ItineraryCreationData,
+  ) => {
+    if (!editingItinerary) return;
+    await updateItinerary(editingItinerary.id, itineraryData);
+    setShowModal(false);
+    setEditingItinerary(null);
   };
 
   const handleConfirmAddExpenditure = async () => {
@@ -166,8 +187,18 @@ export function TripItineraryPage() {
       </div>
       {showModal && (
         <AddItineraryModal
-          onClose={() => setShowModal(false)}
-          onSave={handleSaveItinerary}
+          onClose={() => {
+            setShowModal(false);
+            setEditingItinerary(null);
+          }}
+          onSave={async (itineraryData) => {
+            if (editingItinerary) {
+              await handleUpdateItinerary(itineraryData);
+            } else {
+              await handleSaveItinerary(itineraryData);
+            }
+          }}
+          initialData={editingItinerary ?? undefined}
         />
       )}
       {showAddUserModal && (
@@ -266,6 +297,7 @@ export function TripItineraryPage() {
                         end_time={item.end_time}
                         description={item.description}
                         onDelete={deleteItinerary}
+                        onEdit={handleEditItinerary}
                         googleConnected={googleConnected}
                       />
                     </div>

@@ -9,6 +9,7 @@ interface ItineraryCardProps {
   end_time: Date;
   description: string;
   onDelete: (itineraryId: string) => void;
+  onEdit: (itineraryId: string) => void;
   googleConnected?: boolean;
 }
 
@@ -19,6 +20,7 @@ const ItineraryCard = ({
   end_time,
   description,
   onDelete,
+  onEdit,
   googleConnected = false,
 }: ItineraryCardProps) => {
   const [addingToCalendar, setAddingToCalendar] = useState(false);
@@ -66,13 +68,22 @@ const ItineraryCard = ({
               {activity_name}
             </a>
           </h3>
-          <button
-            className="btn btn-sm btn-outline-danger"
-            onClick={handleDelete}
-            aria-label={`Delete itinerary ${activity_name}`}
-          >
-            &times;
-          </button>
+          <div className="btn-group">
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => onEdit(id)}
+              aria-label={`Edit itinerary ${activity_name}`}
+            >
+              <i className="bi bi-pencil"></i>
+            </button>
+            <button
+              className="btn btn-sm btn-outline-danger"
+              onClick={handleDelete}
+              aria-label={`Delete itinerary ${activity_name}`}
+            >
+              <i className="bi bi-trash3"></i>
+            </button>
+          </div>
         </div>
 
         <div className="mb-2 text-muted">

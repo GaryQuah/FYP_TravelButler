@@ -72,3 +72,26 @@ export async function getTrips(userId: string): Promise<Trip[]> {
     end_date: new Date(trip.end_date),
   }));
 }
+
+export async function updateTrip(
+  tripId: string,
+  tripData: Partial<TripCreationData>,
+): Promise<Trip> {
+  const response = await fetch(`/api/trips/${tripId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(tripData),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to update trip");
+  }
+  const updatedTrip = await response.json();
+  // Convert string dates to Date objects
+  return {
+    ...updatedTrip,
+    start_date: new Date(updatedTrip.start_date),
+    end_date: new Date(updatedTrip.end_date),
+  };
+}

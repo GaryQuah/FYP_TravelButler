@@ -1,16 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import type { AvailabilityTracker } from "../../models";
 
 interface Props {
   onClose: () => void;
-  onSave: (trackerData: { name: string }) => void;
+  onSave: (trackerData: { name: string }, trackerId?: string) => void;
+  initialData?: AvailabilityTracker;
 }
 
-const AddAvailabilityTrackerModal: React.FC<Props> = ({ onClose, onSave }) => {
+const AddAvailabilityTrackerModal: React.FC<Props> = ({
+  onClose,
+  onSave,
+  initialData,
+}) => {
   const [name, setName] = useState("");
+
+  useEffect(() => {
+    if (initialData) {
+      setName(initialData.name);
+    }
+  }, [initialData]);
 
   const handleSubmit = () => {
     if (name) {
-      onSave({ name });
+      onSave({ name }, initialData?.tracker_id);
       onClose();
     } else {
       console.error("Please enter a name for the tracker.");
@@ -26,7 +38,7 @@ const AddAvailabilityTrackerModal: React.FC<Props> = ({ onClose, onSave }) => {
       >
         <div className="modal-dialog">
           <div className="modal-content p-3">
-            <h5>Add Availability Tracker</h5>
+            <h5>{initialData ? "Edit" : "Add"} Availability Tracker</h5>
 
             <div className="mb-2">
               <label htmlFor="tracker_name" className="form-label">

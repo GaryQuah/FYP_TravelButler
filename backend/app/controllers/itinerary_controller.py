@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from motor.motor_asyncio import AsyncIOMotorCollection
-from app.models.itinerary import Itinerary, ItineraryCreationRequest, ItineraryIdsRequest
+from app.models.itinerary import Itinerary, ItineraryCreationRequest, ItineraryIdsRequest, ItineraryUpdateRequest
 from app.services.itinerary_service import (
     create_itinerary,
     get_itineraries_for_trip,
     delete_itinerary,
     get_itineraries_by_ids,
+    update_itinerary
 )
 
 router = APIRouter(prefix="/api/itineraries", tags=["itineraries"])
@@ -52,6 +53,22 @@ async def get_all_itineraries_for_trip(
     """
     itineraries = await get_itineraries_for_trip(itineraries_collection, trip_id)
     return itineraries
+
+
+@router.put("/{trip_id}/{itinerary_id}", response_model=Itinerary)
+async def update_itinerary_endpoint(
+    trip_id: str,
+    itinerary_id: str,
+    itinerary_data: ItineraryUpdateRequest,
+    itineraries_collection: AsyncIOMotorCollection = Depends(get_itineraries_collection)
+):
+    """
+    Update an itinerary item.
+    """
+    updated_itinerary = await update_itinerary(itineraries_collection, itinerary_id, itinerary_data)
+    if not updated_itinerary:
+        raise HTTPException(status_code=404, detail="Itinerary not found")
+    return updated_itinerary
 
 
 @router.delete("/{trip_id}/{itinerary_id}", status_code=status.HTTP_204_NO_CONTENT)

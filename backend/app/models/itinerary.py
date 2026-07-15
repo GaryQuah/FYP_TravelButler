@@ -18,3 +18,9 @@ class ItineraryCreationRequest(BaseModel):
     start_time: datetime
     end_time: datetime
     description: str
+
+class ItineraryUpdateRequest(BaseModel):
+    activity_name: Optional[str] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    description: Optional[str] = None

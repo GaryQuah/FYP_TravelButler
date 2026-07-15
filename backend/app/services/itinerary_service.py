@@ -1,5 +1,5 @@
 from motor.motor_asyncio import AsyncIOMotorCollection
-from app.models.itinerary import Itinerary, ItineraryCreationRequest
+from app.models.itinerary import Itinerary, ItineraryCreationRequest, ItineraryUpdateRequest
 from bson import ObjectId
 
 async def get_itineraries_by_ids(collection: AsyncIOMotorCollection, itinerary_ids: list[str]):
@@ -62,6 +62,26 @@ async def get_itineraries_for_trip(collection: AsyncIOMotorCollection, trip_id: 
     async for itinerary in cursor:
         itineraries.append(itinerary_serializer(itinerary))
     return itineraries
+
+
+async def update_itinerary(
+    collection: AsyncIOMotorCollection, 
+    itinerary_id: str, 
+    itinerary_data: ItineraryUpdateRequest
+):
+    """
+    Update an itinerary item in the database.
+    """
+    itinerary_dict = itinerary_data.dict(exclude_unset=True)
+    
+    await collection.update_one(
+        {"_id": ObjectId(itinerary_id)},
+        {"$set": itinerary_dict}
+    )
+    
+    updated_itinerary = await collection.find_one({"_id": ObjectId(itinerary_id)})
+    
+    return itinerary_serializer(updated_itinerary)
 
 
 async def delete_itinerary(

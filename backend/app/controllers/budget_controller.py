@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from motor.motor_asyncio import AsyncIOMotorCollection
-from app.models.budget import TripBudget, Expenditure
+from app.models.budget import TripBudget, Expenditure, Contributor
 from app.services.budget_service import get_budget, update_budget, add_expenditure
 from app.services.trip_service import get_trip as get_trip_details
 
@@ -29,22 +29,44 @@ async def get_budget_route(
     budgets_collection: AsyncIOMotorCollection = Depends(get_budgets_collection),
     trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
 ):
-    budget = await get_budget(budgets_collection, trip_id)
-    if not budget:
-        # If no budget, create a default one
-        trip_details = await get_trip_details(trips_collection, trip_id)
-        if not trip_details:
-            raise HTTPException(status_code=404, detail="Trip not found, cannot create budget")
+    # Always fetch trip details to get the latest user list
+    trip_details = await get_trip_details(trips_collection, trip_id)
+    if not trip_details:
+        raise HTTPException(status_code=404, detail="Trip not found")
 
-        default_budget = TripBudget(
+    user_ids = trip_details.get("user_ids", [])
+    budget = await get_budget(budgets_collection, trip_id)
+
+    if budget:
+        # If budget exists, update it with the latest user list
+        budget.peopleCount = len(user_ids)
+        
+        # Get existing contributors
+        existing_contributors = {c.id for c in budget.contributors}
+        
+        # Add new users from the trip to the contributors list
+        for user_id in user_ids:
+            if user_id not in existing_contributors:
+                budget.contributors.append(
+                    Contributor(id=user_id, name="New Member", paidAmount=0)
+                )
+        
+        await update_budget(budgets_collection, trip_id, budget)
+    else:
+        # If no budget, create a default one with all users from the trip
+        contributors = [
+            Contributor(id=user_id, name="New Member", paidAmount=0)
+            for user_id in user_ids
+        ]
+        budget = TripBudget(
             id=trip_id,
             tripName=trip_details["trip_name"],
-            peopleCount=len(trip_details["user_ids"]),
+            peopleCount=len(user_ids),
             categories=[],
-            contributors=[],
+            contributors=contributors,
         )
-        await update_budget(budgets_collection, trip_id, default_budget)
-        return default_budget
+        await update_budget(budgets_collection, trip_id, budget)
+
     return budget
 
 @router.put("/api/budget/{trip_id}", response_model=TripBudget)
