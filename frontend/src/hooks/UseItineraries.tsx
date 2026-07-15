@@ -3,6 +3,7 @@ import {
   getItinerariesByIds,
   addItinerary as apiAddItinerary,
   deleteItinerary as apiDeleteItinerary,
+  updateItinerary as apiUpdateItinerary,
 } from "../api";
 
 import { type Itinerary, type ItineraryCreationData } from "../models";
@@ -61,9 +62,39 @@ export function useItineraries(
     }
   };
 
+  const updateItinerary = async (
+    itineraryId: string,
+    itineraryData: Partial<ItineraryCreationData>,
+  ) => {
+    if (!tripId) return;
+
+    try {
+      const updatedItinerary = await apiUpdateItinerary(
+        tripId,
+        itineraryId,
+        itineraryData,
+      );
+      setItineraries((prevItineraries) =>
+        prevItineraries.map((itinerary) =>
+          itinerary.id === itineraryId ? updatedItinerary : itinerary,
+        ),
+      );
+    } catch (e) {
+      console.error("Failed to update itinerary:", e);
+      // Optionally, set an error state to show in the UI
+    }
+  };
+
   useEffect(() => {
     fetchItineraries();
   }, [fetchItineraries]);
 
-  return { itineraries, loading, error, addItinerary, deleteItinerary };
+  return {
+    itineraries,
+    loading,
+    error,
+    addItinerary,
+    deleteItinerary,
+    updateItinerary,
+  };
 }

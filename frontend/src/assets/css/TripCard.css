@@ -1,0 +1,20 @@
+.card {
+    background: linear-gradient(to right, #ffffff 0%, #e1efff 100%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .card-title {
+    font-weight: bold;
+  }
+  
+  .card-text span {
+    font-weight: 500;
+  }

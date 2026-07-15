@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { type ItineraryCreationData } from "../../models";
+import { type Itinerary, type ItineraryCreationData } from "../../models";
 
 // Define a type for the form's internal state to allow for null dates
 type ItineraryFormState = {
@@ -14,14 +14,21 @@ type ItineraryFormState = {
 interface Props {
   onClose: () => void;
   onSave: (itineraryData: ItineraryCreationData) => void;
+  initialData?: Itinerary;
 }
 
-const AddItineraryModal: React.FC<Props> = ({ onClose, onSave }) => {
+const AddItineraryModal: React.FC<Props> = ({
+  onClose,
+  onSave,
+  initialData,
+}) => {
   const [formData, setFormData] = useState<ItineraryFormState>({
-    activity_name: "",
-    start_time: null,
-    end_time: null,
-    description: "",
+    activity_name: initialData?.activity_name || "",
+    start_time: initialData?.start_time
+      ? new Date(initialData.start_time)
+      : null,
+    end_time: initialData?.end_time ? new Date(initialData.end_time) : null,
+    description: initialData?.description || "",
   });
 
   const handleChange = (

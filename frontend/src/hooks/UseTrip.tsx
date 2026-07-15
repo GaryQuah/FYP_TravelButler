@@ -7,6 +7,7 @@ import {
   createTrip as apiCreateTrip,
   deleteTrip as apiDeleteTrip,
   getTrips as apiGetTrips,
+  updateTrip as apiUpdateTrip,
 } from "../api";
 
 import { type Trip, type TripCreationData } from "../models";
@@ -62,6 +63,21 @@ export function useTrips() {
     }
   };
 
+  const updateTrip = async (
+    tripId: string,
+    tripData: Partial<TripCreationData>,
+  ): Promise<Trip | null> => {
+    try {
+      const updatedTrip = await apiUpdateTrip(tripId, tripData);
+      // Refresh the list after update
+      fetchTrips();
+      return updatedTrip;
+    } catch (error) {
+      console.error("Failed to update trip:", error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     fetchTrips();
   }, []);
@@ -71,6 +87,7 @@ export function useTrips() {
     loading,
     createNewTrip,
     deleteTrip,
+    updateTrip,
     refreshTrips: fetchTrips,
   };
 }

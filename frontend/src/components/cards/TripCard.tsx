@@ -1,13 +1,15 @@
 import { type Trip as ApiTrip } from "../../models";
 import { Link } from "react-router-dom";
 import { formatFullDateTime } from "../../utils/dateUtils";
+import "../../assets/css/TripCard.css";
 
 interface CardProps {
   trip: ApiTrip;
   onDelete: (tripId: string) => void;
+  onEdit: (trip: ApiTrip) => void;
 }
 
-const Card = ({ trip, onDelete }: CardProps) => {
+const Card = ({ trip, onDelete, onEdit }: CardProps) => {
   const dateRange = `${formatFullDateTime(trip.start_date)} - ${formatFullDateTime(
     trip.end_date,
   )}`;
@@ -25,13 +27,22 @@ const Card = ({ trip, onDelete }: CardProps) => {
       <div className="card-body d-flex flex-column">
         <div className="d-flex justify-content-between align-items-start">
           <h3 className="mb-0">{trip.trip_name}</h3>
-          <button
-            className="btn btn-sm btn-outline-danger"
-            onClick={handleDelete}
-            aria-label={`Delete trip ${trip.trip_name}`}
-          >
-            &times;
-          </button>
+          <div className="btn-group">
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => onEdit(trip)}
+              aria-label={`Edit trip ${trip.trip_name}`}
+            >
+              <i className="bi bi-pencil"></i>
+            </button>
+            <button
+              className="btn btn-sm btn-outline-danger"
+              onClick={handleDelete}
+              aria-label={`Delete trip ${trip.trip_name}`}
+            >
+              <i className="bi bi-trash3"></i>
+            </button>
+          </div>
         </div>
 
         <div className="mb-2 text-muted">{dateRange}</div>

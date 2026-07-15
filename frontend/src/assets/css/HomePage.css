@@ -1,82 +1,40 @@
-/* styles.css */
+.home-banner {
+    position: relative;
+    height: 200px; 
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+  }
+  
+  .home-banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+  }
+  
+  .home-banner-content {
+    position: relative;
+    z-index: 2;
+    padding: 20px;
+  }
+  
+  .home-banner .btn {
+    padding: 10px 20px;
+    font-size: 1.1rem;
+  }
 
-/* Make the html and body take full height */
-html, body {
-  height: 100%;
-  margin: 0;
-  font-family: sans-serif;
-  background-color: #b3e4fb; /* optional */
+.nav-link {
+  transition: background-color 0.3s ease;
 }
 
-.title{
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
-    color: #3b82f6;
-}
-
-.login-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* perfectly center */
-  width: 400px;           /* optional width */
-  padding: 1rem;
-  box-sizing: border-box;
-}
-
-.login.container form {
-  width: 100%;
-  max-width: 400px; /* keeps form from being too wide */
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column; /* stack children vertically */
-  gap: 1rem;             /* space between fields */
-  width: 100%;
-  max-width: 400px;
-}
-
-.login-form label {
-  display: flex;
-  flex-direction: column; /* put input below the label text */
-  color: #ffffff;
-}
-
-.login-form input {
-  padding: 0.5rem;
-  border-radius: 0.25rem;
-  border: 1px solid #ccc;
-  margin-top: 0.25rem; /* optional spacing below label text */
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.login-form button {
-  padding: 0.5rem;
-  border-radius: 0.25rem;
-  border: none;
-  background-color: #3b82f6;
-  color: rgb(20, 18, 18);
-  cursor: pointer;
-}
-
-.toggle-login-method {
-    margin-top: 1rem;   
-    background: #ffffff;
-    border: none;
-    color: #3b82f6;
-    cursor: pointer;
-
-    /* Center horizontally */
-    display: block;       /* make it a block element */
-    margin-left: auto;    /* auto margins center it */
-    margin-right: auto;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-}
-
-.label-text {
-  color: #000000; /* blue */
-  font-weight: bold; /* optional */
+.nav-link:hover {
+  background-color: #ececec;
 }

@@ -117,8 +117,28 @@ export function TripBudgetPage() {
   }, [trip]);
 
   const amountPerPerson = useMemo(() => {
-    if (!trip || !trip.peopleCount) return 0;
-    return totalTravelExpenditure / trip.peopleCount;
+    console.log("--- Budget Calculation ---");
+    console.log("Total Expenditure:", totalTravelExpenditure);
+    console.log("Trip data:", trip);
+
+    if (!trip) {
+      console.log("Result: 0 (no trip data)");
+      return 0;
+    }
+
+    const contributorCount = trip.contributors.length;
+    console.log("Number of contributors:", contributorCount);
+
+    if (contributorCount === 0) {
+      console.log("Result: 0 (no contributors)");
+      return 0;
+    }
+
+    const result = totalTravelExpenditure / contributorCount;
+    console.log("Final Result (per person):", result);
+    console.log("--------------------------");
+
+    return result;
   }, [trip, totalTravelExpenditure]);
 
   const perPersonSummary = useMemo(() => {
@@ -415,14 +435,16 @@ export function TripBudgetPage() {
               />
             </Col>
             <Col md="auto">
-              <Button onClick={addCategory}>Add Category</Button>
+              <Button onClick={addCategory}>
+                <i className="bi bi-plus-circle me-2"></i>Add Category
+              </Button>
             </Col>
             <Col md="auto">
               <Button
                 variant="success"
                 onClick={() => fileInputRef.current?.click()}
               >
-                Upload Receipt
+                <i className="bi bi-upload me-2"></i>Upload Receipt
               </Button>
               <input
                 type="file"
@@ -481,7 +503,7 @@ export function TripBudgetPage() {
 
                   <Col md="auto">
                     <Button onClick={() => addExpense(category.id)}>
-                      Add Expense
+                      <i className="bi bi-plus me-2"></i>Add Expense
                     </Button>
                   </Col>
                 </Row>

@@ -1,41 +1,292 @@
-.login-gradient-bg {
-  height: 100vh; /* full viewport height */
-  width: 100%;
-  background: linear-gradient(-45deg, #74b5ff, #fad0c4, #a18cd1, #fbc2eb);
-  background-size: 400% 400%;
-  animation: gradientScroll 15s ease infinite;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* ===========================
+   Theme Variables
+=========================== */
+
+:root {
+  /* Primary Colors */
+  --primary-start: #67e8f9;
+  --primary-end: #60a5fa;
+
+  /* Background */
+  --background-1: #ffffff;
+  --background-2: #eef9ff;
+  --background-3: #f4efff;
+
+  /* Hero Overlay */
+  --overlay-start: rgba(10, 18, 35, 0.767);
+  --overlay-end: rgba(20, 45, 70, 0.75);
+
+  /* Text */
+  --text-white-muted: rgba(255, 255, 255, 0.8);
+  --text-white-light: rgba(138, 138, 138, 0.65);
+  --text-muted: #000000;
+
+  /* Shadows */
+  --shadow-card: 0 10px 35px rgba(0, 0, 0, 0.08);
+  --shadow-feature: 0 6px 18px rgba(0, 0, 0, 0.05);
+  --shadow-feature-hover: 0 15px 30px rgba(0, 0, 0, 0.12);
+
+  /* Shared Gradients */
+  --primary-gradient: linear-gradient(
+    90deg,
+    var(--primary-start),
+    var(--primary-end)
+  );
+
+  --icon-gradient: linear-gradient(
+    135deg,
+    var(--primary-end),
+    var(--primary-start)
+  );
+
+  --background-gradient: linear-gradient(
+    -45deg,
+    var(--background-1),
+    var(--background-2),
+    var(--background-3)
+  );
+
+  --overlay-gradient: linear-gradient(
+    135deg,
+    var(--overlay-start),
+    var(--overlay-end)
+  );
 }
 
-.general-gradient-bg {
-  height: 100vh; /* full viewport height */
+/* ===========================
+   Page Layout
+=========================== */
+
+.login-page {
+  display: flex;
+  height: 100vh;
   width: 100%;
-  background: linear-gradient(-45deg, #ffffff, #d3f8ff, #e4d8ff);
+  overflow: hidden;
+}
+
+/* ===========================
+   Left Side
+=========================== */
+
+.login-left {
+  position: relative;
+  width: 45%;
+  overflow: hidden;
+}
+
+.login-background-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.login-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--overlay-gradient);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  color: rgb(255, 255, 255);
+}
+
+.hero-logo {
+  font-size: 5rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-title h1 {
+  line-height: 1.05;
+}
+
+.hero-description {
+  max-width: 520px;
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: var(--text-white-muted);
+  margin-bottom: 2rem;
+}
+
+.hero-divider {
+  width: 90px;
+  height: 4px;
+  background: var(--primary-gradient);
+  border-radius: 100px;
+  margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+  color: var(--text-white-light);
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ===========================
+   Right Side
+=========================== */
+
+.login-right {
+  width: 55%;
+  background: var(--background-gradient);
   background-size: 400% 400%;
   animation: gradientScroll 15s ease infinite;
+  padding: 60px;
+  overflow-y: auto;
+}
+
+/* ===========================
+   Login Card
+=========================== */
+
+.login-card {
+  background: white;
+  border-radius: 24px;
+  padding: 20px 40px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 40px;
+}
+
+.login-logo {
+  font-size: 3.5rem;
+  color: var(--primary-end);
+}
+
+.login-card h2 {
+  margin-bottom: 0.75rem;
+}
+
+.login-card .btn {
+  height: 48px;
+}
+
+/* ===========================
+   Feature Section
+=========================== */
+
+.features-section {
+  margin-top: 10px;
+}
+
+.features-section h3 {
+  color: #212529;
+}
+
+/* ===========================
+   Feature Grid
+=========================== */
+
+.feature-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  height: 100%;
+  padding: 20px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: var(--shadow-feature);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-feature-hover);
+}
+
+.feature-icon {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: var(--icon-gradient);
   display: flex;
   justify-content: center;
   align-items: center;
+  color: white;
+  font-size: 1.4rem;
 }
+
+.feature-card h6 {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.feature-card p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+/* ===========================
+   Animation
+=========================== */
 
 @keyframes gradientScroll {
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
 }
 
-.login-card {
-  padding: 2rem;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 0.75rem;
-  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.2);
-  text-align: center;
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width: 992px) {
+  .login-page {
+    flex-direction: column;
+  }
+
+  .login-left {
+    width: 100%;
+    height: 45vh;
+  }
+
+  .login-right {
+    width: 100%;
+    padding: 30px;
+  }
+
+  .hero-content {
+    margin-top: 4rem;
+    padding-left: 1rem;
+  }
+
+  .display-4 {
+    font-size: 2.4rem;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .feature-card {
+    padding: 16px;
+  }
+
+  .login-card {
+    padding: 30px;
+  }
 }
