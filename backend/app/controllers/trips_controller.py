@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body, HTTPException, status, Depends, Request
 from motor.motor_asyncio import AsyncIOMotorCollection
-from app.models.trip import Trip, TripCreationRequest
+from app.models.trip import Trip, TripCreationRequest, TripUpdateRequest
 from pydantic import BaseModel
 
 class InviteRequest(BaseModel):
@@ -68,7 +68,7 @@ async def get_trip_by_id(trip_id: str, trips_collection: AsyncIOMotorCollection 
  
  
 @router.put("/{trip_id}")
-async def update_trip_by_id(trip_id: str, trip: Trip, trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):
+async def update_trip_by_id(trip_id: str, trip: TripUpdateRequest, trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):
     updated_trip = await update_trip(trips_collection, trip_id, trip)
     if not updated_trip:
         raise HTTPException(status_code=404, detail="Trip not found")

@@ -42,7 +42,7 @@ export function useAvailabilityTrackers() {
     try {
       await apiDeleteAvailabilityTracker(trackerId);
       setTrackers((prevTrackers) =>
-        prevTrackers.filter((tracker) => tracker.tracker_id !== trackerId),
+        prevTrackers.filter((tracker) => tracker.id !== trackerId),
       );
     } catch (error) {
       console.error("Failed to delete availability tracker:", error);
@@ -60,7 +60,7 @@ export function useAvailabilityTrackers() {
       );
       setTrackers((prevTrackers) =>
         prevTrackers.map((tracker) =>
-          tracker.tracker_id === trackerId ? updatedTracker : tracker,
+          tracker.id === trackerId ? updatedTracker : tracker,
         ),
       );
     } catch (error) {

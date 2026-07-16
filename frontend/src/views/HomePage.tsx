@@ -57,8 +57,9 @@ export function HomePage() {
 
   const handleUpdateTracker = async (
     trackerData: { name: string },
-    trackerId: string,
+    trackerId?: string,
   ) => {
+    if (!trackerId) return;
     await updateTracker(trackerId, trackerData);
     setShowTrackerModal(false);
     setEditingTracker(null);
@@ -239,11 +240,11 @@ export function HomePage() {
                 <p>Loading availability trackers...</p>
               ) : (
                 trackers.map((tracker) => (
-                  <div key={tracker.tracker_id} className="col-md-6">
+                  <div key={tracker.id} className="col-md-6">
                     <AvailabilityTrackerCard
                       tracker={tracker}
-                      onDelete={handleDeleteTracker}
-                      onEdit={handleEditTracker}
+                      onDelete={() => handleDeleteTracker(tracker.id)}
+                      onEdit={() => handleEditTracker(tracker)}
                     />
                   </div>
                 ))
