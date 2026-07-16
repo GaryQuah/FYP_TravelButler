@@ -53,6 +53,25 @@ async def delete_tracker(collection: AsyncIOMotorCollection, tracker_id: str):
     result = await collection.delete_one({"_id": ObjectId(tracker_id)})
     return result.deleted_count > 0
 
+
+async def update_tracker(collection: AsyncIOMotorCollection, tracker_id: str, tracker_data: AvailabilityTrackerCreationRequest):
+    """
+    Update an availability tracker's details in the database.
+    """
+    update_data = tracker_data.dict(exclude_unset=True)
+
+    result = await collection.update_one(
+        {"_id": ObjectId(tracker_id)},
+        {"$set": update_data}
+    )
+
+    if result.matched_count == 0:
+        return None
+
+    updated_tracker = await get_tracker(collection, tracker_id)
+    return updated_tracker
+
+
 async def update_tracker_availability(collection: AsyncIOMotorCollection, tracker_id: str, user_id: str, dates: list[str]):
     """
     Update the available dates for a user within a specific tracker.

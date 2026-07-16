@@ -10,3 +10,6 @@ class AvailabilityTracker(BaseModel):
 class AvailabilityTrackerCreationRequest(BaseModel):
     name: str
     user_ids: List[str]
+
+class AvailabilityTrackerUpdateRequest(BaseModel):
+    name: str

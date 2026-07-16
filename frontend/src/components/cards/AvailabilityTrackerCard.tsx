@@ -15,7 +15,7 @@ const AvailabilityTrackerCard: React.FC<Props> = ({
 }) => {
   const handleDelete = () => {
     if (window.confirm(`Are you sure you want to delete "${tracker.name}"?`)) {
-      onDelete(tracker.tracker_id);
+      onDelete(tracker.id);
     }
   };
 
@@ -42,7 +42,7 @@ const AvailabilityTrackerCard: React.FC<Props> = ({
           </div>
         </div>
         <Link
-          to={`/availability/${tracker.tracker_id}`}
+          to={`/availability/${tracker.id}`}
           className="btn btn-outline-primary mt-3 align-self-start"
         >
           View

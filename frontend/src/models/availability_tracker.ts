@@ -1,5 +1,5 @@
 export interface AvailabilityTracker {
-  tracker_id: string;
+  id: string;
   name: string;
   user_ids: string[];
   availability: Record<string, string[]>;

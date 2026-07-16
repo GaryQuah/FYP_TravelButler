@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body, Depends, Request, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.services import availability_tracker_service
-from app.models.availability_tracker import AvailabilityTracker, AvailabilityTrackerCreationRequest
+from app.models.availability_tracker import AvailabilityTracker, AvailabilityTrackerCreationRequest, AvailabilityTrackerUpdateRequest
 from app.models.user import User
 from app.dependencies import get_current_user_id
 from app.services.availability_tracker_service import (
@@ -45,6 +45,17 @@ async def get_tracker_route(
     if not tracker:
         raise HTTPException(status_code=404, detail="Tracker not found")
     return tracker
+
+@router.put("/{tracker_id}", response_model=AvailabilityTracker)
+async def update_tracker_route(
+    tracker_id: str,
+    tracker_data: AvailabilityTrackerUpdateRequest,
+    db: AsyncIOMotorCollection = Depends(get_availability_collection)
+):
+    updated_tracker = await availability_tracker_service.update_tracker(db, tracker_id, tracker_data)
+    if not updated_tracker:
+        raise HTTPException(status_code=404, detail="Tracker not found")
+    return updated_tracker
 
 @router.delete("/{tracker_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_tracker_route(

@@ -21,3 +21,10 @@ class TripCreationRequest(BaseModel):
     description: str
     budget: float = 0.0
     user_ids: list[str]
+
+class TripUpdateRequest(BaseModel):
+    trip_name: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    description: Optional[str] = None
+    budget: Optional[float] = None

@@ -22,7 +22,7 @@ const AddAvailabilityTrackerModal: React.FC<Props> = ({
 
   const handleSubmit = () => {
     if (name) {
-      onSave({ name }, initialData?.tracker_id);
+      onSave({ name }, initialData?.id);
       onClose();
     } else {
       console.error("Please enter a name for the tracker.");
