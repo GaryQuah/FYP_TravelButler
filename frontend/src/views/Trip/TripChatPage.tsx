@@ -7,7 +7,7 @@ import type { ChatMessage, Chat } from "../../models";
 
 export function TripChatPage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { trip, members } = useTripDetails(tripId!);
+  const { trip, members } = useTripDetails();
   const { user } = useUser();
   const [input, setInput] = useState("");
   const [chat, setChat] = useState<Chat | null>(null);

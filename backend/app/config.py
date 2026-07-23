@@ -21,6 +21,8 @@ TRIP_COLLECTION = os.environ.get("TRIP_COLLECTION", "trips")
 ITINERARY_COLLECTION = os.environ.get("ITINERARY_COLLECTION", "itineraries")
 #Stores chat history and messages for user interactions with the AI assistant
 CHAT_COLLECTION = os.environ.get("CHATS_COLLECTION", "chats")
+# Stores AI chat history and messages for user interactions with the AI assistant
+AI_CHAT_COLLECTION = os.environ.get("AI_CHATS_COLLECTION", "ai_chats")
 # Stores user budget preferences and limits for trip planning
 BUDGET_COLLECTION = os.environ.get("BUDGET_COLLECTION", "budgets")
 # Stores user availability data for scheduling purposes (e.g. free time slots)

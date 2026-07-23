@@ -4,6 +4,7 @@ from bson import ObjectId
 from datetime import datetime
 from app.services.user_service import get_user_by_email, get_users_by_ids
 from app.services.chat_service import create_chat
+from app.services.ai_chat_service import create_ai_chat
 def trip_serializer(trip) -> dict:
     """
     Serializes a trip document from MongoDB into a dictionary,
@@ -22,6 +23,7 @@ def trip_serializer(trip) -> dict:
         "end_date": trip["end_date"],
         "description": trip["description"],
         "chat_id": trip.get("chat_id"),
+        "ai_chat_id": trip.get("ai_chat_id"),
     }
 
 async def get_all_trips(collection: AsyncIOMotorCollection, user_id: str):
@@ -35,7 +37,7 @@ async def get_all_trips(collection: AsyncIOMotorCollection, user_id: str):
         trips.append(trip_serializer(trip))
     return trips
 
-async def create_trip(trips_collection: AsyncIOMotorCollection, users_collection: AsyncIOMotorCollection, chats_collection: AsyncIOMotorCollection, budgets_collection: AsyncIOMotorCollection, trip_data: TripCreationRequest):
+async def create_trip(trips_collection: AsyncIOMotorCollection, users_collection: AsyncIOMotorCollection, chats_collection: AsyncIOMotorCollection, budgets_collection: AsyncIOMotorCollection, ai_chats_collection: AsyncIOMotorCollection, trip_data: TripCreationRequest):
     """
     Create a new trip in the database from creation data.
     """
@@ -51,11 +53,12 @@ async def create_trip(trips_collection: AsyncIOMotorCollection, users_collection
     
     # Create a chat for the new trip
     chat_id = await create_chat(chats_collection, trip_id)
+    ai_chat_id = await create_ai_chat(ai_chats_collection, trip_id)
     
     # Update the trip with the new chat_id
     await trips_collection.update_one(
         {"_id": result.inserted_id},
-        {"$set": {"chat_id": chat_id}}
+        {"$set": {"chat_id": chat_id, "ai_chat_id": ai_chat_id}}
     )
 
     # Fetch user details to create contributors list
@@ -85,6 +88,7 @@ async def get_trip(collection: AsyncIOMotorCollection, trip_id: str):
     """
     trip = await collection.find_one({"_id": ObjectId(trip_id)})
     if trip:
+        print(trip_serializer(trip))
         return trip_serializer(trip)
         
     return None
@@ -114,6 +118,7 @@ async def delete_trip(
     trips_collection: AsyncIOMotorCollection,
     budgets_collection: AsyncIOMotorCollection,
     chats_collection: AsyncIOMotorCollection,
+    ai_chats_collection: AsyncIOMotorCollection,
     trip_id: str,
 ):
     """
@@ -130,6 +135,10 @@ async def delete_trip(
     # Delete the associated chat if a chat_id exists
     if "chat_id" in trip and trip["chat_id"]:
         await chats_collection.delete_one({"_id": ObjectId(trip["chat_id"])})
+
+    # Delete the associated AI chat if a ai_chat_id exists
+    if "ai_chat_id" in trip and trip["ai_chat_id"]:
+        await ai_chats_collection.delete_one({"_id": ObjectId(trip["ai_chat_id"])})
 
     # Finally, delete the trip itself
     result = await trips_collection.delete_one({"_id": ObjectId(trip_id)})

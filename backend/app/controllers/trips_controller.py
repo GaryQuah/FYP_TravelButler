@@ -37,7 +37,10 @@ def get_chats_collection(request: Request) -> AsyncIOMotorCollection:
 
 def get_budgets_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.budgets_collection
- 
+
+def get_ai_chat_collection(request: Request) -> AsyncIOMotorCollection:
+    return request.app.ai_chat_collection  
+
 @router.get("/")
 async def get_all_trips_route(
     trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
@@ -54,9 +57,10 @@ async def create_new_trip(
     trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection), 
     users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
     chats_collection: AsyncIOMotorCollection = Depends(get_chats_collection),
-    budgets_collection: AsyncIOMotorCollection = Depends(get_budgets_collection)
+    budgets_collection: AsyncIOMotorCollection = Depends(get_budgets_collection),
+    ai_chats_collection: AsyncIOMotorCollection = Depends(get_ai_chat_collection)
 ):
-    return await create_trip(trips_collection, users_collection, chats_collection, budgets_collection, trip_data)
+    return await create_trip(trips_collection, users_collection, chats_collection, budgets_collection, ai_chats_collection,  trip_data)
  
  
 @router.get("/{trip_id}", response_model=Trip)
@@ -81,9 +85,10 @@ async def delete_trip_by_id(
     trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
     budgets_collection: AsyncIOMotorCollection = Depends(get_budgets_collection),
     chats_collection: AsyncIOMotorCollection = Depends(get_chats_collection),
+    ai_chats_collection: AsyncIOMotorCollection = Depends(get_ai_chat_collection),
 ):
     deleted_trip = await delete_trip(
-        trips_collection, budgets_collection, chats_collection, trip_id
+        trips_collection, budgets_collection, chats_collection, ai_chats_collection, trip_id
     )
     if not deleted_trip:
         raise HTTPException(status_code=404, detail="Trip not found")

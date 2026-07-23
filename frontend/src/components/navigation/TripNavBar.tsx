@@ -28,6 +28,11 @@ const navItems: NavItem[] = [
     path: "poll",
     icon: "bi-bar-chart-fill",
   },
+  {
+    label: "Assistance",
+    path: "assistance",
+    icon: "bi-question-circle-fill",
+  },
 ];
 
 const TripNavbar = () => {
