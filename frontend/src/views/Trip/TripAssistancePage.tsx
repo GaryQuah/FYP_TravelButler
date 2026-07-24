@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../models/UserContext";
+import { MiniItineraryCard } from "../../components/cards/MiniItineraryCard";
 
 import { addAIChatMessage, getAIChat } from "../../api";
 import type { ChatMessage, AiChat } from "../../models";
@@ -49,6 +50,7 @@ export function TripAssistancePage() {
           ai_chat_id: trip.ai_chat_id!,
           trip_id: trip.trip_id,
           messages: [userMessage],
+          ai_recommendations: [],
         };
       }
       return {
@@ -84,7 +86,7 @@ export function TripAssistancePage() {
         className="flex-grow-1 border rounded p-3 mb-3 overflow-auto"
         style={{ maxHeight: "60vh" }}
       >
-        {chat?.messages?.map((msg: ChatMessage) => (
+        {chat?.messages?.map((msg: ChatMessage, index: number) => (
           <div
             key={`${msg.timestamp}-${msg.user_id}`}
             className={`mb-3 d-flex ${
@@ -111,6 +113,15 @@ export function TripAssistancePage() {
               ) : (
                 <div>{msg.message}</div>
               )}
+              {msg.user_id === "assistant" &&
+                index === chat.messages.length - 1 &&
+                chat.ai_recommendations?.length > 0 && (
+                  <div className="mt-2">
+                    {chat.ai_recommendations.map((itinerary, i) => (
+                      <MiniItineraryCard key={i} itinerary={itinerary} />
+                    ))}
+                  </div>
+                )}
               <div className="text-end small opacity-75">
                 {new Date(msg.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",
