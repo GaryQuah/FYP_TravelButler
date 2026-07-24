@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../models/UserContext";
@@ -12,6 +13,7 @@ export function TripAssistancePage() {
   const { user } = useUser();
   const [input, setInput] = useState("");
   const [chat, setChat] = useState<AiChat | null>(null);
+  const [isThinking, setIsThinking] = useState(false);
 
   useEffect(() => {
     if (trip?.ai_chat_id) {
@@ -35,16 +37,41 @@ export function TripAssistancePage() {
   const sendMessage = async () => {
     if (!input.trim() || !trip?.ai_chat_id || !user) return;
 
+    const userMessage: ChatMessage = {
+      user_id: user.user_id,
+      message: input,
+      timestamp: new Date().toISOString(),
+    };
+
+    setChat((prevChat) => {
+      if (!prevChat) {
+        return {
+          ai_chat_id: trip.ai_chat_id!,
+          trip_id: trip.trip_id,
+          messages: [userMessage],
+        };
+      }
+      return {
+        ...prevChat,
+        messages: [...prevChat.messages, userMessage],
+      };
+    });
+
+    const messageToSend = input;
+    setInput("");
+
+    setIsThinking(true);
     try {
       const updatedChat = await addAIChatMessage(
         trip.ai_chat_id,
         user.user_id,
-        input,
+        messageToSend,
       );
       setChat(updatedChat);
-      setInput("");
     } catch (error) {
       console.error("Failed to send message:", error);
+    } finally {
+      setIsThinking(false);
     }
   };
 
@@ -61,23 +88,29 @@ export function TripAssistancePage() {
           <div
             key={`${msg.timestamp}-${msg.user_id}`}
             className={`mb-3 d-flex ${
-              msg.user_id === user?.user_id
-                ? "justify-content-end"
-                : "justify-content-start"
+              msg.user_id === "assistant"
+                ? "justify-content-start"
+                : "justify-content-end"
             }`}
           >
             <div
               className={`p-2 rounded ${
-                msg.user_id === user?.user_id
-                  ? "bg-primary text-white"
-                  : "bg-light border"
+                msg.user_id === "assistant"
+                  ? "bg-light border"
+                  : "bg-primary text-white"
               }`}
               style={{ maxWidth: "60%" }}
             >
               <div className="small fw-bold">
-                {memberNames[msg.user_id] || msg.user_id}
+                {msg.user_id === "assistant"
+                  ? "AI Assistant"
+                  : memberNames[msg.user_id] || msg.user_id}
               </div>
-              <div>{msg.message}</div>
+              {msg.user_id === "assistant" ? (
+                <ReactMarkdown>{msg.message}</ReactMarkdown>
+              ) : (
+                <div>{msg.message}</div>
+              )}
               <div className="text-end small opacity-75">
                 {new Date(msg.timestamp).toLocaleTimeString([], {
                   hour: "2-digit",
@@ -87,6 +120,17 @@ export function TripAssistancePage() {
             </div>
           </div>
         ))}
+        {isThinking && (
+          <div className="mb-3 d-flex justify-content-start">
+            <div
+              className="p-2 rounded bg-light border"
+              style={{ maxWidth: "60%" }}
+            >
+              <div className="small fw-bold">AI Assistant</div>
+              <div>typing...</div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input area */}

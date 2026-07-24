@@ -130,6 +130,42 @@ class GeminiService:
         except json.JSONDecodeError:
             return {}
 
+    def generate_chat_response(
+        self,
+        user_input: str,
+        history: list,
+        temperature: float = 0.7
+    ) -> str:
+        """
+        Generate a chat response.
+        """
+
+        system_instruction = """
+        You are a friendly and helpful travel assistant.
+        Your goal is to help users plan their trips.
+        Be concise and provide relevant information.
+        """
+
+        # Format the history
+        formatted_history = ""
+        for message in history:
+            role = "User" if message["is_user"] else "AI"
+            formatted_history += f"{role}: {message['text']}\n"
+
+        prompt = f"""
+        {formatted_history}
+        User: {user_input}
+        AI:
+        """
+
+        response_text = self.generate_text(
+            prompt=prompt,
+            system_instruction=system_instruction,
+            temperature=temperature
+        )
+
+        return response_text
+
     def extract_receipt(
         self,
         file_bytes: bytes,

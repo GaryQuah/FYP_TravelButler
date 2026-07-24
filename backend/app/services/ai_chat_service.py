@@ -37,28 +37,62 @@ async def get_ai_chat_by_id(collection: AsyncIOMotorCollection, ai_chat_id: str)
         return ai_chat_serializer(chat)
     return None
 
+import httpx
+from motor.motor_asyncio import AsyncIOMotorCollection
+from app.models.chat import Chat, Message
+from bson import ObjectId
+from datetime import datetime
+
 async def add_message_to_ai_chat(collection: AsyncIOMotorCollection, ai_chat_id: str, user_id: str, message: str):
     """
-    Add a message to an AI chat.
+    Add a message to an AI chat and get a response from the AI.
     """
-    message_data = Message(user_id=user_id, message=message)
-    # Pydantic v2 doesn't have .dict(), it's .model_dump()
+    # Add user message to DB
+    user_message_data = Message(user_id=user_id, message=message)
     try:
-        message_dict = message_data.model_dump()
+        user_message_dict = user_message_data.model_dump()
     except AttributeError:
-        message_dict = message_data.dict()
+        user_message_dict = user_message_data.dict()
 
-
-    result = await collection.update_one(
+    await collection.update_one(
         {"_id": ObjectId(ai_chat_id)},
-        {"$push": {"messages": message_dict}}
+        {"$push": {"messages": user_message_dict}}
     )
 
-    if result.matched_count == 0:
-        return None
+    # Prepare history for AI
+    chat = await collection.find_one({"_id": ObjectId(ai_chat_id)})
+    history = []
+    if chat and "messages" in chat:
+        for msg in chat["messages"]:
+            history.append({
+                "is_user": msg["user_id"] != "assistant",
+                "text": msg["message"]
+            })
+
+    # Get AI response
+    async with httpx.AsyncClient() as client:
+        response = await client.post("http://localhost:8000/api/gemini/chat", json={
+            "message": message,
+            "history": history
+        })
+        response.raise_for_status()
+        ai_response_text = response.json()["response"]
+
+    # Add AI response to DB
+    ai_message_data = Message(user_id="assistant", message=ai_response_text)
+    try:
+        ai_message_dict = ai_message_data.model_dump()
+    except AttributeError:
+        ai_message_dict = ai_message_data.dict()
+
+    await collection.update_one(
+        {"_id": ObjectId(ai_chat_id)},
+        {"$push": {"messages": ai_message_dict}}
+    )
 
     updated_chat = await collection.find_one({"_id": ObjectId(ai_chat_id)})
     return ai_chat_serializer(updated_chat)
+
 
 async def clear_ai_chat_messages(collection: AsyncIOMotorCollection, ai_chat_id: str):
     """
