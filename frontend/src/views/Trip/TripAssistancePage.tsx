@@ -130,13 +130,15 @@ export function TripAssistancePage() {
                 index === chat.messages.length - 1 &&
                 chat.ai_recommendations?.length > 0 && (
                   <div className="mt-2">
-                    {chat.ai_recommendations.map((itinerary, i) => (
-                      <MiniItineraryCard
-                        key={i}
-                        itinerary={itinerary}
-                        onAddToItinerary={handleAddToItinerary}
-                      />
-                    ))}
+                    {chat.ai_recommendations.map((itinerary, i) => {
+                      return (
+                        <MiniItineraryCard
+                          key={i}
+                          itinerary={itinerary}
+                          onAddToItinerary={handleAddToItinerary}
+                        />
+                      );
+                    })}
                   </div>
                 )}
               <div className="text-end small opacity-75">

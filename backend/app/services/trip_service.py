@@ -88,7 +88,6 @@ async def get_trip(collection: AsyncIOMotorCollection, trip_id: str):
     """
     trip = await collection.find_one({"_id": ObjectId(trip_id)})
     if trip:
-        print(trip_serializer(trip))
         return trip_serializer(trip)
         
     return None
