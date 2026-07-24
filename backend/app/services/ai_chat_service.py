@@ -1,7 +1,9 @@
 from motor.motor_asyncio import AsyncIOMotorCollection
-from app.models.chat import Chat, Message
+from app.models.ai_chat import AiChat
+from app.models.chat import Message
 from bson import ObjectId
 from datetime import datetime
+import json
 
 def ai_chat_serializer(chat) -> dict:
     """
@@ -16,14 +18,15 @@ def ai_chat_serializer(chat) -> dict:
                 "message": msg["message"],
                 "timestamp": msg["timestamp"].isoformat() if isinstance(msg.get("timestamp"), datetime) else msg.get("timestamp")
             } for msg in chat.get("messages", [])
-        ]
+        ],
+        "ai_recommendations": chat.get("ai_recommendations", [])
     }
 
 async def create_ai_chat(collection: AsyncIOMotorCollection, trip_id: str) -> str:
     """
     Create a new chat for a trip.
     """
-    chat_data = Chat(trip_id=trip_id)
+    chat_data = AiChat(trip_id=trip_id)
     chat_dict = chat_data.dict()
     result = await collection.insert_one(chat_dict)
     return str(result.inserted_id)
@@ -39,7 +42,7 @@ async def get_ai_chat_by_id(collection: AsyncIOMotorCollection, ai_chat_id: str)
 
 import httpx
 from motor.motor_asyncio import AsyncIOMotorCollection
-from app.models.chat import Chat, Message
+from app.models.chat import Message
 from bson import ObjectId
 from datetime import datetime
 
@@ -76,7 +79,10 @@ async def add_message_to_ai_chat(collection: AsyncIOMotorCollection, ai_chat_id:
             "history": history
         })
         response.raise_for_status()
-        ai_response_text = response.json()["response"]
+        ai_response = response.json()
+
+    ai_response_text = ai_response.get("response", "")
+    itinerary = ai_response.get("itinerary")
 
     # Add AI response to DB
     ai_message_data = Message(user_id="assistant", message=ai_response_text)
@@ -85,9 +91,13 @@ async def add_message_to_ai_chat(collection: AsyncIOMotorCollection, ai_chat_id:
     except AttributeError:
         ai_message_dict = ai_message_data.dict()
 
+    update_doc = {"$push": {"messages": ai_message_dict}}
+    if itinerary:
+        update_doc["$set"] = {"ai_recommendations": itinerary}
+
     await collection.update_one(
         {"_id": ObjectId(ai_chat_id)},
-        {"$push": {"messages": ai_message_dict}}
+        update_doc
     )
 
     updated_chat = await collection.find_one({"_id": ObjectId(ai_chat_id)})

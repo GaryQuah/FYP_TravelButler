@@ -29,4 +29,4 @@ async def chat(request: ChatRequest):
         user_input=request.message,
         history=request.history
     )
-    return {"response": response}
+    return response
