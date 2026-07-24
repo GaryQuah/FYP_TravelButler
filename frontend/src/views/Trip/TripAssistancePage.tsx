@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../models/UserContext";
 import { MiniItineraryCard } from "../../components/cards/MiniItineraryCard";
+import { formatTime } from "../../utils/dateUtils";
 
 import { addAIChatMessage, getAIChat, addItinerary } from "../../api";
 import type { ChatMessage, AiChat, ItineraryCreationData } from "../../models";
@@ -92,7 +93,7 @@ export function TripAssistancePage() {
 
   return (
     <div className="d-flex flex-column">
-      <h2>AI Assistance Trip Chat</h2>
+      <h2>AI Assisted Chat</h2>
 
       {/* Chat messages */}
       <div
@@ -142,10 +143,7 @@ export function TripAssistancePage() {
                   </div>
                 )}
               <div className="text-end small opacity-75">
-                {new Date(msg.timestamp).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {formatTime(msg.timestamp)}
               </div>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../models/UserContext";
 import { addChatMessage, getChat } from "../../api";
 import type { ChatMessage, Chat } from "../../models";
+import { convertUtcToLocalTime } from "../../utils/dateUtils";
 
 export function TripChatPage() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -78,10 +79,7 @@ export function TripChatPage() {
               </div>
               <div>{msg.message}</div>
               <div className="text-end small opacity-75">
-                {new Date(msg.timestamp).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {convertUtcToLocalTime(msg.timestamp)}
               </div>
             </div>
           </div>
