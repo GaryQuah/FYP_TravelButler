@@ -4,10 +4,12 @@ import { formatTime } from "../../utils/dateUtils";
 
 interface MiniItineraryCardProps {
   itinerary: ItineraryCreationData;
+  onAddToItinerary: (itinerary: ItineraryCreationData) => void;
 }
 
 export const MiniItineraryCard: React.FC<MiniItineraryCardProps> = ({
   itinerary,
+  onAddToItinerary,
 }) => {
   return (
     <div className="card mb-2">
@@ -17,7 +19,14 @@ export const MiniItineraryCard: React.FC<MiniItineraryCardProps> = ({
           {formatTime(itinerary.start_time)} - {formatTime(itinerary.end_time)}
         </div>
         <p className="card-text">{itinerary.description}</p>
-        <div className="d-flex justify-content-between"></div>
+        <div className="d-flex justify-content-end">
+          <button
+            className="btn btn-primary"
+            onClick={() => onAddToItinerary(itinerary)}
+          >
+            Add to Itinerary
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -5,12 +5,12 @@ import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../models/UserContext";
 import { MiniItineraryCard } from "../../components/cards/MiniItineraryCard";
 
-import { addAIChatMessage, getAIChat } from "../../api";
-import type { ChatMessage, AiChat } from "../../models";
+import { addAIChatMessage, getAIChat, addItinerary } from "../../api";
+import type { ChatMessage, AiChat, ItineraryCreationData } from "../../models";
 
 export function TripAssistancePage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const { trip, members } = useTripDetails();
+  const { trip, members, addItineraryItem } = useTripDetails();
   const { user } = useUser();
   const [input, setInput] = useState("");
   const [chat, setChat] = useState<AiChat | null>(null);
@@ -34,6 +34,19 @@ export function TripAssistancePage() {
       {} as { [key: string]: string },
     );
   }, [members]);
+
+  const handleAddToItinerary = async (item: ItineraryCreationData) => {
+    if (!tripId) return;
+    try {
+      const newItineraryItem = await addItinerary(tripId, item);
+      addItineraryItem(newItineraryItem);
+      // Optionally, provide feedback to the user
+      alert("Activity added to itinerary!");
+    } catch (error) {
+      console.error("Failed to add itinerary item:", error);
+      alert("Failed to add activity. Please try again.");
+    }
+  };
 
   const sendMessage = async () => {
     if (!input.trim() || !trip?.ai_chat_id || !user) return;
@@ -118,7 +131,11 @@ export function TripAssistancePage() {
                 chat.ai_recommendations?.length > 0 && (
                   <div className="mt-2">
                     {chat.ai_recommendations.map((itinerary, i) => (
-                      <MiniItineraryCard key={i} itinerary={itinerary} />
+                      <MiniItineraryCard
+                        key={i}
+                        itinerary={itinerary}
+                        onAddToItinerary={handleAddToItinerary}
+                      />
                     ))}
                   </div>
                 )}

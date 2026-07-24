@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { getTripDetails, getTripMembers } from "../api";
-import type { Trip, User } from "../models";
+import type { Trip, User, Itinerary } from "../models";
 
 // Create a context for trip details
 const TripDetailsContext = createContext<ReturnType<
@@ -68,5 +68,22 @@ function useProvideTripDetails(tripId: string | undefined) {
     setTrip(newTrip);
   };
 
-  return { trip, members, loading, error, refresh, setTripDetails };
+  const addItineraryItem = (newItem: Itinerary) => {
+    if (trip) {
+      setTrip({
+        ...trip,
+        itinerary_ids: [...(trip.itinerary_ids || []), newItem.id],
+      });
+    }
+  };
+
+  return {
+    trip,
+    members,
+    loading,
+    error,
+    refresh,
+    setTripDetails,
+    addItineraryItem,
+  };
 }
