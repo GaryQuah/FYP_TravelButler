@@ -5,6 +5,8 @@ import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../models/UserContext";
 import { MiniItineraryCard } from "../../components/cards/MiniItineraryCard";
 import { formatTime } from "../../utils/dateUtils";
+import { ItineraryModal } from "../../components/modals/ItineraryModal";
+import { DateSelectionModal } from "../../components/modals/DateSelectionModal";
 
 import { addAIChatMessage, getAIChat, addItinerary } from "../../api";
 import type { ChatMessage, AiChat, ItineraryCreationData } from "../../models";
@@ -16,6 +18,10 @@ export function TripAssistancePage() {
   const [input, setInput] = useState("");
   const [chat, setChat] = useState<AiChat | null>(null);
   const [isThinking, setIsThinking] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItinerary, setSelectedItinerary] =
+    useState<ItineraryCreationData | null>(null);
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
 
   useEffect(() => {
     if (trip?.ai_chat_id) {
@@ -36,16 +42,60 @@ export function TripAssistancePage() {
     );
   }, [members]);
 
-  const handleAddToItinerary = async (item: ItineraryCreationData) => {
+  const handleAddToItinerary = (item: ItineraryCreationData) => {
+    setSelectedItinerary(item);
+    setIsModalOpen(true);
+  };
+
+  const handleAddAllToItinerary = async () => {
+    setIsDateModalOpen(true);
+  };
+
+  const handleSaveItinerary = async (data: ItineraryCreationData) => {
     if (!tripId) return;
     try {
-      const newItineraryItem = await addItinerary(tripId, item);
+      const newItineraryItem = await addItinerary(tripId, data);
       addItineraryItem(newItineraryItem);
-      // Optionally, provide feedback to the user
+      setIsModalOpen(false);
       alert("Activity added to itinerary!");
     } catch (error) {
       console.error("Failed to add itinerary item:", error);
       alert("Failed to add activity. Please try again.");
+    }
+  };
+
+  const handleSaveAllItineraries = async (date: Date) => {
+    if (!tripId || !chat?.ai_recommendations) return;
+
+    try {
+      for (const item of chat.ai_recommendations) {
+        const newItem = {
+          ...item,
+          start_time: new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            new Date(item.start_time).getHours(),
+            new Date(item.start_time).getMinutes(),
+          ),
+          end_time: new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            new Date(item.end_time).getHours(),
+            new Date(item.end_time).getMinutes(),
+          ),
+        };
+        const newItineraryItem = await addItinerary(tripId, newItem);
+        addItineraryItem(newItineraryItem);
+      }
+      setIsDateModalOpen(false);
+      alert("All recommended activities have been added to your itinerary!");
+    } catch (error) {
+      console.error("Failed to add all itinerary items:", error);
+      alert(
+        "Failed to add all activities. Please check the console for details.",
+      );
     }
   };
 
@@ -89,6 +139,15 @@ export function TripAssistancePage() {
     } finally {
       setIsThinking(false);
     }
+  };
+
+  const formatDateForInput = (date: Date | string | undefined) => {
+    if (!date) return undefined;
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
 
   return (
@@ -142,6 +201,12 @@ export function TripAssistancePage() {
                   index === chat.messages.length - 1 &&
                   chat.ai_recommendations?.length > 0 && (
                     <div className="mt-2">
+                      <button
+                        className="btn btn-secondary btn-sm mb-2"
+                        onClick={handleAddAllToItinerary}
+                      >
+                        Add All to Itinerary
+                      </button>
                       {chat.ai_recommendations.map((itinerary, i) => {
                         return (
                           <MiniItineraryCard
@@ -189,6 +254,21 @@ export function TripAssistancePage() {
           Send
         </button>
       </div>
+      <ItineraryModal
+        show={isModalOpen}
+        onHide={() => setIsModalOpen(false)}
+        onSave={handleSaveItinerary}
+        itinerary={selectedItinerary}
+        tripStartDate={formatDateForInput(trip?.start_date)}
+        tripEndDate={formatDateForInput(trip?.end_date)}
+      />
+      <DateSelectionModal
+        show={isDateModalOpen}
+        onHide={() => setIsDateModalOpen(false)}
+        onSave={handleSaveAllItineraries}
+        minDate={formatDateForInput(trip?.start_date)}
+        maxDate={formatDateForInput(trip?.end_date)}
+      />
     </div>
   );
 }
