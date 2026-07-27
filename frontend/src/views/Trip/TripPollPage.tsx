@@ -190,34 +190,7 @@ export function TripPollPage() {
     }
   };
 
-  const updatePoll = async (
-    pollId: string,
-    title: string,
-    options: string[],
-  ) => {
-    if (!user) return;
-    try {
-      const response = await fetch(`/api/trip/${tripId}/polls/${pollId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-User-Id": user.user_id,
-        },
-        body: JSON.stringify({ title, options }),
-      });
 
-      if (response.ok) {
-        const updatedPoll = await response.json();
-        setPolls((prev) =>
-          prev.map((p) => (p.id === pollId ? updatedPoll : p)),
-        );
-      } else {
-        console.error("Failed to update poll");
-      }
-    } catch (error) {
-      console.error("Error updating poll:", error);
-    }
-  };
 
   return (
     <div className="row">
@@ -284,7 +257,7 @@ export function TripPollPage() {
         {/* Poll Cards */}
         {isLoading ? (
           <div>Loading...</div>
-        ) : (
+        ) : sortedPolls.length > 0 ? (
           <Stack gap={3}>
             {sortedPolls.map((poll) => {
               const totalVotes = poll.options.reduce(
@@ -362,6 +335,10 @@ export function TripPollPage() {
               );
             })}
           </Stack>
+        ) : (
+          <div className="text-center">
+            <p>No polls available. Create one to get started!</p>
+          </div>
         )}
       </div>
     </div>

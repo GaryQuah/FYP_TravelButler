@@ -100,54 +100,68 @@ export function TripAssistancePage() {
         className="flex-grow-1 border rounded p-3 mb-3 overflow-auto"
         style={{ maxHeight: "60vh" }}
       >
-        {chat?.messages?.map((msg: ChatMessage, index: number) => (
-          <div
-            key={`${msg.timestamp}-${msg.user_id}`}
-            className={`mb-3 d-flex ${
-              msg.user_id === "assistant"
-                ? "justify-content-start"
-                : "justify-content-end"
-            }`}
-          >
+        {chat?.messages?.map((msg: ChatMessage, index: number) => {
+          let messageContent = msg.message;
+          if (msg.user_id === "assistant") {
+            try {
+              const parsed = JSON.parse(msg.message);
+              if (parsed && parsed.response) {
+                messageContent = parsed.response;
+              }
+            } catch (e) {
+              // Not a JSON string, so we'll just display the raw message.
+            }
+          }
+
+          return (
             <div
-              className={`p-2 rounded ${
+              key={`${msg.timestamp}-${msg.user_id}`}
+              className={`mb-3 d-flex ${
                 msg.user_id === "assistant"
-                  ? "bg-light border"
-                  : "bg-primary text-white"
+                  ? "justify-content-start"
+                  : "justify-content-end"
               }`}
-              style={{ maxWidth: "60%" }}
             >
-              <div className="small fw-bold">
-                {msg.user_id === "assistant"
-                  ? "AI Assistant"
-                  : memberNames[msg.user_id] || msg.user_id}
-              </div>
-              {msg.user_id === "assistant" ? (
-                <ReactMarkdown>{msg.message}</ReactMarkdown>
-              ) : (
-                <div>{msg.message}</div>
-              )}
-              {msg.user_id === "assistant" &&
-                index === chat.messages.length - 1 &&
-                chat.ai_recommendations?.length > 0 && (
-                  <div className="mt-2">
-                    {chat.ai_recommendations.map((itinerary, i) => {
-                      return (
-                        <MiniItineraryCard
-                          key={i}
-                          itinerary={itinerary}
-                          onAddToItinerary={handleAddToItinerary}
-                        />
-                      );
-                    })}
-                  </div>
+              <div
+                className={`p-2 rounded ${
+                  msg.user_id === "assistant"
+                    ? "bg-light border"
+                    : "bg-primary text-white"
+                }`}
+                style={{ maxWidth: "60%" }}
+              >
+                <div className="small fw-bold">
+                  {msg.user_id === "assistant"
+                    ? "AI Assistant"
+                    : memberNames[msg.user_id] || msg.user_id}
+                </div>
+                {msg.user_id === "assistant" ? (
+                  <ReactMarkdown>{messageContent}</ReactMarkdown>
+                ) : (
+                  <div>{messageContent}</div>
                 )}
-              <div className="text-end small opacity-75">
-                {formatTime(msg.timestamp)}
+                {msg.user_id === "assistant" &&
+                  index === chat.messages.length - 1 &&
+                  chat.ai_recommendations?.length > 0 && (
+                    <div className="mt-2">
+                      {chat.ai_recommendations.map((itinerary, i) => {
+                        return (
+                          <MiniItineraryCard
+                            key={i}
+                            itinerary={itinerary}
+                            onAddToItinerary={handleAddToItinerary}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                <div className="text-end small opacity-75">
+                  {formatTime(msg.timestamp)}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {isThinking && (
           <div className="mb-3 d-flex justify-content-start">
             <div
