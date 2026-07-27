@@ -1,15 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import {
-  Button,
-  Card,
-  Container,
-  Form,
-  Modal,
-  ProgressBar,
-  Stack,
-} from "react-bootstrap";
+import { Button, Card, Form, Modal, ProgressBar, Stack } from "react-bootstrap";
 import { useUser } from "../../models/UserContext";
+import {
+  createPoll as apiCreatePoll,
+  deletePoll as apiDeletePoll,
+  fetchPolls as apiFetchPolls,
+  voteOnPoll as apiVoteOnPoll,
+} from "../../api/poll";
 
 interface Vote {
   userId: string;
@@ -30,19 +28,10 @@ interface Poll {
   options: PollOption[];
 }
 
-const mockPolls: Poll[] = [];
-
 export function TripPollPage() {
-  // Existing Modal Control
-  const [showModal, setShowModal] = useState(false);
   const [showAddPollModal, setShowAddPollModal] = useState(false);
   const [addPollError, setAddPollError] = useState<string | null>(null);
-  const [editingPoll, setEditingPoll] = useState<Poll | null>(null);
-  const [editPollError, setEditPollError] = useState<string | null>(null);
-  const [editedTitle, setEditedTitle] = useState("");
-  const [editedOptions, setEditedOptions] = useState<string[]>([]);
 
-  // Poll State
   const [polls, setPolls] = useState<Poll[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { tripId } = useParams<{ tripId: string }>();
@@ -52,23 +41,12 @@ export function TripPollPage() {
   const [newOptions, setNewOptions] = useState(["", ""]);
 
   useEffect(() => {
-    const fetchPolls = async () => {
+    const loadPolls = async () => {
       if (!tripId || !user) return;
       try {
         setIsLoading(true);
-        const token = localStorage.getItem("access_token");
-        const response = await fetch(`/api/trip/${tripId}/polls`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setPolls(data);
-        } else {
-          console.error("Failed to fetch polls");
-        }
+        const data = await apiFetchPolls(tripId);
+        setPolls(data);
       } catch (error) {
         console.error("Error fetching polls:", error);
       } finally {
@@ -76,7 +54,7 @@ export function TripPollPage() {
       }
     };
 
-    fetchPolls();
+    loadPolls();
   }, [tripId, user]);
 
   const sortedPolls = useMemo(() => {
@@ -96,7 +74,7 @@ export function TripPollPage() {
     setNewOptions(updated);
   };
 
-  const createPoll = async () => {
+  const handleCreatePoll = async () => {
     if (!user) {
       setAddPollError("You must be logged in to create a poll.");
       return;
@@ -105,90 +83,45 @@ export function TripPollPage() {
       setAddPollError("Poll title is required.");
       return;
     }
-
     const validOptions = newOptions.filter((o) => o.trim() !== "");
-
     if (validOptions.length < 2) {
       setAddPollError("Minimum 2 options required.");
       return;
     }
 
-    const newPoll = {
-      title: newPollTitle,
-      options: validOptions,
-    };
-
     try {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(`/api/trip/${tripId}/polls`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newPoll),
+      if (!tripId) throw new Error("Trip ID is missing");
+      const createdPoll = await apiCreatePoll(tripId, {
+        title: newPollTitle,
+        options: validOptions,
       });
-
-      if (response.ok) {
-        const createdPoll = await response.json();
-        setPolls((prev) => [createdPoll, ...prev]);
-        setNewPollTitle("");
-        setNewOptions(["", ""]);
-        setAddPollError(null);
-        setShowAddPollModal(false);
-      } else {
-        setAddPollError("Failed to create poll. Please try again.");
-      }
+      setPolls((prev) => [createdPoll, ...prev]);
+      setNewPollTitle("");
+      setNewOptions(["", ""]);
+      setAddPollError(null);
+      setShowAddPollModal(false);
     } catch (error) {
-      setAddPollError("An error occurred. Please try again.");
+      setAddPollError(
+        error instanceof Error ? error.message : "An error occurred.",
+      );
     }
   };
 
-  const vote = async (pollId: string, optionId: string) => {
-    if (!user) return;
+  const handleVote = async (pollId: string, optionId: string) => {
+    if (!user || !tripId) return;
     try {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `/api/trip/${tripId}/polls/${pollId}/options/${optionId}/vote`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      if (response.ok) {
-        const updatedPoll = await response.json();
-        setPolls((prev) =>
-          prev.map((p) => (p.id === pollId ? updatedPoll : p)),
-        );
-      } else {
-        console.error("Failed to vote");
-      }
+      const updatedPoll = await apiVoteOnPoll(tripId, pollId, optionId);
+      setPolls((prev) => prev.map((p) => (p.id === pollId ? updatedPoll : p)));
     } catch (error) {
       console.error("Error voting:", error);
     }
   };
 
-  const deletePoll = async (pollId: string) => {
-    if (!user) return;
+  const handleDeletePoll = async (pollId: string) => {
+    if (!user || !tripId) return;
     try {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(`/api/trip/${tripId}/polls/${pollId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        setPolls((prev) => prev.filter((p) => p.id !== pollId));
-      } else {
-        console.error("Failed to delete poll");
-      }
+      await apiDeletePoll(tripId, pollId);
+      setPolls((prev) => prev.filter((p) => p.id !== pollId));
     } catch (error) {
       console.error("Error deleting poll:", error);
     }
@@ -204,7 +137,6 @@ export function TripPollPage() {
           </Button>
         </div>
 
-        {/* Create Poll Modal */}
         <Modal
           show={showAddPollModal}
           onHide={() => setShowAddPollModal(false)}
@@ -250,13 +182,12 @@ export function TripPollPage() {
             >
               Cancel
             </Button>
-            <Button variant="primary" onClick={createPoll}>
+            <Button variant="primary" onClick={handleCreatePoll}>
               Create Poll
             </Button>
           </Modal.Footer>
         </Modal>
 
-        {/* Poll Cards */}
         {isLoading ? (
           <div>Loading...</div>
         ) : sortedPolls.length > 0 ? (
@@ -280,7 +211,7 @@ export function TripPollPage() {
                         <Button
                           variant="outline-danger"
                           size="sm"
-                          onClick={() => deletePoll(poll.id)}
+                          onClick={() => handleDeletePoll(poll.id)}
                           className="me-2"
                         >
                           Delete
@@ -324,7 +255,7 @@ export function TripPollPage() {
                             <Button
                               size="sm"
                               variant="outline-primary"
-                              onClick={() => vote(poll.id, option.id)}
+                              onClick={() => handleVote(poll.id, option.id)}
                             >
                               Vote
                             </Button>

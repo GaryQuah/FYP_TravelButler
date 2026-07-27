@@ -108,9 +108,7 @@ export function TripAssistancePage() {
               if (parsed && parsed.response) {
                 messageContent = parsed.response;
               }
-            } catch (e) {
-              // Not a JSON string, so we'll just display the raw message.
-            }
+            } catch (e) {}
           }
 
           return (

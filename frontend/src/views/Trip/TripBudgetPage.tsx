@@ -26,56 +26,14 @@ import {
 } from "react-bootstrap";
 import { analyzeReceipt } from "../../api/gemini";
 
-/* =========================================================
-   Models
-========================================================= */
+import type {
+  TripBudget,
+  ExpenseItem,
+  Category,
+  Contributor,
+} from "../../models/budget";
 
-export interface ExpenseItem {
-  id: string;
-  title: string;
-  amount: number;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  expenses: ExpenseItem[];
-}
-
-export interface Contributor {
-  id: string;
-  name: string;
-  paidAmount: number;
-}
-
-export interface TripBudget {
-  id: string;
-  tripName: string;
-  peopleCount: number;
-  categories: Category[];
-  contributors: Contributor[];
-}
-
-/* =========================================================
-   Mock Data
-========================================================= */
-
-/* =========================================================
-   Colors
-========================================================= */
-
-const BAR_COLORS = [
-  "#0d6efd",
-  "#198754",
-  "#dc3545",
-  "#fd7e14",
-  "#6f42c1",
-  "#20c997",
-];
-
-/* =========================================================
-   Component
-========================================================= */
+import { BAR_COLORS } from "../../models/budget";
 
 export function TripBudgetPage() {
   const [trip, setTrip] = useState<TripBudget | null>(null);

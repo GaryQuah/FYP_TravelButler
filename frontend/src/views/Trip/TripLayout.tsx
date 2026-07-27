@@ -89,7 +89,6 @@ function TripLayoutContent() {
             </div>
           </div>
 
-          {/* Page content (itinerary / chat / budget) */}
           <Outlet />
         </div>
       </div>

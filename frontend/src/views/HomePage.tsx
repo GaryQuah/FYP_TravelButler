@@ -13,6 +13,7 @@ import { useAvailabilityTrackers } from "../hooks/useAvailabilityTrackers";
 import AvailabilityTrackerCard from "../components/cards/AvailabilityTrackerCard";
 import AvailabilityTrackerModal from "../components/modals/AvailabilityTrackerModal";
 import "../assets/css/HomePage.css";
+import { createTracker as apiCreateTracker } from "../api/home";
 import homeBanner from "../assets/images/dashboard/sunset.jpg";
 
 export function HomePage() {
@@ -81,29 +82,18 @@ export function HomePage() {
     }
 
     try {
-      const response = await fetch("/api/availability-trackers/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-User-Id": user.user_id,
-        },
-        body: JSON.stringify({
-          name: trackerData.name,
-          user_ids: [user.user_id],
-        }),
-      });
-
-      if (response.ok) {
-        alert("Availability tracker created successfully");
-        refetchTrackers();
-        setShowTrackerModal(false);
-      } else {
-        alert("Failed to create availability tracker");
-        setShowTrackerModal(false);
-      }
+      await apiCreateTracker({ name: trackerData.name, userId: user.user_id });
+      alert("Availability tracker created successfully");
+      refetchTrackers();
+      setShowTrackerModal(false);
     } catch (error) {
       console.error("An error occurred:", error);
-      alert("An error occurred while creating the tracker.");
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("An error occurred while creating the tracker.");
+      }
+      setShowTrackerModal(false);
     }
   };
 
