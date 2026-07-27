@@ -3,7 +3,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 from app.services import availability_tracker_service
 from app.models.availability_tracker import AvailabilityTracker, AvailabilityTrackerCreationRequest, AvailabilityTrackerUpdateRequest
 from app.models.user import User
-from app.dependencies import get_current_user_id
+from app.utils.jwt import get_current_user
 from app.services.availability_tracker_service import (
     get_tracker_members,
     add_user_to_tracker_by_email,
@@ -22,10 +22,12 @@ router = APIRouter(prefix="/api/availability-trackers", tags=["availability-trac
 
 @router.get("/", response_model=List[AvailabilityTracker])
 async def get_all_trackers_route(
-    user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     db: AsyncIOMotorCollection = Depends(get_availability_collection)
 ):
-    trackers = await availability_tracker_service.get_all_trackers(db, user_id)
+    trackers = await availability_tracker_service.get_all_trackers(
+        db, current_user.user_id
+    )
     return trackers
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=AvailabilityTracker)

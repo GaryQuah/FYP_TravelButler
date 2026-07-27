@@ -1,28 +1,12 @@
-const getAuthToken = (): string | null => {
-  const userItem = localStorage.getItem("user");
-  if (userItem) {
-    try {
-      const user = JSON.parse(userItem);
-      return user?.token || null;
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      return null;
-    }
-  }
-  return null;
-};
+import { getAuthHeaders } from "./auth";
 
 export const post = async (url: string, body: any) => {
-  const token = getAuthToken();
-
   const isFormData = body instanceof FormData;
 
-  const headers: HeadersInit = {
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
+  const headers = getAuthHeaders();
 
-  if (!isFormData) {
-    headers["Content-Type"] = "application/json";
+  if (isFormData) {
+    delete headers["Content-Type"];
   }
 
   const response = await fetch(url, {

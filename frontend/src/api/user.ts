@@ -1,15 +1,21 @@
 import type { User } from "../models";
+import { getAuthHeaders } from "./auth";
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
 
 export const loginOrRegisterUser = async (
-  email: string,
-  name?: string,
-): Promise<User | null> => {
+  credential: string,
+): Promise<LoginResponse | null> => {
   const response = await fetch(`/api/users/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ email, name }),
+    body: JSON.stringify({ token: credential }),
   });
 
   if (!response.ok) {
@@ -26,9 +32,7 @@ export async function inviteUserToTrip(
 ): Promise<void> {
   const response = await fetch(`/api/trips/${tripId}/invite`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ email }),
   });
 
@@ -44,9 +48,7 @@ export const createUser = async (
 ): Promise<User> => {
   const response = await fetch(`/api/users/`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ name, email }),
   });
 
@@ -65,9 +67,7 @@ export async function inviteUserToTracker(
     `/api/availability-trackers/${trackerId}/invite`,
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ email }),
     },
   );

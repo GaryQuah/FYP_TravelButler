@@ -1,11 +1,10 @@
 import type { User, Trip, TripCreationData } from "../models";
+import { getAuthHeaders } from "./auth";
 
 export async function createTrip(tripData: TripCreationData): Promise<Trip> {
   const response = await fetch(`/api/trips/`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify(tripData),
   });
   if (!response.ok) {
@@ -19,11 +18,12 @@ export async function createTrip(tripData: TripCreationData): Promise<Trip> {
     end_date: new Date(newTrip.end_date),
     ai_chat_id: newTrip.ai_chat_id,
   };
-};
+}
 
 export async function deleteTrip(tripId: string): Promise<void> {
   const response = await fetch(`/api/trips/${tripId}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
@@ -35,7 +35,9 @@ export async function deleteTrip(tripId: string): Promise<void> {
 }
 
 export async function getTripDetails(tripId: string): Promise<Trip> {
-  const response = await fetch(`/api/trips/${tripId}`);
+  const response = await fetch(`/api/trips/${tripId}`, {
+    headers: getAuthHeaders(),
+  });
   if (!response.ok) {
     throw new Error("Failed to fetch trip details");
   }
@@ -50,18 +52,18 @@ export async function getTripDetails(tripId: string): Promise<Trip> {
 }
 
 export async function getTripMembers(tripId: string): Promise<User[]> {
-  const response = await fetch(`/api/trips/${tripId}/members`);
+  const response = await fetch(`/api/trips/${tripId}/members`, {
+    headers: getAuthHeaders(),
+  });
   if (!response.ok) {
     throw new Error("Failed to fetch trip members");
   }
   return response.json();
 }
 
-export async function getTrips(userId: string): Promise<Trip[]> {
-  const response = await fetch("/api/trips", {
-    headers: {
-      "X-User-Id": userId,
-    },
+export async function getTrips(): Promise<Trip[]> {
+  const response = await fetch("/api/trips/", {
+    headers: getAuthHeaders(),
   });
   if (!response.ok) {
     throw new Error("Failed to fetch trips");
@@ -82,9 +84,7 @@ export async function updateTrip(
 ): Promise<Trip> {
   const response = await fetch(`/api/trips/${tripId}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify(tripData),
   });
   if (!response.ok) {

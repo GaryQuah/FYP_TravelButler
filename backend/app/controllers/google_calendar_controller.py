@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorCollection
 from datetime import datetime
-from app.dependencies import get_current_user_id
+from app.utils.jwt import get_current_user
+from app.models.user import User
 from app.services.google_calendar_service import (
     get_google_calendar_integration,
     save_google_calendar_integration,
@@ -25,27 +26,27 @@ def get_itineraries_collection(request: Request) -> AsyncIOMotorCollection:
 
 @router.get("/status")
 async def check_connection_status(
-    user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     integrations_collection: AsyncIOMotorCollection = Depends(get_integrations_collection)
 ):
     """Check if user has connected Google Calendar"""
-    integration = await get_google_calendar_integration(integrations_collection, user_id)
+    integration = await get_google_calendar_integration(integrations_collection, current_user.user_id)
     return {"connected": integration is not None}
 
 @router.post("/connect")
 async def connect_google_calendar(
     request_data: GoogleCalendarIntegrationCreateRequest,
-    user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     integrations_collection: AsyncIOMotorCollection = Depends(get_integrations_collection)
 ):
     """Connect Google Calendar using authorization code from frontend."""
-    print(f"Received connect request from user: {user_id}")
+    print(f"Received connect request from user: {current_user.user_id}")
     try:
         # Exchange authorization code for tokens
         tokens = await exchange_code_for_tokens(request_data.code)
         
         # Save the new tokens in mongoDB
-        result = await save_google_calendar_integration(integrations_collection, user_id, tokens)
+        result = await save_google_calendar_integration(integrations_collection, current_user.user_id, tokens)
         
         print(f"Successfully saved integration: {result.id}")
         return {"success": True, "message": "Google Calendar connected successfully"}
@@ -60,11 +61,11 @@ async def connect_google_calendar(
 
 @router.delete("/disconnect")
 async def disconnect_google_calendar(
-    user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     integrations_collection: AsyncIOMotorCollection = Depends(get_integrations_collection)
 ):
     """Disconnect Google Calendar"""
-    success = await delete_google_calendar_integration(integrations_collection, user_id)
+    success = await delete_google_calendar_integration(integrations_collection, current_user.user_id)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -75,7 +76,7 @@ async def disconnect_google_calendar(
 @router.post("/export-itineraries")
 async def export_itineraries_to_calendar(
     request_data: ExportItineraryRequest,
-    user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     integrations_collection: AsyncIOMotorCollection = Depends(get_integrations_collection),
     itineraries_collection: AsyncIOMotorCollection = Depends(get_itineraries_collection)
 ):
@@ -111,7 +112,7 @@ async def export_itineraries_to_calendar(
             }
             print(f"Created event: {event}")
             
-            result = await create_calendar_event(integrations_collection, user_id, event)
+            result = await create_calendar_event(integrations_collection, current_user.user_id, event)
             print(f"Calendar event created: {result}")
             created_events.append({
                 "itinerary_id": itinerary["id"],
@@ -138,12 +139,12 @@ async def export_itineraries_to_calendar(
 @router.post("/events")
 async def create_single_event(
     event_data: dict,
-    user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     integrations_collection: AsyncIOMotorCollection = Depends(get_integrations_collection)
 ):
     """Create a single event in Google Calendar"""
     try:
-        result = await create_calendar_event(integrations_collection, user_id, event_data)
+        result = await create_calendar_event(integrations_collection, current_user.user_id, event_data)
         return {"success": True, "event": result}
     except Exception as e:
         raise HTTPException(

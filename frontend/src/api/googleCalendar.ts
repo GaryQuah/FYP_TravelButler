@@ -1,74 +1,77 @@
-const API_BASE_URL = 'http://localhost:8000/api';
+import { getAuthHeaders } from "./auth";
+
+const API_BASE_URL = "http://localhost:8000/api";
 
 export async function getGoogleCalendarStatus(): Promise<{ connected: boolean }> {
   const response = await fetch(`${API_BASE_URL}/google-calendar/status`, {
-    credentials: 'include',
-    headers: {
-      'X-User-Id': localStorage.getItem('userId') || '',
-    },
+    headers: getAuthHeaders(),
   });
-  if (!response.ok) throw new Error('Failed to get Google Calendar status');
+  if (!response.ok) throw new Error("Failed to get Google Calendar status");
   return response.json();
 }
 
-export async function connectGoogleCalendar(codeResponse: { code: string }): Promise<{ success: boolean; message: string }> {
+export async function connectGoogleCalendar(codeResponse: {
+  code: string;
+}): Promise<{ success: boolean; message: string }> {
   const response = await fetch(`${API_BASE_URL}/google-calendar/connect`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-User-Id': localStorage.getItem('userId') || '',
-    },
+    method: "POST",
+    headers: getAuthHeaders(),
     body: JSON.stringify(codeResponse),
   });
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+    const errorData = await response
+      .json()
+      .catch(() => ({ detail: "Unknown error" }));
     throw new Error(errorData.detail || `HTTP error: ${response.status}`);
   }
   return response.json();
 }
 
-export async function disconnectGoogleCalendar(): Promise<{ success: boolean; message: string }> {
+export async function disconnectGoogleCalendar(): Promise<{
+  success: boolean;
+  message: string;
+}> {
   const response = await fetch(`${API_BASE_URL}/google-calendar/disconnect`, {
-    method: 'DELETE',
-    credentials: 'include',
-    headers: {
-      'X-User-Id': localStorage.getItem('userId') || '',
-    },
+    method: "DELETE",
+    headers: getAuthHeaders(),
   });
-  if (!response.ok) throw new Error('Failed to disconnect Google Calendar');
+  if (!response.ok) throw new Error("Failed to disconnect Google Calendar");
   return response.json();
 }
 
-export async function exportItinerariesToCalendar(itinerary_ids: string[]): Promise<{
+export async function exportItinerariesToCalendar(
+  itinerary_ids: string[],
+): Promise<{
   success: boolean;
-  created_events: Array<{ itinerary_id: string; event_id: string; html_link: string }>;
+  created_events: Array<{
+    itinerary_id: string;
+    event_id: string;
+    html_link: string;
+  }>;
   errors: Array<{ itinerary_id: string; error: string }>;
   message: string;
 }> {
-  const response = await fetch(`${API_BASE_URL}/google-calendar/export-itineraries`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-User-Id': localStorage.getItem('userId') || '',
+  const response = await fetch(
+    `${API_BASE_URL}/google-calendar/export-itineraries`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ itinerary_ids }),
     },
-    body: JSON.stringify({ itinerary_ids }),
-  });
-  if (!response.ok) throw new Error('Failed to export itineraries to Google Calendar');
+  );
+  if (!response.ok)
+    throw new Error("Failed to export itineraries to Google Calendar");
   return response.json();
 }
 
-export async function createSingleCalendarEvent(eventData: any): Promise<{ success: boolean; event: any }> {
+export async function createSingleCalendarEvent(
+  eventData: any,
+): Promise<{ success: boolean; event: any }> {
   const response = await fetch(`${API_BASE_URL}/google-calendar/events`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-User-Id': localStorage.getItem('userId') || '',
-    },
+    method: "POST",
+    headers: getAuthHeaders(),
     body: JSON.stringify(eventData),
   });
-  if (!response.ok) throw new Error('Failed to create calendar event');
+  if (!response.ok) throw new Error("Failed to create calendar event");
   return response.json();
 }

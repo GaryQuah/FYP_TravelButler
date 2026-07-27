@@ -1,7 +1,9 @@
 import type { Itinerary, ItineraryCreationData } from "../models";
+import { getAuthHeaders } from "./auth";
 
 export async function getItineraries(tripId: string): Promise<Itinerary[]> {
-  const response = await fetch(`/api/itineraries/${tripId}`);
+  const headers = await getAuthHeaders();
+  const response = await fetch(`/api/itineraries/${tripId}`, { headers });
   if (!response.ok) {
     throw new Error("Failed to fetch itineraries");
   }
@@ -18,9 +20,11 @@ export async function addItinerary(
   tripId: string,
   itineraryData: ItineraryCreationData,
 ): Promise<Itinerary> {
+  const authHeaders = await getAuthHeaders();
   const response = await fetch(`/api/itineraries/${tripId}`, {
     method: "POST",
     headers: {
+      ...authHeaders,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(itineraryData),
@@ -34,21 +38,27 @@ export async function addItinerary(
 
 export async function deleteItinerary(
   tripId: string,
-  itineraryId: string
+  itineraryId: string,
 ): Promise<void> {
+  const headers = await getAuthHeaders();
   const response = await fetch(`/api/itineraries/${tripId}/${itineraryId}`, {
     method: "DELETE",
+    headers,
   });
- 
+
   if (!response.ok) {
     throw new Error("Failed to delete itinerary");
   }
 }
 
-export async function getItinerariesByIds(itineraryIds: string[]): Promise<Itinerary[]> {
+export async function getItinerariesByIds(
+  itineraryIds: string[],
+): Promise<Itinerary[]> {
+  const authHeaders = await getAuthHeaders();
   const response = await fetch(`/api/itineraries/get_by_ids`, {
     method: "POST",
     headers: {
+      ...authHeaders,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ itinerary_ids: itineraryIds }),
@@ -70,9 +80,11 @@ export async function updateItinerary(
   itineraryId: string,
   itineraryData: Partial<ItineraryCreationData>,
 ): Promise<Itinerary> {
+  const authHeaders = await getAuthHeaders();
   const response = await fetch(`/api/itineraries/${tripId}/${itineraryId}`, {
     method: "PUT",
     headers: {
+      ...authHeaders,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(itineraryData),

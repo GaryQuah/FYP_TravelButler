@@ -1,38 +1,39 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-
-from app.models import UpdateUserRequest, User
+from app.utils.jwt import create_access_token
+from app.utils.google import verify_google_token
+from app.utils.jwt import get_current_user
+from app.dependencies import get_users_collection
 from app.services.user_service import (
+    find_or_create_user,
     create_user,
     get_user_by_email,
-    update_user,
-    find_or_create_user,
     get_user_by_id,
+    update_user,
 )
-from pydantic import BaseModel
+from app.models.user import User, UpdateUserRequest
 
-class LoginRequest(BaseModel):
-    email: str
-    name: str | None = None
+router = APIRouter(prefix="/api/users", tags=["Users"])
 
-router = APIRouter(prefix="/api/users", tags=["users"])
-
-# Dependency to get the database collection from the application state
-def get_users_collection(request: Request) -> AsyncIOMotorCollection:
-    return request.app.users_collection
+class GoogleLoginRequest(BaseModel):
+    token: str
 
 @router.post("/login", status_code=status.HTTP_200_OK)
-async def login_user(
-    request: LoginRequest,
+async def login_google(
+    request: GoogleLoginRequest,
     users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
 ):
+    google_user = await verify_google_token(request.token)
     user = await find_or_create_user(
-        users_collection, request.email, request.name
+        users_collection, google_user["email"], google_user.get("name")
     )
     if not user:
         raise HTTPException(status_code=500, detail="Failed to create or find user")
-    return user
+
+    access_token = create_access_token(data={"sub": user["user_id"]})
+    return {"access_token": access_token, "token_type": "bearer", "user": user}
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user_route(
@@ -50,6 +51,10 @@ async def get_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+@router.get("/me", response_model=User)
+async def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user
 
 
 @router.get("/{user_id}", response_model=User)

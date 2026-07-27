@@ -1,7 +1,10 @@
 import type { Chat } from "../models/chat";
+import { getAuthHeaders } from "./auth";
 
 export async function getChat(chatId: string): Promise<Chat> {
-  const response = await fetch(`/api/chats/${chatId}`);
+  const response = await fetch(`/api/chats/${chatId}`, {
+    headers: getAuthHeaders(),
+  });
   if (!response.ok) {
     throw new Error("Failed to fetch chat");
   }
@@ -11,13 +14,11 @@ export async function getChat(chatId: string): Promise<Chat> {
 export async function addChatMessage(
   chatId: string,
   userId: string,
-  message: string
+  message: string,
 ): Promise<Chat> {
   const response = await fetch(`/api/chats/${chatId}/messages`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ user_id: userId, message }),
   });
 

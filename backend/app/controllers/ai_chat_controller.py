@@ -5,8 +5,10 @@ from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/ai-chats", tags=["ai-chats"])
 
+from app.utils.jwt import get_current_user
+from app.models.user import User
+
 class MessageRequest(BaseModel):
-    user_id: str
     message: str
 
 def get_ai_chat_collection(request: Request) -> AsyncIOMotorCollection:
@@ -20,8 +22,13 @@ async def get_ai_chat(ai_chat_id: str, collection: AsyncIOMotorCollection = Depe
     raise HTTPException(status_code=404, detail="Chat not found")
 
 @router.post("/{ai_chat_id}/messages", response_description="Add a message to a chat")
-async def add_message(ai_chat_id: str, request: MessageRequest, collection: AsyncIOMotorCollection = Depends(get_ai_chat_collection)):
-    chat = await add_message_to_ai_chat(collection, ai_chat_id, request.user_id, request.message)       
+async def add_message(
+    ai_chat_id: str, 
+    request: MessageRequest, 
+    collection: AsyncIOMotorCollection = Depends(get_ai_chat_collection), 
+    current_user: User = Depends(get_current_user)
+):
+    chat = await add_message_to_ai_chat(collection, ai_chat_id, current_user.user_id, request.message)
     if chat:
         return chat
     raise HTTPException(status_code=404, detail="Chat not found")

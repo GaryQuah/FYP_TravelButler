@@ -12,7 +12,7 @@ class ChatMessage(BaseModel):
     
 from app.models.itinerary import Itinerary
 from app.models.user import User
-from app.dependencies import get_current_user_id
+from app.utils.jwt import get_current_user
 from app.services.trip_service import (
     create_trip,
     delete_trip,
@@ -39,14 +39,14 @@ def get_budgets_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.budgets_collection
 
 def get_ai_chat_collection(request: Request) -> AsyncIOMotorCollection:
-    return request.app.ai_chat_collection  
+    return request.app.ai_chats_collection  
 
 @router.get("/")
 async def get_all_trips_route(
     trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
-    user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
 ):
-    trips = await get_all_trips(trips_collection, user_id)
+    trips = await get_all_trips(trips_collection, current_user.user_id)
     if not trips:
         return []
     return trips
