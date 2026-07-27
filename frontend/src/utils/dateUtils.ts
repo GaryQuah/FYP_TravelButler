@@ -30,3 +30,11 @@ export const formatTime = (date: Date | string): string => {
   const minutes = d.getMinutes().toString().padStart(2, "0");
   return `${hours}:${minutes}`;
 };
+
+// Converts a UTC ISO string to a local time string (HH:mm)
+export const convertUtcToLocalTime = (utcString: string): string => {
+  const date = new Date(utcString);
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+};

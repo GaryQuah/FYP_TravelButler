@@ -1,6 +1,6 @@
 import type { User, Trip, TripCreationData } from "../models";
 
-export const createTrip = async (tripData: TripCreationData): Promise<Trip> => {
+export async function createTrip(tripData: TripCreationData): Promise<Trip> {
   const response = await fetch(`/api/trips/`, {
     method: "POST",
     headers: {
@@ -17,6 +17,7 @@ export const createTrip = async (tripData: TripCreationData): Promise<Trip> => {
     ...newTrip,
     start_date: new Date(newTrip.start_date),
     end_date: new Date(newTrip.end_date),
+    ai_chat_id: newTrip.ai_chat_id,
   };
 };
 
@@ -44,6 +45,7 @@ export async function getTripDetails(tripId: string): Promise<Trip> {
     ...trip,
     start_date: new Date(trip.start_date),
     end_date: new Date(trip.end_date),
+    ai_chat_id: trip.ai_chat_id,
   };
 }
 
@@ -70,6 +72,7 @@ export async function getTrips(userId: string): Promise<Trip[]> {
     ...trip,
     start_date: new Date(trip.start_date),
     end_date: new Date(trip.end_date),
+    ai_chat_id: trip.ai_chat_id,
   }));
 }
 
@@ -93,5 +96,6 @@ export async function updateTrip(
     ...updatedTrip,
     start_date: new Date(updatedTrip.start_date),
     end_date: new Date(updatedTrip.end_date),
+    ai_chat_id: updatedTrip.ai_chat_id,
   };
 }

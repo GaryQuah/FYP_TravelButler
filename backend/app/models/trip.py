@@ -13,6 +13,7 @@ class Trip(BaseModel):
     end_date: datetime
     description: str
     chat_id: Optional[str] = Field(None)
+    ai_chat_id: Optional[str] = Field(None)
 
 class TripCreationRequest(BaseModel):
     trip_name: str

@@ -7,10 +7,11 @@ import AvailabilityPage from "./views/AvailabilityPage";
 import { SettingsPage } from "./views/SettingsPage";
 import {
   TripLayout,
-  TripChatPage,
+  TripAssistancePage,
   TripItineraryPage,
   TripBudgetPage,
   TripPollPage,
+  TripChatPage,
 } from "./views/Trip";
 
 import { UserProvider } from "./models/UserContext";
@@ -30,6 +31,7 @@ function App() {
           <Route index element={<TripItineraryPage />} />
           <Route path="itinerary" element={<TripItineraryPage />} />
           <Route path="chat" element={<TripChatPage />} />
+          <Route path="assistance" element={<TripAssistancePage />} />
           <Route path="budget" element={<TripBudgetPage />} />
           <Route path="poll" element={<TripPollPage />} />
         </Route>

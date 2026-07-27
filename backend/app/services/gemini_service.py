@@ -130,6 +130,62 @@ class GeminiService:
         except json.JSONDecodeError:
             return {}
 
+    def generate_chat_response(
+        self,
+        user_input: str,
+        history: list,
+        temperature: float = 0.7
+    ) -> dict:
+        """
+        Generate a chat response.
+        """
+
+        system_instruction = """
+        You are a friendly and helpful travel assistant.
+        Your goal is to help users plan their trips.
+        Be concise and provide relevant information.
+        When suggesting activities or itineraries, provide only one option. Do not give multiple choices.
+        If the user is asking for an itinerary, return a JSON object with two keys: "response" and "itinerary".
+        The "response" key should contain the text response, and the "itinerary" key should contain a list of itinerary items.
+        Each itinerary item should be a JSON object with the following keys: "activity_name", "start_time", "end_time", "description".
+        The start_time and end_time should be in ISO 8601 format.
+        If the user is not asking for an itinerary, return a JSON object with only the "response" key.
+        Return ONLY valid JSON. Do not include markdown or explanations.
+        """
+
+        # Format the history
+        formatted_history = ""
+        for message in history:
+            role = "User" if message["is_user"] else "AI"
+            formatted_history += f"{role}: {message['text']}\n"
+
+        prompt = f"""
+        {formatted_history}
+        User: {user_input}
+        AI:
+        """
+
+        response_text = self.generate_text(
+            prompt=prompt,
+            system_instruction=system_instruction,
+            temperature=temperature
+        )
+
+        print(response_text)
+
+        try:
+            # The response might be wrapped in markdown
+            clean_response = (
+                response_text
+                .strip()
+                .replace("```json", "")
+                .replace("```", "")
+                .strip()
+            )
+            return json.loads(clean_response)
+        except json.JSONDecodeError:
+            return {"response": response_text, "itinerary": []}
+
     def extract_receipt(
         self,
         file_bytes: bytes,

@@ -1,22 +1,34 @@
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.chat import Chat, Message
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
 
 def chat_serializer(chat) -> dict:
     """
     Serializes a chat document from MongoDB into a dictionary.
+    Ensures that timestamps are timezone-aware and formatted in ISO 8601.
     """
+    serialized_messages = []
+    for msg in chat.get("messages", []):
+        timestamp = msg.get("timestamp")
+        if isinstance(timestamp, datetime):
+            # Assume naive datetimes from DB are UTC and make them aware
+            if timestamp.tzinfo is None:
+                timestamp = timestamp.replace(tzinfo=timezone.utc)
+            timestamp_str = timestamp.isoformat()
+        else:
+            timestamp_str = timestamp
+
+        serialized_messages.append({
+            "user_id": msg["user_id"],
+            "message": msg["message"],
+            "timestamp": timestamp_str,
+        })
+
     return {
         "chat_id": str(chat["_id"]),
         "trip_id": chat["trip_id"],
-        "messages": [
-            {
-                "user_id": msg["user_id"],
-                "message": msg["message"],
-                "timestamp": msg["timestamp"].isoformat() if isinstance(msg.get("timestamp"), datetime) else msg.get("timestamp")
-            } for msg in chat.get("messages", [])
-        ]
+        "messages": serialized_messages,
     }
 
 async def create_chat(collection: AsyncIOMotorCollection, trip_id: str) -> str:
