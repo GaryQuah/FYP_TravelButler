@@ -56,10 +56,11 @@ export function TripPollPage() {
       if (!tripId || !user) return;
       try {
         setIsLoading(true);
+        const token = localStorage.getItem("access_token");
         const response = await fetch(`/api/trip/${tripId}/polls`, {
           headers: {
             "Content-Type": "application/json",
-            "X-User-Id": user.user_id,
+            Authorization: `Bearer ${token}`,
           },
         });
         if (response.ok) {
@@ -118,11 +119,12 @@ export function TripPollPage() {
     };
 
     try {
+      const token = localStorage.getItem("access_token");
       const response = await fetch(`/api/trip/${tripId}/polls`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-User-Id": user.user_id,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(newPoll),
       });
@@ -145,13 +147,14 @@ export function TripPollPage() {
   const vote = async (pollId: string, optionId: string) => {
     if (!user) return;
     try {
+      const token = localStorage.getItem("access_token");
       const response = await fetch(
         `/api/trip/${tripId}/polls/${pollId}/options/${optionId}/vote`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-User-Id": user.user_id,
+            Authorization: `Bearer ${token}`,
           },
         },
       );
@@ -172,11 +175,12 @@ export function TripPollPage() {
   const deletePoll = async (pollId: string) => {
     if (!user) return;
     try {
+      const token = localStorage.getItem("access_token");
       const response = await fetch(`/api/trip/${tripId}/polls/${pollId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "X-User-Id": user.user_id,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -189,8 +193,6 @@ export function TripPollPage() {
       console.error("Error deleting poll:", error);
     }
   };
-
-
 
   return (
     <div className="row">

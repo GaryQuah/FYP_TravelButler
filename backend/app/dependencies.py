@@ -1,7 +1,4 @@
-from fastapi import Header, HTTPException
-from typing import Optional
+from fastapi import Request
 
-def get_current_user_id(x_user_id: Optional[str] = Header(None)) -> str:
-    if x_user_id is None:
-        raise HTTPException(status_code=401, detail="User ID not provided in headers")
-    return x_user_id
+def get_users_collection(request: Request):
+    return request.app.users_collection

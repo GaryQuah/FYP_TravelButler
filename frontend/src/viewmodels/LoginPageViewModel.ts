@@ -22,14 +22,13 @@ export function LoginPageViewModel() {
   const handleGoogleLogin = async (credentialResponse: any) => {
     if (!credentialResponse.credential) return;
 
-    const decoded: { email: string; name?: string } =
-      jwtDecode(credentialResponse.credential);
+    const loginResponse = await loginOrRegisterUser(credentialResponse.credential);
 
-    const user = await loginOrRegisterUser(decoded.email, decoded.name);
-
-    if (user && user.name) {
-      localStorage.setItem("lastUserName", user.name);
-      setUser(user);
+    if (loginResponse) {
+      localStorage.setItem("access_token", loginResponse.access_token);
+      localStorage.setItem("user", JSON.stringify(loginResponse.user));
+      localStorage.setItem("lastUserName", loginResponse.user.name);
+      setUser(loginResponse.user);
       navigate("/Home");
     } else {
       // Handle error case where user is null

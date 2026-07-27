@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   deleteAvailabilityTracker as apiDeleteAvailabilityTracker,
+  getAvailabilityTrackers as apiGetAvailabilityTrackers,
   updateAvailabilityTracker as apiUpdateAvailabilityTracker,
 } from "../api/availability";
 import type {
@@ -21,15 +22,7 @@ export function useAvailabilityTrackers() {
     }
     try {
       setLoading(true);
-      const response = await fetch("/api/availability-trackers/", {
-        headers: {
-          "X-User-Id": user.user_id,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch availability trackers");
-      }
-      const data = await response.json();
+      const data = await apiGetAvailabilityTrackers();
       setTrackers(data);
     } catch (error) {
       console.error(error);
