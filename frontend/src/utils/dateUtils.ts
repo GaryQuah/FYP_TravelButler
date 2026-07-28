@@ -38,3 +38,10 @@ export const convertUtcToLocalTime = (utcString: string): string => {
   const minutes = date.getMinutes().toString().padStart(2, "0");
   return `${hours}:${minutes}`;
 };
+
+export const parseUtcDateString = (dateString: string): Date => {
+  if (!dateString.endsWith("Z")) {
+    return new Date(dateString + "Z");
+  }
+  return new Date(dateString);
+};

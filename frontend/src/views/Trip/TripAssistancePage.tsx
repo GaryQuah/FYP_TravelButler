@@ -68,23 +68,37 @@ export function TripAssistancePage() {
     if (!tripId || !chat?.ai_recommendations) return;
 
     try {
+      const dateString = formatDateForInput(date);
+      if (!dateString) {
+        alert("Invalid date selected.");
+        return;
+      }
+
       for (const item of chat.ai_recommendations) {
+        const startTimeObj = new Date(item.start_time);
+        const endTimeObj = new Date(item.end_time);
+
+        const startTimeString = `${String(startTimeObj.getUTCHours()).padStart(
+          2,
+          "0",
+        )}:${String(startTimeObj.getUTCMinutes()).padStart(
+          2,
+          "0",
+        )}:${String(startTimeObj.getUTCSeconds()).padStart(2, "0")}`;
+        const endTimeString = `${String(endTimeObj.getUTCHours()).padStart(
+          2,
+          "0",
+        )}:${String(endTimeObj.getUTCMinutes()).padStart(2, "0")}:${String(
+          endTimeObj.getUTCSeconds(),
+        ).padStart(2, "0")}`;
+
+        const newStartTime = new Date(`${dateString}T${startTimeString}Z`);
+        const newEndTime = new Date(`${dateString}T${endTimeString}Z`);
+
         const newItem = {
           ...item,
-          start_time: new Date(
-            date.getFullYear(),
-            date.getMonth(),
-            date.getDate(),
-            new Date(item.start_time).getHours(),
-            new Date(item.start_time).getMinutes(),
-          ),
-          end_time: new Date(
-            date.getFullYear(),
-            date.getMonth(),
-            date.getDate(),
-            new Date(item.end_time).getHours(),
-            new Date(item.end_time).getMinutes(),
-          ),
+          start_time: newStartTime,
+          end_time: newEndTime,
         };
         const newItineraryItem = await addItinerary(tripId, newItem);
         addItineraryItem(newItineraryItem);
