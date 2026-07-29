@@ -31,5 +31,6 @@ AVAILABILITY_COLLECTION = os.environ.get("AVAILABILITY_COLLECTION", "availabilit
 POLL_COLLECTION = os.environ.get("POLL_COLLECTION", "polls")
 # Stores user integration data such as services and tokens for external APIs (e.g. Google Calendar)
 INTEGRATIONS_COLLECTION = os.environ.get("INTEGRATIONS_COLLECTION", "integrations")
+DOCUMENT_COLLECTION = os.environ.get("DOCUMENT_COLLECTION", "documents")
 
 DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"}

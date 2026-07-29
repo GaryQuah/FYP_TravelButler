@@ -2,9 +2,10 @@ from typing import Optional
 from app.models.itinerary import Itinerary
 from datetime import date, datetime
 from pydantic import BaseModel, Field
+from bson import ObjectId
 
 class Trip(BaseModel):
-    trip_id: str
+    id: ObjectId = Field(default_factory=ObjectId, alias="_id")
     user_ids: list[str]
     itinerary_ids: Optional[list[str]] = Field(None)
     budget: float
@@ -14,6 +15,14 @@ class Trip(BaseModel):
     description: str
     chat_id: Optional[str] = Field(None)
     ai_chat_id: Optional[str] = Field(None)
+    document_ids: Optional[list[str]] = Field(None)
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            ObjectId: str
+        }
 
 class TripCreationRequest(BaseModel):
     trip_name: str

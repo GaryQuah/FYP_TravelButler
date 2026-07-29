@@ -12,6 +12,7 @@ import {
   TripBudgetPage,
   TripPollPage,
   TripChatPage,
+  TripDocumentPage,
 } from "./views/Trip";
 
 import { UserProvider } from "./models/UserContext";
@@ -31,6 +32,7 @@ function App() {
           <Route index element={<TripItineraryPage />} />
           <Route path="itinerary" element={<TripItineraryPage />} />
           <Route path="chat" element={<TripChatPage />} />
+          <Route path="documents" element={<TripDocumentPage />} />
           <Route path="assistance" element={<TripAssistancePage />} />
           <Route path="budget" element={<TripBudgetPage />} />
           <Route path="poll" element={<TripPollPage />} />

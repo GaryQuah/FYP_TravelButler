@@ -15,6 +15,7 @@ from app.controllers.poll_controller import router as poll_router
 from app.controllers.google_calendar_controller import router as google_calendar_router
 from app.controllers.gemini_controller import router as gemini_router
 from app.controllers.ai_chat_controller import router as ai_chat_router
+from app.controllers.document_controller import router as document_router
 from app.db.mongo import lifespan
 
 app = FastAPI(lifespan=lifespan, debug=DEBUG)
@@ -39,6 +40,7 @@ app.include_router(poll_router)
 app.include_router(google_calendar_router)
 app.include_router(gemini_router)
 app.include_router(ai_chat_router)
+app.include_router(document_router)
 
 def main():
     uvicorn.run("app.main:app", host="0.0.0.0", port=3001, reload=DEBUG)
