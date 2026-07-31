@@ -87,6 +87,7 @@ function TripLayoutContent() {
                 ></div>
                 <div style={{ position: "relative", zIndex: 1 }}>
                   <h1 className="display-5 fst-italic">{trip.trip_name}</h1>
+                  <h3 className="display-8 fst-italic">{trip.country}</h3>
                   <p className="mb-3">
                     {formatFullDateTime(trip.start_date)} -{" "}
                     {formatFullDateTime(trip.end_date)}

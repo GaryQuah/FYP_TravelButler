@@ -26,7 +26,10 @@ const Card = ({ trip, onDelete, onEdit }: CardProps) => {
     <div className="card mb-4 shadow-sm h-100">
       <div className="card-body d-flex flex-column">
         <div className="d-flex justify-content-between align-items-start">
-          <h3 className="mb-0">{trip.trip_name}</h3>
+          <div>
+            <h3 className="mb-0">{trip.trip_name}</h3>
+            <h5 className="mb-0">{trip.country}</h5>
+          </div>
           <div className="btn-group">
             <button
               className="btn btn-sm btn-outline-secondary"

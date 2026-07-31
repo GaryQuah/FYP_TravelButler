@@ -22,6 +22,7 @@ def trip_serializer(trip) -> dict:
         "start_date": trip["start_date"],
         "end_date": trip["end_date"],
         "description": trip["description"],
+        "country": trip.get("country", ""),
         "chat_id": trip.get("chat_id"),
         "ai_chat_id": trip.get("ai_chat_id"),
     }
@@ -46,6 +47,7 @@ async def create_trip(trips_collection: AsyncIOMotorCollection, users_collection
 
     # Add fields not provided by the creation request
     trip_dict["itinerary_ids"] = []
+    trip_dict["country"] = trip_data.country
     
     # Now, insert the complete trip dictionary
     result = await trips_collection.insert_one(trip_dict)

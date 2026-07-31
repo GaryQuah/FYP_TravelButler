@@ -11,6 +11,7 @@ export interface Trip {
   start_date: Date;
   end_date: Date;
   description: string;
+  country: string;
   user_ids: string[];
   itinerary_ids: string[];
   chat_id?: string;
@@ -22,6 +23,7 @@ export interface TripCreationData {
   start_date: string;
   end_date: string;
   description: string;
+  country: string;
   budget?: number;
   user_ids: string[];
 }
