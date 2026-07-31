@@ -134,16 +134,17 @@ class GeminiService:
         self,
         user_input: str,
         history: list,
+        country: str,
         temperature: float = 0.7
     ) -> dict:
         """
         Generate a chat response.
         """
 
-        system_instruction = """
+        system_instruction = f"""
         You are a friendly and helpful travel assistant.
-        Your goal is to help users plan their trips.
-        Be concise and provide relevant information.
+        Your goal is to help users plan their trips to {country}.
+        Be concise and provide relevant information about {country}.
         When suggesting activities or itineraries, provide only one option. Do not give multiple choices.
         If the user is asking for an itinerary, return a JSON object with two keys: "response" and "itinerary".
         The "response" key should contain the text response, and the "itinerary" key should contain a list of itinerary items.

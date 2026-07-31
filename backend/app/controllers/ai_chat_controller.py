@@ -11,6 +11,7 @@ from app.models.user import User
 
 class MessageRequest(BaseModel):
     message: str
+    country: str
 
 def get_ai_chat_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.ai_chats_collection
@@ -40,7 +41,7 @@ async def add_message(
     current_user: User = Depends(get_current_user)
 ):
     await require_ai_chat_member(collection, trips_collection, ai_chat_id, current_user.user_id)
-    chat = await add_message_to_ai_chat(collection, ai_chat_id, current_user.user_id, request.message)
+    chat = await add_message_to_ai_chat(collection, ai_chat_id, current_user.user_id, request.message, request.country)
     if chat:
         return chat
     raise HTTPException(status_code=404, detail="Chat not found")

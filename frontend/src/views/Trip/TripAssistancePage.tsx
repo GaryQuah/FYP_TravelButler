@@ -138,6 +138,7 @@ export function TripAssistancePage() {
     });
 
     const messageToSend = input;
+
     setInput("");
 
     setIsThinking(true);
@@ -146,6 +147,7 @@ export function TripAssistancePage() {
         trip.ai_chat_id,
         user.user_id,
         messageToSend,
+        trip.country,
       );
       setChat(updatedChat);
     } catch (error) {
