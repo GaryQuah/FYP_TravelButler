@@ -56,10 +56,6 @@ export function TripDocumentPage() {
 
   return (
     <div className="row">
-      <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
-        <i className="bi bi-plus-circle me-2"></i>Upload Document
-      </button>
-
       {isModalOpen && (
         <UploadDocumentModal
           onClose={() => setIsModalOpen(false)}
@@ -68,7 +64,15 @@ export function TripDocumentPage() {
       )}
 
       <div className="document-list mt-4">
-        <h2>Documents</h2>
+        <div className="document-header">
+          <h2 className="mb-0">Documents</h2>
+          <button
+            className="btn btn-primary btn-sm document-upload-btn"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <i className="bi bi-plus-circle me-1"></i>Upload
+          </button>
+        </div>
         <ul className="list-group">
           {documents.map((doc) => (
             <li key={doc.id} className="list-group-item">
@@ -89,13 +93,6 @@ export function TripDocumentPage() {
                   )}
                   <p className="mb-0 text-muted">{doc.description}</p>
                 </div>
-                <a
-                  href={doc.gcs_url}
-                  download
-                  className="btn btn-outline-secondary btn-sm"
-                >
-                  <i className="bi bi-download"></i>
-                </a>
               </div>
             </li>
           ))}

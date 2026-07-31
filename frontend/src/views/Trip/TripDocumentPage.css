@@ -34,3 +34,16 @@
   text-decoration: none;
   cursor: pointer;
 }
+
+.document-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.document-upload-btn {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  border-radius: 0.5rem;
+}

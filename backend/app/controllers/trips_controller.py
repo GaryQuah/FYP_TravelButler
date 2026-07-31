@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, HTTPException, status, Depends, Request
+from fastapi import APIRouter, HTTPException, status, Depends, Request
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.trip import Trip, TripCreationRequest, TripUpdateRequest
 from pydantic import BaseModel
@@ -13,6 +13,11 @@ class ChatMessage(BaseModel):
 from app.models.itinerary import Itinerary
 from app.models.user import User
 from app.utils.jwt import get_current_user
+from app.dependencies import (
+    require_trip_member,
+    get_users_collection,
+    get_trips_collection,
+)
 from app.services.trip_service import (
     create_trip,
     delete_trip,
@@ -24,13 +29,6 @@ from app.services.trip_service import (
 )
  
 router = APIRouter(prefix="/api/trips", tags=["trips"])
-
-#Retrieve all the trips collection from the app state and return it for use in the route handlers through dependency injection
-def get_trips_collection(request: Request) -> AsyncIOMotorCollection:
-    return request.app.trips_collection
-
-def get_users_collection(request: Request) -> AsyncIOMotorCollection:
-    return request.app.users_collection
 
 def get_chats_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.chats_collection
@@ -54,17 +52,26 @@ async def get_all_trips_route(
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_new_trip(
     trip_data: TripCreationRequest, 
+    current_user: User = Depends(get_current_user),
     trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection), 
     users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
     chats_collection: AsyncIOMotorCollection = Depends(get_chats_collection),
     budgets_collection: AsyncIOMotorCollection = Depends(get_budgets_collection),
     ai_chats_collection: AsyncIOMotorCollection = Depends(get_ai_chat_collection)
 ):
+    if current_user.user_id not in trip_data.user_ids:
+        trip_data.user_ids.append(current_user.user_id)
+
     return await create_trip(trips_collection, users_collection, chats_collection, budgets_collection, ai_chats_collection,  trip_data)
  
  
 @router.get("/{trip_id}", response_model=Trip)
-async def get_trip_by_id(trip_id: str, trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):
+async def get_trip_by_id(
+    trip_id: str,
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    current_user: User = Depends(get_current_user),
+):
+    await require_trip_member(trips_collection, trip_id, current_user.user_id)
     trip = await get_trip(trips_collection, trip_id)
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
@@ -72,7 +79,13 @@ async def get_trip_by_id(trip_id: str, trips_collection: AsyncIOMotorCollection 
  
  
 @router.put("/{trip_id}")
-async def update_trip_by_id(trip_id: str, trip: TripUpdateRequest, trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)):
+async def update_trip_by_id(
+    trip_id: str,
+    trip: TripUpdateRequest,
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    current_user: User = Depends(get_current_user),
+):
+    await require_trip_member(trips_collection, trip_id, current_user.user_id)
     updated_trip = await update_trip(trips_collection, trip_id, trip)
     if not updated_trip:
         raise HTTPException(status_code=404, detail="Trip not found")
@@ -86,7 +99,9 @@ async def delete_trip_by_id(
     budgets_collection: AsyncIOMotorCollection = Depends(get_budgets_collection),
     chats_collection: AsyncIOMotorCollection = Depends(get_chats_collection),
     ai_chats_collection: AsyncIOMotorCollection = Depends(get_ai_chat_collection),
+    current_user: User = Depends(get_current_user),
 ):
+    await require_trip_member(trips_collection, trip_id, current_user.user_id)
     deleted_trip = await delete_trip(
         trips_collection, budgets_collection, chats_collection, ai_chats_collection, trip_id
     )
@@ -100,10 +115,12 @@ async def get_members_for_trip(
     trip_id: str,
     trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
     users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Get all members for a specific trip.
     """
+    await require_trip_member(trips_collection, trip_id, current_user.user_id)
     members = await get_trip_members(trips_collection, users_collection, trip_id)
     return members
 
@@ -114,7 +131,9 @@ async def invite_user_to_trip(
     request: InviteRequest,
     trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
     users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
+    current_user: User = Depends(get_current_user),
 ):
+    await require_trip_member(trips_collection, trip_id, current_user.user_id)
     updated_trip = await add_user_to_trip_by_email(
         trips_collection, users_collection, trip_id, request.email
     )

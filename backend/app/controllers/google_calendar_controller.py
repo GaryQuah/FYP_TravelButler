@@ -15,6 +15,7 @@ from app.models.google_calendar_integration import (
     ExportItineraryRequest
 )
 from app.services.itinerary_service import get_itineraries_by_ids
+from app.dependencies import require_itinerary_member
 
 router = APIRouter(prefix="/api/google-calendar", tags=["google-calendar"])
 
@@ -23,6 +24,9 @@ def get_integrations_collection(request: Request) -> AsyncIOMotorCollection:
 
 def get_itineraries_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.itineraries_collection
+
+def get_trips_collection(request: Request) -> AsyncIOMotorCollection:
+    return request.app.trips_collection
 
 @router.get("/status")
 async def check_connection_status(
@@ -78,10 +82,19 @@ async def export_itineraries_to_calendar(
     request_data: ExportItineraryRequest,
     current_user: User = Depends(get_current_user),
     integrations_collection: AsyncIOMotorCollection = Depends(get_integrations_collection),
-    itineraries_collection: AsyncIOMotorCollection = Depends(get_itineraries_collection)
+    itineraries_collection: AsyncIOMotorCollection = Depends(get_itineraries_collection),
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
 ):
     """Export multiple itineraries to Google Calendar"""
     print(f"Export request received. Itinerary IDs: {request_data.itinerary_ids}")
+    for itinerary_id in request_data.itinerary_ids:
+        await require_itinerary_member(
+            itineraries_collection,
+            trips_collection,
+            itinerary_id,
+            current_user.user_id,
+        )
+
     # Get the itineraries
     itineraries = await get_itineraries_by_ids(itineraries_collection, request_data.itinerary_ids)
     print(f"Found {len(itineraries)} itineraries")

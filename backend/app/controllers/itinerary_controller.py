@@ -8,6 +8,9 @@ from app.services.itinerary_service import (
     get_itineraries_by_ids,
     update_itinerary
 )
+from app.dependencies import require_itinerary_member, require_trip_member
+from app.models.user import User
+from app.utils.jwt import get_current_user
 
 router = APIRouter(prefix="/api/itineraries", tags=["itineraries"])
 
@@ -20,11 +23,21 @@ def get_trips_collection(request: Request) -> AsyncIOMotorCollection:
 @router.post("/get_by_ids")
 async def get_itineraries_by_ids_endpoint(
     request: ItineraryIdsRequest,
-    itineraries_collection: AsyncIOMotorCollection = Depends(get_itineraries_collection)
+    itineraries_collection: AsyncIOMotorCollection = Depends(get_itineraries_collection),
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Get all itinerary items for a specific trip.
     """
+    for itinerary_id in request.itinerary_ids:
+        await require_itinerary_member(
+            itineraries_collection,
+            trips_collection,
+            itinerary_id,
+            current_user.user_id,
+        )
+
     itineraries = await get_itineraries_by_ids(itineraries_collection, request.itinerary_ids)
     return itineraries
 
@@ -33,11 +46,13 @@ async def add_new_itinerary(
     trip_id: str,
     itinerary_data: ItineraryCreationRequest,
     itineraries_collection: AsyncIOMotorCollection = Depends(get_itineraries_collection),
-    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Create a new itinerary item linked to a trip.
     """
+    await require_trip_member(trips_collection, trip_id, current_user.user_id)
     new_itinerary = await create_itinerary(itineraries_collection, trips_collection, trip_id, itinerary_data)
     if not new_itinerary:
         raise HTTPException(status_code=500, detail="Failed to create itinerary")
@@ -46,11 +61,14 @@ async def add_new_itinerary(
 @router.get("/{trip_id}")
 async def get_all_itineraries_for_trip(
     trip_id: str,
-    itineraries_collection: AsyncIOMotorCollection = Depends(get_itineraries_collection)
+    itineraries_collection: AsyncIOMotorCollection = Depends(get_itineraries_collection),
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Get all itinerary items for a specific trip.
     """
+    await require_trip_member(trips_collection, trip_id, current_user.user_id)
     itineraries = await get_itineraries_for_trip(itineraries_collection, trip_id)
     return itineraries
 
@@ -60,11 +78,22 @@ async def update_itinerary_endpoint(
     trip_id: str,
     itinerary_id: str,
     itinerary_data: ItineraryUpdateRequest,
-    itineraries_collection: AsyncIOMotorCollection = Depends(get_itineraries_collection)
+    itineraries_collection: AsyncIOMotorCollection = Depends(get_itineraries_collection),
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Update an itinerary item.
     """
+    itinerary = await require_itinerary_member(
+        itineraries_collection,
+        trips_collection,
+        itinerary_id,
+        current_user.user_id,
+    )
+    if itinerary["trip_id"] != trip_id:
+        raise HTTPException(status_code=404, detail="Itinerary not found")
+
     updated_itinerary = await update_itinerary(itineraries_collection, itinerary_id, itinerary_data)
     if not updated_itinerary:
         raise HTTPException(status_code=404, detail="Itinerary not found")
@@ -78,11 +107,21 @@ async def remove_itinerary(
     itineraries_collection: AsyncIOMotorCollection = Depends(
         get_itineraries_collection
     ),
-    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection)
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Delete an itinerary item from a trip.
     """
+    itinerary = await require_itinerary_member(
+        itineraries_collection,
+        trips_collection,
+        itinerary_id,
+        current_user.user_id,
+    )
+    if itinerary["trip_id"] != trip_id:
+        raise HTTPException(status_code=404, detail="Itinerary not found")
+
     success = await delete_itinerary(itineraries_collection, trips_collection, trip_id, itinerary_id)
     if not success:
         raise HTTPException(status_code=404, detail="Itinerary not found")

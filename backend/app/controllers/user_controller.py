@@ -45,8 +45,16 @@ async def create_user_route(
 
 @router.get("/{email}")
 async def get_user(
-    email: str, users_collection: AsyncIOMotorCollection = Depends(get_users_collection)
+    email: str,
+    users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
+    current_user: User = Depends(get_current_user),
 ):
+    if email != current_user.email:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this user",
+        )
+
     user = await get_user_by_email(users_collection, email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -61,8 +69,14 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
 async def get_user_by_id_route(
     user_id: str,
     db: AsyncIOMotorCollection = Depends(get_users_collection),
+    current_user: User = Depends(get_current_user),
 ):
-    # ... inside the new get_user_by_id_route function ...
+    if user_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to view this user",
+        )
+
     user = await get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(
@@ -78,7 +92,14 @@ async def update_user_route(
     user_id: str,
     data: UpdateUserRequest,
     users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
+    current_user: User = Depends(get_current_user),
 ):
+    if user_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to update this user",
+        )
+
     update_data = {k: v for k, v in data.dict().items() if v is not None}
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
