@@ -161,10 +161,10 @@ export function LoginPage() {
                 </div>
 
                 <div>
-                  <h6>AI Assisted Planning</h6>
+                  <h6>AI Assited Itinerary Planning</h6>
                   <p>
-                    Automatically extract information from your itinerary such
-                    as budget
+                    Not sure what to do? Let our AI assistant suggest activities
+                    for you to pick from.
                   </p>
                 </div>
               </div>
@@ -173,13 +173,14 @@ export function LoginPage() {
             <div className="col-md-6">
               <div className="feature-card">
                 <div className="feature-icon">
-                  <i className="bi bi-geo-alt"></i>
+                  <i className="bi-filetype-doc"></i>
                 </div>
 
                 <div>
-                  <h6>Placeholder</h6>
+                  <h6>Document hub</h6>
                   <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    Store and access your documents such as passports, visa and
+                    plane tickets easily.
                   </p>
                 </div>
               </div>
