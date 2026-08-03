@@ -1,13 +1,4 @@
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("access_token");
-  if (!token) {
-    throw new Error("No access token found.");
-  }
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
-};
+import { getAuthHeaders } from "./auth";
 
 export const fetchPolls = async (tripId: string) => {
   const response = await fetch(`/api/trip/${tripId}/polls`, {

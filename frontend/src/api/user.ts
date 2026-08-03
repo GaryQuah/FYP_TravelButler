@@ -1,5 +1,5 @@
 import type { User } from "../models";
-import { getAuthHeaders } from "./auth";
+import { clearAuthState, getAuthHeaders } from "./auth";
 
 export interface LoginResponse {
   access_token: string;
@@ -37,8 +37,8 @@ export async function inviteUserToTrip(
   });
 
   if (!response.ok) {
-    const errorBody = await response.json();
-    throw new Error(errorBody.message || "Failed to invite user");
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.detail || errorBody.message || "Failed to invite user");
   }
 }
 
@@ -73,7 +73,27 @@ export async function inviteUserToTracker(
   );
 
   if (!response.ok) {
-    const errorBody = await response.json();
-    throw new Error(errorBody.message || "Failed to invite user to tracker");
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(
+      errorBody.detail || errorBody.message || "Failed to invite user to tracker",
+    );
   }
+}
+
+export async function getCurrentUser(): Promise<User> {
+  const response = await fetch(`/api/users/me`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch current user");
+  }
+  return response.json();
+}
+
+export async function logoutUser(): Promise<void> {
+  await fetch(`/api/users/logout`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  clearAuthState();
 }

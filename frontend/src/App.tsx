@@ -16,26 +16,29 @@ import {
 } from "./views/Trip";
 
 import { UserProvider } from "./models/UserContext";
+import RequireAuth from "./components/auth/RequireAuth";
 
 function App() {
   return (
     <UserProvider>
       <Routes>
         <Route path="/" element={<LoginPage />} />
-        <Route path="/Home" element={<HomePage />} />
-        <Route path="/Suggestions" element={<SuggestionsPage />} />
-        <Route path="/availability/:trackerId" element={<AvailabilityPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route element={<RequireAuth />}>
+          <Route path="/Home" element={<HomePage />} />
+          <Route path="/Suggestions" element={<SuggestionsPage />} />
+          <Route path="/availability/:trackerId" element={<AvailabilityPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
 
-        {/* Trip routes */}
-        <Route path="/trip/:tripId" element={<TripLayout />}>
-          <Route index element={<TripItineraryPage />} />
-          <Route path="itinerary" element={<TripItineraryPage />} />
-          <Route path="chat" element={<TripChatPage />} />
-          <Route path="documents" element={<TripDocumentPage />} />
-          <Route path="assistance" element={<TripAssistancePage />} />
-          <Route path="budget" element={<TripBudgetPage />} />
-          <Route path="poll" element={<TripPollPage />} />
+          {/* Trip routes */}
+          <Route path="/trip/:tripId" element={<TripLayout />}>
+            <Route index element={<TripItineraryPage />} />
+            <Route path="itinerary" element={<TripItineraryPage />} />
+            <Route path="chat" element={<TripChatPage />} />
+            <Route path="documents" element={<TripDocumentPage />} />
+            <Route path="assistance" element={<TripAssistancePage />} />
+            <Route path="budget" element={<TripBudgetPage />} />
+            <Route path="poll" element={<TripPollPage />} />
+          </Route>
         </Route>
       </Routes>
     </UserProvider>
