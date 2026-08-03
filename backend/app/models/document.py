@@ -10,6 +10,7 @@ class Document(BaseModel):
     name: str | None = None
     description: str | None = None
     created_at: datetime = datetime.now()
+    user_id: str
 
     class Config:
         validate_by_name = True

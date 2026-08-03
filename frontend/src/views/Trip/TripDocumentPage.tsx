@@ -1,22 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { deleteDocument, getDocuments, uploadDocument } from "../../api/document";
+import {
+  deleteDocument,
+  getDocuments,
+  uploadDocument,
+  type Document,
+} from "../../api/document";
 import { analyzeDocument } from "../../api/gemini";
 import { addItinerary } from "../../api/itinerary";
 import { addExpenditure } from "../../api/budget";
-import { ImagePreview } from "./ImagePreview";
+
 import { UploadDocumentModal } from "../../components/modals/UploadDocumentModal";
 import "./TripDocumentPage.css";
-
-interface Document {
-  id: string;
-  filename: string;
-  name: string;
-  description: string;
-  content_type: string;
-  gcs_url: string;
-  created_at: string;
-}
 
 type AnalysisActionType = "itinerary" | "budget";
 
@@ -55,7 +50,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function getStringValue(payload: Record<string, unknown>, keys: string[]): string {
+function getStringValue(
+  payload: Record<string, unknown>,
+  keys: string[],
+): string {
   for (const key of keys) {
     const value = payload[key];
     if (typeof value === "string" && value.trim()) {
@@ -87,10 +85,7 @@ function toDateTimeLocalString(payload: Record<string, unknown>): {
     "datetime",
     "date",
   ]);
-  const endCandidate = getStringValue(payload, [
-    "end_time",
-    "arrival_time",
-  ]);
+  const endCandidate = getStringValue(payload, ["end_time", "arrival_time"]);
   const timeCandidate = getStringValue(payload, ["time"]);
 
   const buildDate = (dateString: string): Date | null => {
@@ -184,10 +179,7 @@ function buildAnalysisActions(analysis: unknown): AnalysisAction[] {
   const hasBudgetSignal =
     Boolean(budgetPayload) ||
     analysis.budget_found === true ||
-    analysis.expenditure_found === true ||
-    serialized.includes("budget") ||
-    serialized.includes("receipt") ||
-    serialized.includes("amount");
+    analysis.expenditure_found === true;
 
   if (hasItinerarySignal) {
     actions.push({
@@ -215,7 +207,16 @@ export function TripDocumentPage() {
   const [itineraryDraft, setItineraryDraft] = useState<ItineraryDraft>(
     EMPTY_ITINERARY_DRAFT,
   );
-  const [budgetDraft, setBudgetDraft] = useState<BudgetDraft>(EMPTY_BUDGET_DRAFT);
+  const [budgetDraft, setBudgetDraft] =
+    useState<BudgetDraft>(EMPTY_BUDGET_DRAFT);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const filteredDocuments = documents.filter(
+    (doc) =>
+      doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doc.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   const activeAction =
     activeAnalysisIndex >= 0 ? analysisQueue[activeAnalysisIndex] : null;
@@ -272,15 +273,26 @@ export function TripDocumentPage() {
       setIsModalOpen(false);
 
       if (file.type.startsWith("image/")) {
-        const analysis = await analyzeDocument(file);
-        const actions = buildAnalysisActions(analysis);
-        if (actions.length > 0) {
-          setAnalysisQueue(actions);
-          setActiveAnalysisIndex(0);
-        }
+        handleImageAnalysis(file);
       }
     } catch (error) {
       console.error("Error uploading file:", error);
+    }
+  };
+
+  const handleImageAnalysis = async (file: File) => {
+    setIsAnalyzing(true);
+    try {
+      const analysis = await analyzeDocument(file);
+      const actions = buildAnalysisActions(analysis);
+      if (actions.length > 0) {
+        setAnalysisQueue(actions);
+        setActiveAnalysisIndex(0);
+      }
+    } catch (error) {
+      console.error("Error analyzing document:", error);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -362,7 +374,10 @@ export function TripDocumentPage() {
       )}
 
       {activeAction?.type === "itinerary" && (
-        <div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div
+          className="modal d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
@@ -375,8 +390,8 @@ export function TripDocumentPage() {
               </div>
               <div className="modal-body">
                 <p>
-                  We found itinerary-related details in your image. Please confirm or
-                  edit before creating.
+                  We found itinerary-related details in your image. Please
+                  confirm or edit before creating.
                 </p>
                 <input
                   className="form-control mb-2"
@@ -445,7 +460,10 @@ export function TripDocumentPage() {
       )}
 
       {activeAction?.type === "budget" && (
-        <div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div
+          className="modal d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
@@ -458,8 +476,8 @@ export function TripDocumentPage() {
               </div>
               <div className="modal-body">
                 <p>
-                  We found budget-related details in your image. Please confirm or edit
-                  before creating.
+                  We found budget-related details in your image. Please confirm
+                  or edit before creating.
                 </p>
                 <input
                   className="form-control mb-2"
@@ -517,47 +535,136 @@ export function TripDocumentPage() {
         </div>
       )}
 
+      {isAnalyzing && (
+        <div
+          className="modal d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-body text-center">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                <p className="mt-3">Analyzing your document...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="document-list mt-4">
         <div className="document-header">
           <h2 className="mb-0">Documents</h2>
-          <button
-            className="btn btn-primary btn-sm document-upload-btn"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <i className="bi bi-plus-circle me-1"></i>Upload
-          </button>
+          <div className="d-flex align-items-center">
+            <div className="input-group me-2">
+              <span className="input-group-text bg-white">
+                <i className="bi bi-search"></i>
+              </span>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search documents..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="dropdown me-2">
+              <button
+                className="btn btn-outline-secondary dropdown-toggle"
+                type="button"
+                id="dropdownMenuButton1"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                All Types
+              </button>
+              <ul
+                className="dropdown-menu"
+                aria-labelledby="dropdownMenuButton1"
+              >
+                <li>
+                  <a className="dropdown-item" href="#">
+                    All Types
+                  </a>
+                </li>
+                <li>
+                  <a className="dropdown-item" href="#">
+                    Image
+                  </a>
+                </li>
+                <li>
+                  <a className="dropdown-item" href="#">
+                    PDF
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <button
+              className="btn btn-primary btn-sm document-upload-btn"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <i className="bi bi-plus-circle me-1"></i>Upload
+            </button>
+          </div>
         </div>
-        <ul className="list-group">
-          {documents.map((doc) => (
-            <li key={doc.id} className="list-group-item">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  {doc.content_type.startsWith("image/") ? (
-                    <ImagePreview src={doc.gcs_url} alt={doc.name}>
-                      <span className="fw-bold">{doc.name}</span>
-                    </ImagePreview>
-                  ) : (
-                    <a
-                      href={doc.gcs_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <span className="fw-bold">{doc.name}</span>
-                    </a>
-                  )}
-                  <p className="mb-0 text-muted">{doc.description}</p>
+        <div className="row g-4 mt-2">
+          {filteredDocuments.map((doc) => (
+            <div key={doc.id} className="col-lg-3 col-md-4 col-sm-6">
+              <div className="card h-100 document-card">
+                <a href={doc.gcs_url} target="_blank" rel="noopener noreferrer">
+                  <div className="card-img-top-container">
+                    {doc.content_type.startsWith("image/") ? (
+                      <img
+                        src={doc.gcs_url}
+                        alt={doc.name}
+                        className="card-img-top"
+                      />
+                    ) : (
+                      <div className="card-img-top-placeholder">
+                        <i className="bi bi-file-earmark-text display-1"></i>
+                      </div>
+                    )}
+                  </div>
+                </a>
+                <div className="card-body">
+                  <h5 className="card-title">{doc.name}</h5>
+                  <p className="card-text">{doc.description}</p>
+                  <span
+                    className={`badge ${
+                      doc.content_type.startsWith("image/")
+                        ? "bg-success"
+                        : "bg-danger"
+                    }`}
+                  >
+                    {doc.content_type.startsWith("image/") ? "Image" : "PDF"}
+                  </span>
+                  <p className="card-text text-muted mt-2">
+                    Added on{" "}
+                    {new Date(doc.created_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
                 </div>
-                <button
-                  type="button"
-                  className="btn btn-outline-danger btn-sm"
-                  onClick={() => handleDeleteDocument(doc.id)}
-                >
-                  <i className="bi bi-trash me-1"></i>Delete
-                </button>
+                <div className="card-footer bg-white border-0">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <small className="text-muted">
+                      Uploaded by {doc.uploaded_by}
+                    </small>
+                    <button
+                      className="btn btn-outline-danger btn-sm"
+                      onClick={() => handleDeleteDocument(doc.id)}
+                    >
+                      <i className="bi bi-trash me-1"></i>Delete
+                    </button>
+                  </div>
+                </div>
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );
