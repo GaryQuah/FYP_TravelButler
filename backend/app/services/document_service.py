@@ -2,6 +2,7 @@ from google.cloud import storage
 import os
 from app.models.document import Document
 from bson import ObjectId
+from bson.errors import InvalidId
 from motor.motor_asyncio import AsyncIOMotorClient
 
 import datetime
@@ -61,3 +62,32 @@ class DocumentService:
 
         print(f"Documents with signed URLs: {documents}")
         return documents
+
+    async def delete_document_for_trip(self, trip_id: str, document_id: str) -> bool:
+        try:
+            trip_object_id = ObjectId(trip_id)
+            document_object_id = ObjectId(document_id)
+        except InvalidId:
+            return False
+
+        trip = await self.db.trips.find_one({"_id": trip_object_id})
+        if not trip:
+            return False
+
+        if document_object_id not in trip.get("document_ids", []):
+            return False
+
+        document = await self.db.documents.find_one({"_id": document_object_id})
+        if not document:
+            return False
+
+        blob = self.storage_client.bucket(self.bucket_name).blob(document["gcs_path"])
+        if blob.exists():
+            blob.delete()
+
+        await self.db.documents.delete_one({"_id": document_object_id})
+        await self.db.trips.update_one(
+            {"_id": trip_object_id},
+            {"$pull": {"document_ids": document_object_id}},
+        )
+        return True

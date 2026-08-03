@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, Request
+from fastapi import APIRouter, Depends, UploadFile, File, Form, Request, HTTPException, status
 from app.services.document_service import DocumentService
 from app.dependencies import get_db
 from app.dependencies import require_trip_member
@@ -50,3 +50,17 @@ async def get_documents(
     await require_trip_member(trips_collection, trip_id, current_user.user_id)
     documents = await document_service.get_documents_for_trip(ObjectId(trip_id))
     return [document_serializer(doc) for doc in documents]
+
+@router.delete("/api/trips/{trip_id}/documents/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_document(
+    trip_id: str,
+    document_id: str,
+    document_service: DocumentService = Depends(get_document_service),
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    current_user: User = Depends(get_current_user),
+):
+    await require_trip_member(trips_collection, trip_id, current_user.user_id)
+    deleted = await document_service.delete_document_for_trip(trip_id, document_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return

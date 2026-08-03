@@ -262,3 +262,78 @@ class GeminiService:
 
         except (json.JSONDecodeError, AttributeError):
             return {}
+
+    def extract_document(
+        self,
+        file_bytes: bytes,
+        mime_type: str,
+        temperature: float = 0.2
+    ) -> dict:
+        """
+        Analyze a generic travel document image and extract itinerary and/or budget
+        details when present.
+        """
+
+        prompt = """
+        Analyze this travel-related image/document and detect whether it contains:
+        1) itinerary/ticket details (e.g., flight ticket, boarding pass, transport ticket)
+        2) budget/expense details (e.g., receipt, amount spent, payable amount)
+
+        Return ONLY valid JSON in this exact shape:
+        {
+          "itinerary_found": true or false,
+          "budget_found": true or false,
+          "itinerary": {
+            "activity_name": "string",
+            "start_time": "ISO 8601 datetime string or empty string",
+            "end_time": "ISO 8601 datetime string or empty string",
+            "description": "string"
+          },
+          "budget": {
+            "item": "string",
+            "amount": number,
+            "category": "string"
+          }
+        }
+
+        Rules:
+        - If itinerary details are not found, set itinerary_found to false and itinerary to {}.
+        - If budget details are not found, set budget_found to false and budget to {}.
+        - If details are partially missing, still set *_found true when the document is clearly related, and fill missing fields with empty strings.
+        - For budget.category, choose one of: Food, Transport, Accommodation, Shopping, Entertainment, Utilities, Miscellaneous.
+        - Do not include markdown, comments, or any text outside JSON.
+        """
+
+        safe_mime_type = mime_type or "application/octet-stream"
+
+        contents = [
+            prompt,
+            types.Part.from_bytes(
+                data=file_bytes,
+                mime_type=safe_mime_type,
+            ),
+        ]
+
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=contents,
+            config=types.GenerateContentConfig(
+                temperature=temperature,
+            ),
+        )
+
+        try:
+            clean_response = (
+                response.text
+                .strip()
+                .replace("```json", "")
+                .replace("```", "")
+                .strip()
+            )
+
+            parsed = json.loads(clean_response)
+            if not isinstance(parsed, dict):
+                return {}
+            return parsed
+        except (json.JSONDecodeError, AttributeError):
+            return {}

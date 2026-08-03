@@ -24,6 +24,15 @@ async def analyze_receipt(file: UploadFile = File(...)):
     response = gemini.extract_receipt(file_bytes=contents, mime_type=file.content_type)
     return response
 
+@router.post("/analyze-document")
+async def analyze_document(file: UploadFile = File(...)):
+    contents = await file.read()
+    response = gemini.extract_document(
+        file_bytes=contents,
+        mime_type=file.content_type
+    )
+    return response
+
 @router.post("/chat")
 async def chat(request: ChatRequest):
     response = gemini.generate_chat_response(

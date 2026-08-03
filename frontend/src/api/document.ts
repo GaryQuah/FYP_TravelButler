@@ -25,7 +25,7 @@ export async function uploadDocument(
   file: File,
   name: string,
   description: string,
-): Promise<void> {
+): Promise<Document> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("name", name);
@@ -44,5 +44,20 @@ export async function uploadDocument(
 
   if (!response.ok) {
     throw new Error("File upload failed");
+  }
+  return response.json();
+}
+
+export async function deleteDocument(
+  tripId: string,
+  documentId: string,
+): Promise<void> {
+  const response = await fetch(`/api/trips/${tripId}/documents/${documentId}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete document");
   }
 }
