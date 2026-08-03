@@ -57,7 +57,7 @@ from app.models.chat import Message
 from bson import ObjectId
 from datetime import datetime
 
-async def add_message_to_ai_chat(collection: AsyncIOMotorCollection, ai_chat_id: str, user_id: str, message: str):
+async def add_message_to_ai_chat(collection: AsyncIOMotorCollection, ai_chat_id: str, user_id: str, message: str, country: str):
     """
     Add a message to an AI chat and get a response from the AI.
     """
@@ -87,7 +87,8 @@ async def add_message_to_ai_chat(collection: AsyncIOMotorCollection, ai_chat_id:
     async with httpx.AsyncClient() as client:
         response = await client.post("http://localhost:8000/api/gemini/chat", json={
             "message": message,
-            "history": history
+            "history": history,
+            "country": country
         })
         response.raise_for_status()
         ai_response = response.json()

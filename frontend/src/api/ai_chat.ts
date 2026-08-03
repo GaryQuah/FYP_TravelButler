@@ -15,11 +15,12 @@ export async function addAIChatMessage(
   aiChatId: string,
   userId: string,
   message: string,
+  country: string,
 ): Promise<AiChat> {
   const response = await fetch(`/api/ai-chats/${aiChatId}/messages`, {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify({ user_id: userId, message }),
+    body: JSON.stringify({ user_id: userId, message, country }),
   });
 
   if (!response.ok) {

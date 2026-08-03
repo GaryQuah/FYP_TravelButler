@@ -1,10 +1,13 @@
 import { Outlet, useParams } from "react-router-dom";
+import { useState } from "react";
 import Navbar from "../../components/navigation/Navbar";
 import TripNavbar from "../../components/navigation/TripNavBar";
+import AddUserModal from "../../components/modals/AddUserModal";
 import {
   useTripDetails,
   TripDetailsProvider,
 } from "../../hooks/useTripDetails";
+import { inviteUserToTrip } from "../../api";
 import { formatFullDateTime } from "../../utils/dateUtils";
 import "../../assets/css/LoginPage.css";
 import homeBanner from "../../assets/images/dashboard/sunset.jpg";
@@ -20,7 +23,25 @@ export function TripLayout() {
 }
 
 function TripLayoutContent() {
-  const { trip, members, loading, error } = useTripDetails();
+  const { tripId } = useParams<{ tripId: string }>();
+  const { trip, members, loading, error, refresh } = useTripDetails();
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [addUserError, setAddUserError] = useState<string | null>(null);
+
+  const handleAddUser = async (email: string) => {
+    if (!tripId) {
+      setAddUserError("Trip ID is missing.");
+      return;
+    }
+    try {
+      await inviteUserToTrip(tripId, email);
+      setShowAddUserModal(false);
+      setAddUserError(null);
+      refresh();
+    } catch (err: any) {
+      setAddUserError(err.message || "Failed to add user.");
+    }
+  };
 
   if (loading) {
     return <div>Loading trip details...</div>;
@@ -66,6 +87,7 @@ function TripLayoutContent() {
                 ></div>
                 <div style={{ position: "relative", zIndex: 1 }}>
                   <h1 className="display-5 fst-italic">{trip.trip_name}</h1>
+                  <h3 className="display-8 fst-italic">{trip.country}</h3>
                   <p className="mb-3">
                     {formatFullDateTime(trip.start_date)} -{" "}
                     {formatFullDateTime(trip.end_date)}
@@ -77,7 +99,15 @@ function TripLayoutContent() {
 
             {/* Trip members */}
             <div className="col-md-4">
-              <h4>Trip Members</h4>
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <h4 className="mb-0">Trip Members</h4>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setShowAddUserModal(true)}
+                >
+                  <i className="bi bi-person-plus me-2"></i>Add User
+                </button>
+              </div>
 
               <ul className="list-group">
                 {members.map((member) => (
@@ -92,6 +122,13 @@ function TripLayoutContent() {
           <Outlet />
         </div>
       </div>
+      {showAddUserModal && (
+        <AddUserModal
+          onClose={() => setShowAddUserModal(false)}
+          onAddUser={handleAddUser}
+          error={addUserError}
+        />
+      )}
     </>
   );
 }

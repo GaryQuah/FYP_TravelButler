@@ -1,6 +1,8 @@
 import type { Itinerary, ItineraryCreationData } from "../models";
 import { getAuthHeaders } from "./auth";
 
+import { parseUtcDateString } from "../utils/dateUtils";
+
 export async function getItineraries(tripId: string): Promise<Itinerary[]> {
   const headers = await getAuthHeaders();
   const response = await fetch(`/api/itineraries/${tripId}`, { headers });
@@ -11,8 +13,8 @@ export async function getItineraries(tripId: string): Promise<Itinerary[]> {
   // Convert string dates to Date objects
   return itineraries.map((itinerary: any) => ({
     ...itinerary,
-    start_time: new Date(itinerary.start_time),
-    end_time: new Date(itinerary.end_time),
+    start_time: parseUtcDateString(itinerary.start_time),
+    end_time: parseUtcDateString(itinerary.end_time),
   }));
 }
 
@@ -70,8 +72,8 @@ export async function getItinerariesByIds(
   // Convert string dates to Date objects
   return itineraries.map((itinerary: any) => ({
     ...itinerary,
-    start_time: new Date(itinerary.start_time),
-    end_time: new Date(itinerary.end_time),
+    start_time: parseUtcDateString(itinerary.start_time),
+    end_time: parseUtcDateString(itinerary.end_time),
   }));
 }
 
@@ -96,7 +98,7 @@ export async function updateItinerary(
   // Convert string dates to Date objects
   return {
     ...updatedItinerary,
-    start_time: new Date(updatedItinerary.start_time),
-    end_time: new Date(updatedItinerary.end_time),
+    start_time: parseUtcDateString(updatedItinerary.start_time),
+    end_time: parseUtcDateString(updatedItinerary.end_time),
   };
 }

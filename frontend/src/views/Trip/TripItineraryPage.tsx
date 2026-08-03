@@ -2,11 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ItineraryCard from "../../components/cards/ItineraryCard";
 import AddItineraryModal from "../../components/modals/AddItineraryModal";
-import AddUserModal from "../../components/modals/AddUserModal";
 import { useItineraries } from "../../hooks/UseItineraries";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import {
-  inviteUserToTrip,
   exportItinerariesToCalendar,
   getGoogleCalendarStatus,
 } from "../../api";
@@ -20,7 +18,6 @@ export function TripItineraryPage() {
     trip,
     loading: tripLoading,
     error: tripError,
-    refresh: refreshTripDetails,
   } = useTripDetails();
   const {
     itineraries,
@@ -31,8 +28,6 @@ export function TripItineraryPage() {
     updateItinerary,
   } = useItineraries(tripId, trip?.itinerary_ids);
   const [showModal, setShowModal] = useState(false);
-  const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [addUserError, setAddUserError] = useState<string | null>(null);
   const [googleConnected, setGoogleConnected] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
@@ -87,18 +82,6 @@ export function TripItineraryPage() {
     }
   };
 
-  const handleAddUser = async (email: string) => {
-    if (!tripId) return;
-    try {
-      await inviteUserToTrip(tripId, email);
-      setShowAddUserModal(false);
-      setAddUserError(null);
-      refreshTripDetails(); // Refresh the trip details and members
-    } catch (error: any) {
-      setAddUserError(error.message || "Failed to add user.");
-    }
-  };
-
   if (tripLoading) {
     return <div>Loading trip details...</div>;
   }
@@ -149,12 +132,6 @@ export function TripItineraryPage() {
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>
           <i className="bi bi-plus-circle me-2"></i>Add Itinerary
         </button>
-        <button
-          className="btn btn-secondary ms-2"
-          onClick={() => setShowAddUserModal(true)}
-        >
-          <i className="bi bi-person-plus me-2"></i>Add User
-        </button>
         {googleConnected && itineraries && itineraries.length > 0 && (
           <button
             className="btn btn-success ms-2"
@@ -199,13 +176,6 @@ export function TripItineraryPage() {
             }
           }}
           initialData={editingItinerary ?? undefined}
-        />
-      )}
-      {showAddUserModal && (
-        <AddUserModal
-          onClose={() => setShowAddUserModal(false)}
-          onAddUser={handleAddUser}
-          error={addUserError}
         />
       )}
 

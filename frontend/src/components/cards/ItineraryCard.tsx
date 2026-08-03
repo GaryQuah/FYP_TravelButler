@@ -42,11 +42,11 @@ const ItineraryCard = ({
         description: description,
         start: {
           dateTime: new Date(start_time).toISOString(),
-          timeZone: "Asia/Singapore",
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
         end: {
           dateTime: new Date(end_time).toISOString(),
-          timeZone: "Asia/Singapore",
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
       };
 

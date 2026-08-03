@@ -33,6 +33,11 @@ const navItems: NavItem[] = [
     path: "assistance",
     icon: "bi-question-circle-fill",
   },
+  {
+    label: "Documents",
+    path: "documents",
+    icon: "bi-filetype-doc",
+  },
 ];
 
 const TripNavbar = () => {

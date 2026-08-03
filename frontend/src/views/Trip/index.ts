@@ -4,3 +4,4 @@ export * from "./TripChatPage";
 export * from "./TripBudgetPage";
 export * from "./TripPollPage";
 export * from "./TripAssistancePage";
+export * from "./TripDocumentPage";

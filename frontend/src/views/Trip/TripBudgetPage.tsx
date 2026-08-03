@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { getTripBudget } from "../../api/budget";
+import { getAuthHeaders } from "../../api/auth";
 import {
   BarChart,
   Bar,
@@ -124,9 +125,7 @@ export function TripBudgetPage() {
     try {
       const response = await fetch(`/api/budget/${trip.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updatedTrip),
       });
 
@@ -325,7 +324,7 @@ export function TripBudgetPage() {
       </Card>
 
       {/* =====================================================
-          EXPENDITURE PER PERSON (EDITABLE)
+          EXPENDITURE PER PERSON 
       ===================================================== */}
 
       <Card className="mb-4">
@@ -336,7 +335,7 @@ export function TripBudgetPage() {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Paid Amount (Editable)</th>
+                <th>Paid Amount</th>
                 <th>Expected</th>
                 <th>Balance</th>
               </tr>

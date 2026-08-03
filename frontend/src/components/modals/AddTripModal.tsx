@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { CountryDropdown } from "react-country-region-selector";
 import { type TripCreationData } from "../../models";
 
 // Use a specific type for the form's internal state to handle Date objects
@@ -9,6 +10,7 @@ type TripFormState = {
   start_date: Date | null;
   end_date: Date | null;
   description: string;
+  country: string;
 };
 
 interface Props {
@@ -24,6 +26,7 @@ const AddTripModal: React.FC<Props> = ({ onClose, onSave, initialData }) => {
     start_date: initialData?.start_date || null,
     end_date: initialData?.end_date || null,
     description: initialData?.description || "",
+    country: initialData?.country || "",
   });
 
   const handleChange = (
@@ -33,6 +36,13 @@ const AddTripModal: React.FC<Props> = ({ onClose, onSave, initialData }) => {
     setFormData({
       ...formData,
       [name]: value,
+    });
+  };
+
+  const handleCountryChange = (val: string) => {
+    setFormData({
+      ...formData,
+      country: val,
     });
   };
 
@@ -86,6 +96,12 @@ const AddTripModal: React.FC<Props> = ({ onClose, onSave, initialData }) => {
                 required
               />
             </div>
+
+            <CountryDropdown
+              value={formData.country}
+              onChange={handleCountryChange}
+              className="form-control mb-2"
+            />
 
             <DatePicker
               className="form-control mb-2"
