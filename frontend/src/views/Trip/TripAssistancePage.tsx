@@ -74,23 +74,12 @@ export function TripAssistancePage() {
         return;
       }
 
-      for (const item of chat.ai_recommendations) {
+      const itineraryPromises = chat.ai_recommendations.map((item) => {
         const startTimeObj = new Date(item.start_time);
         const endTimeObj = new Date(item.end_time);
 
-        const startTimeString = `${String(startTimeObj.getUTCHours()).padStart(
-          2,
-          "0",
-        )}:${String(startTimeObj.getUTCMinutes()).padStart(
-          2,
-          "0",
-        )}:${String(startTimeObj.getUTCSeconds()).padStart(2, "0")}`;
-        const endTimeString = `${String(endTimeObj.getUTCHours()).padStart(
-          2,
-          "0",
-        )}:${String(endTimeObj.getUTCMinutes()).padStart(2, "0")}:${String(
-          endTimeObj.getUTCSeconds(),
-        ).padStart(2, "0")}`;
+        const startTimeString = `${String(startTimeObj.getUTCHours()).padStart(2, "0")}:${String(startTimeObj.getUTCMinutes()).padStart(2, "0")}:${String(startTimeObj.getUTCSeconds()).padStart(2, "0")}`;
+        const endTimeString = `${String(endTimeObj.getUTCHours()).padStart(2, "0")}:${String(endTimeObj.getUTCMinutes()).padStart(2, "0")}:${String(endTimeObj.getUTCSeconds()).padStart(2, "0")}`;
 
         const newStartTime = new Date(`${dateString}T${startTimeString}Z`);
         const newEndTime = new Date(`${dateString}T${endTimeString}Z`);
@@ -100,9 +89,12 @@ export function TripAssistancePage() {
           start_time: newStartTime,
           end_time: newEndTime,
         };
-        const newItineraryItem = await addItinerary(tripId, newItem);
-        addItineraryItem(newItineraryItem);
-      }
+        return addItinerary(tripId, newItem);
+      });
+
+      const newItineraryItems = await Promise.all(itineraryPromises);
+      newItineraryItems.forEach(addItineraryItem);
+
       setIsDateModalOpen(false);
       alert("All recommended activities have been added to your itinerary!");
     } catch (error) {
