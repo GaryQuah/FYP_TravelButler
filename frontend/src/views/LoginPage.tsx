@@ -185,21 +185,6 @@ export function LoginPage() {
                 </div>
               </div>
             </div>
-
-            <div className="col-md-6">
-              <div className="feature-card">
-                <div className="feature-icon">
-                  <i className="bi bi-geo-alt"></i>
-                </div>
-
-                <div>
-                  <h6>Placeholder</h6>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

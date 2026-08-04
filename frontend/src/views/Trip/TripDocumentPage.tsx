@@ -211,6 +211,10 @@ export function TripDocumentPage() {
     useState<BudgetDraft>(EMPTY_BUDGET_DRAFT);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [alert, setAlert] = useState<{
+    message: string;
+    type: "success" | "danger";
+  } | null>(null);
 
   const filteredDocuments = documents.filter(
     (doc) =>
@@ -303,7 +307,10 @@ export function TripDocumentPage() {
       !itineraryDraft.start_time ||
       !itineraryDraft.end_time
     ) {
-      alert("Please complete activity name, start time, and end time.");
+      setAlert({
+        message: "Please complete activity name, start time, and end time.",
+        type: "danger",
+      });
       return;
     }
 
@@ -314,10 +321,17 @@ export function TripDocumentPage() {
         end_time: new Date(itineraryDraft.end_time),
         description: itineraryDraft.description.trim(),
       });
+      setAlert({
+        message: "Itinerary item created successfully!",
+        type: "success",
+      });
       moveToNextAnalysisAction();
     } catch (error) {
       console.error("Failed to add itinerary item:", error);
-      alert("Failed to create itinerary item. Please try again.");
+      setAlert({
+        message: "Failed to create itinerary item. Please try again.",
+        type: "danger",
+      });
     }
   };
 
@@ -330,7 +344,10 @@ export function TripDocumentPage() {
       !budgetDraft.category.trim() ||
       Number.isNaN(parsedAmount)
     ) {
-      alert("Please provide item, amount, and category.");
+      setAlert({
+        message: "Please provide item, amount, and category.",
+        type: "danger",
+      });
       return;
     }
 
@@ -340,10 +357,17 @@ export function TripDocumentPage() {
         amount: parsedAmount,
         category: budgetDraft.category.trim(),
       });
+      setAlert({
+        message: "Budget entry created successfully!",
+        type: "success",
+      });
       moveToNextAnalysisAction();
     } catch (error) {
       console.error("Failed to add expenditure:", error);
-      alert("Failed to create budget entry. Please try again.");
+      setAlert({
+        message: "Failed to create budget entry. Please try again.",
+        type: "danger",
+      });
     }
   };
 
@@ -357,15 +381,32 @@ export function TripDocumentPage() {
 
     try {
       await deleteDocument(tripId, documentId);
+      setAlert({ message: "Document deleted successfully!", type: "success" });
       await fetchDocuments();
     } catch (error) {
       console.error("Failed to delete document:", error);
-      alert("Failed to delete document. Please try again.");
+      setAlert({
+        message: "Failed to delete document. Please try again.",
+        type: "danger",
+      });
     }
   };
 
   return (
     <div className="row">
+      {alert && (
+        <div
+          className={`alert alert-${alert.type} alert-dismissible fade show`}
+          role="alert"
+        >
+          {alert.message}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setAlert(null)}
+          ></button>
+        </div>
+      )}
       {isModalOpen && (
         <UploadDocumentModal
           onClose={() => setIsModalOpen(false)}

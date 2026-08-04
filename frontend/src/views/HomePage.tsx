@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/navigation/Navbar";
 import Card from "../components/cards/TripCard";
 import AddTripModal from "../components/modals/AddTripModal";
+import { Alert } from "react-bootstrap";
 import {
   type Trip as ApiTrip,
   type AvailabilityTracker,
@@ -15,6 +16,12 @@ import AvailabilityTrackerModal from "../components/modals/AvailabilityTrackerMo
 import "../assets/css/HomePage.css";
 import { createTracker as apiCreateTracker } from "../api/home";
 import homeBanner from "../assets/images/dashboard/sunset.jpg";
+
+type AlertState = {
+  show: boolean;
+  message: string;
+  variant: "success" | "danger";
+};
 
 export function HomePage() {
   const {
@@ -38,6 +45,27 @@ export function HomePage() {
   const [editingTrip, setEditingTrip] = useState<ApiTrip | null>(null);
   const [editingTracker, setEditingTracker] =
     useState<AvailabilityTracker | null>(null);
+  const [alert, setAlert] = useState<AlertState>({
+    show: false,
+    message: "",
+    variant: "success",
+  });
+
+  const showAlert = (
+    message: string,
+    variant: "success" | "danger" = "success",
+  ) => {
+    setAlert({ show: true, message, variant });
+  };
+
+  useEffect(() => {
+    if (alert.show) {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
 
   const handleEditTrip = (trip: ApiTrip) => {
     setEditingTrip(trip);
@@ -71,27 +99,27 @@ export function HomePage() {
       await deleteTracker(trackerId);
     } catch (error) {
       console.error("Failed to delete tracker:", error);
-      alert("Failed to delete tracker.");
+      showAlert("Failed to delete tracker.", "danger");
     }
   };
 
   const handleCreateTracker = async (trackerData: { name: string }) => {
     if (!user) {
-      alert("You must be logged in to create a tracker.");
+      showAlert("You must be logged in to create a tracker.", "danger");
       return;
     }
 
     try {
       await apiCreateTracker({ name: trackerData.name, userId: user.user_id });
-      alert("Availability tracker created successfully");
+      showAlert("Availability tracker created successfully");
       refetchTrackers();
       setShowTrackerModal(false);
     } catch (error) {
       console.error("An error occurred:", error);
       if (error instanceof Error) {
-        alert(error.message);
+        showAlert(error.message, "danger");
       } else {
-        alert("An error occurred while creating the tracker.");
+        showAlert("An error occurred while creating the tracker.", "danger");
       }
       setShowTrackerModal(false);
     }
@@ -101,6 +129,16 @@ export function HomePage() {
     <>
       <Navbar />
       <div className="container">
+        {alert.show && (
+          <Alert
+            variant={alert.variant}
+            onClose={() => setAlert({ ...alert, show: false })}
+            dismissible
+            className="mt-3"
+          >
+            {alert.message}
+          </Alert>
+        )}
         <div
           className="home-banner mb-4"
           style={{ backgroundImage: `url(${homeBanner})` }}
