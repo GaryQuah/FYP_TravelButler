@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from app.utils.jwt import create_access_token
+from app.utils.jwt import create_access_token, clear_access_cookie, set_access_cookie
 from app.utils.google import verify_google_token
 from app.utils.jwt import get_current_user
 from app.dependencies import get_users_collection
@@ -23,6 +23,7 @@ class GoogleLoginRequest(BaseModel):
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def login_google(
     request: GoogleLoginRequest,
+    response: Response,
     users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
 ):
     google_user = await verify_google_token(request.token)
@@ -33,7 +34,14 @@ async def login_google(
         raise HTTPException(status_code=500, detail="Failed to create or find user")
 
     access_token = create_access_token(data={"sub": user["user_id"]})
+    set_access_cookie(response, access_token)
     return {"access_token": access_token, "token_type": "bearer", "user": user}
+
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(response: Response):
+    clear_access_cookie(response)
+    return {"success": True}
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user_route(
@@ -43,7 +51,12 @@ async def create_user_route(
     return await create_user(users_collection, user)
 
 
-@router.get("/{email}")
+@router.get("/me", response_model=User)
+async def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.get("/by-email/{email}")
 async def get_user(
     email: str,
     users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
@@ -60,12 +73,7 @@ async def get_user(
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@router.get("/me", response_model=User)
-async def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
-
-
-@router.get("/{user_id}", response_model=User)
+@router.get("/by-id/{user_id}", response_model=User)
 async def get_user_by_id_route(
     user_id: str,
     db: AsyncIOMotorCollection = Depends(get_users_collection),

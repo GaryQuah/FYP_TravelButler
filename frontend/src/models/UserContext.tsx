@@ -7,6 +7,8 @@ TODO: Is this the best way to manage user data?
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User } from "../models";
+import { clearAuthState } from "../api/auth";
+import { getCurrentUser } from "../api/user";
 
 interface UserContextType {
   user: User | null;
@@ -21,17 +23,20 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true); // Start in a loading state
 
   useEffect(() => {
-    try {
-      const item = window.localStorage.getItem("user");
-      if (item) {
-        setUserState(JSON.parse(item));
+    const hydrateUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setUserState(user);
+        window.localStorage.setItem("user", JSON.stringify(user));
+      } catch {
+        setUserState(null);
+        clearAuthState();
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      setUserState(null);
-    } finally {
-      setLoading(false); // Finished loading
-    }
+    };
+
+    hydrateUser();
   }, []); // Runs only once on mount
 
   const setUser = (user: User | null) => {

@@ -1,13 +1,12 @@
+import { getAuthHeaders } from "./auth";
+
 export const createTracker = async (trackerData: {
   name: string;
   userId: string;
 }) => {
   const response = await fetch("/api/availability-trackers/", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-User-Id": trackerData.userId,
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       name: trackerData.name,
       user_ids: [trackerData.userId],

@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { type AvailabilityTracker } from "../../models/availability_tracker";
+import ConfirmationModal from "../modals/ConfirmationModal";
 import "../../assets/css/TripCard.css";
 
 interface Props {
@@ -13,42 +14,56 @@ const AvailabilityTrackerCard: React.FC<Props> = ({
   onDelete,
   onEdit,
 }) => {
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
   const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete "${tracker.name}"?`)) {
-      onDelete(tracker.id);
-    }
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    onDelete(tracker.id);
+    setShowConfirmModal(false);
   };
 
   return (
-    <div className="card mb-4 shadow-sm h-100">
-      <div className="card-body d-flex flex-column">
-        <div className="d-flex justify-content-between align-items-start">
-          <h3 className="mb-0">{tracker.name}</h3>
-          <div className="btn-group">
-            <button
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => onEdit(tracker)}
-              aria-label={`Edit tracker ${tracker.name}`}
-            >
-              <i className="bi bi-pencil"></i>
-            </button>
-            <button
-              className="btn btn-sm btn-outline-danger"
-              onClick={handleDelete}
-              aria-label={`Delete tracker ${tracker.name}`}
-            >
-              <i className="bi bi-trash3"></i>
-            </button>
+    <>
+      <div className="card mb-4 shadow-sm h-100">
+        <div className="card-body d-flex flex-column">
+          <div className="d-flex justify-content-between align-items-start">
+            <h3 className="mb-0">{tracker.name}</h3>
+            <div className="btn-group">
+              <button
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => onEdit(tracker)}
+                aria-label={`Edit tracker ${tracker.name}`}
+              >
+                <i className="bi bi-pencil"></i>
+              </button>
+              <button
+                className="btn btn-sm btn-outline-danger"
+                onClick={handleDelete}
+                aria-label={`Delete tracker ${tracker.name}`}
+              >
+                <i className="bi bi-trash3"></i>
+              </button>
+            </div>
           </div>
+          <Link
+            to={`/availability/${tracker.id}`}
+            className="btn btn-outline-primary mt-3 align-self-start"
+          >
+            View
+          </Link>
         </div>
-        <Link
-          to={`/availability/${tracker.id}`}
-          className="btn btn-outline-primary mt-3 align-self-start"
-        >
-          View
-        </Link>
       </div>
-    </div>
+      <ConfirmationModal
+        show={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Confirm Deletion"
+        body={`Are you sure you want to delete "${tracker.name}"?`}
+      />
+    </>
   );
 };
 

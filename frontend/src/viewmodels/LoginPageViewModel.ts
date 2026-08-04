@@ -1,4 +1,3 @@
-import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../models/UserContext";
 import { loginOrRegisterUser } from "../api";
@@ -25,7 +24,6 @@ export function LoginPageViewModel() {
     const loginResponse = await loginOrRegisterUser(credentialResponse.credential);
 
     if (loginResponse) {
-      localStorage.setItem("access_token", loginResponse.access_token);
       localStorage.setItem("user", JSON.stringify(loginResponse.user));
       localStorage.setItem("lastUserName", loginResponse.user.name);
       setUser(loginResponse.user);

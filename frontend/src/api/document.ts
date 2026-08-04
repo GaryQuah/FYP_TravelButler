@@ -1,6 +1,6 @@
 import { getAuthHeaders } from "./auth";
 
-interface Document {
+export interface Document {
   id: string;
   filename: string;
   name: string;
@@ -8,6 +8,8 @@ interface Document {
   content_type: string;
   gcs_url: string;
   created_at: string;
+  user_id: string;
+  uploaded_by: string;
 }
 
 export async function getDocuments(tripId: string): Promise<Document[]> {

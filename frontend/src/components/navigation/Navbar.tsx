@@ -3,6 +3,7 @@ import "./Navbar.css";
 import { useUser } from "../../models/UserContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import WelcomeTypewriter from "../WelcomeTypewriter.tsx";
+import { logoutUser } from "../../api/user";
 
 interface NavItem {
   label: string;
@@ -31,7 +32,16 @@ const navItems: NavItem[] = [
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useUser();
+  const { user, setUser } = useUser();
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } finally {
+      setUser(null);
+      navigate("/");
+    }
+  };
 
   return (
     <header className="navbar-container">
@@ -67,6 +77,9 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="welcome-name">{user?.name}</div>
+          <button className="btn btn-outline-light btn-sm ms-3" onClick={handleLogout}>
+            Logout
+          </button>
         </div>
       </nav>
     </header>

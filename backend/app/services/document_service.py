@@ -13,7 +13,7 @@ class DocumentService:
         self.storage_client = storage.Client()
         self.bucket_name = os.environ.get("GCS_BUCKET_NAME", "your-gcs-bucket-name")
 
-    async def upload_file(self, file, filename, trip_id, content_type, name: str | None = None, description: str | None = None):
+    async def upload_file(self, file, filename, trip_id, content_type, user_id, name: str | None = None, description: str | None = None):
         bucket = self.storage_client.bucket(self.bucket_name)
         blob = bucket.blob(filename)
 
@@ -25,6 +25,7 @@ class DocumentService:
             gcs_path=blob.name,
             name=name,
             description=description,
+            user_id=user_id
         )
 
         result = await self.db.documents.insert_one(document.dict(by_alias=True))

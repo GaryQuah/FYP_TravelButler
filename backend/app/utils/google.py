@@ -6,8 +6,19 @@ from fastapi import HTTPException, status
 CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 
 async def verify_google_token(token: str) -> dict:
+    if not CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Google OAuth client ID is not configured",
+        )
+
     try:
         idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+        if not idinfo.get("email_verified", False):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Google account email is not verified",
+            )
         return idinfo
     except ValueError:
         raise HTTPException(

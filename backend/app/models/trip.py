@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from bson import ObjectId
 
 class Trip(BaseModel):
-    id: ObjectId = Field(default_factory=ObjectId, alias="_id")
+    id: str = Field(default_factory=lambda: str(ObjectId()), alias="_id")
     user_ids: list[str]
     itinerary_ids: Optional[list[str]] = Field(None)
     budget: float
@@ -20,10 +20,6 @@ class Trip(BaseModel):
 
     class Config:
         validate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {
-            ObjectId: str
-        }
 
 class TripCreationRequest(BaseModel):
     trip_name: str

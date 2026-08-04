@@ -22,6 +22,10 @@ export function TripAssistancePage() {
   const [selectedItinerary, setSelectedItinerary] =
     useState<ItineraryCreationData | null>(null);
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  const [alert, setAlert] = useState<{
+    message: string;
+    type: "success" | "danger";
+  } | null>(null);
 
   useEffect(() => {
     if (trip?.ai_chat_id) {
@@ -57,10 +61,13 @@ export function TripAssistancePage() {
       const newItineraryItem = await addItinerary(tripId, data);
       addItineraryItem(newItineraryItem);
       setIsModalOpen(false);
-      alert("Activity added to itinerary!");
+      setAlert({ message: "Activity added to itinerary!", type: "success" });
     } catch (error) {
       console.error("Failed to add itinerary item:", error);
-      alert("Failed to add activity. Please try again.");
+      setAlert({
+        message: "Failed to add activity. Please try again.",
+        type: "danger",
+      });
     }
   };
 
@@ -70,7 +77,7 @@ export function TripAssistancePage() {
     try {
       const dateString = formatDateForInput(date);
       if (!dateString) {
-        alert("Invalid date selected.");
+        setAlert({ message: "Invalid date selected.", type: "danger" });
         return;
       }
 
@@ -78,8 +85,19 @@ export function TripAssistancePage() {
         const startTimeObj = new Date(item.start_time);
         const endTimeObj = new Date(item.end_time);
 
-        const startTimeString = `${String(startTimeObj.getUTCHours()).padStart(2, "0")}:${String(startTimeObj.getUTCMinutes()).padStart(2, "0")}:${String(startTimeObj.getUTCSeconds()).padStart(2, "0")}`;
-        const endTimeString = `${String(endTimeObj.getUTCHours()).padStart(2, "0")}:${String(endTimeObj.getUTCMinutes()).padStart(2, "0")}:${String(endTimeObj.getUTCSeconds()).padStart(2, "0")}`;
+        const startTimeString = `${String(startTimeObj.getUTCHours()).padStart(
+          2,
+          "0",
+        )}:${String(startTimeObj.getUTCMinutes()).padStart(
+          2,
+          "0",
+        )}:${String(startTimeObj.getUTCSeconds()).padStart(2, "0")}`;
+        const endTimeString = `${String(endTimeObj.getUTCHours()).padStart(
+          2,
+          "0",
+        )}:${String(endTimeObj.getUTCMinutes()).padStart(2, "0")}:${String(
+          endTimeObj.getUTCSeconds(),
+        ).padStart(2, "0")}`;
 
         const newStartTime = new Date(`${dateString}T${startTimeString}Z`);
         const newEndTime = new Date(`${dateString}T${endTimeString}Z`);
@@ -96,12 +114,18 @@ export function TripAssistancePage() {
       newItineraryItems.forEach(addItineraryItem);
 
       setIsDateModalOpen(false);
-      alert("All recommended activities have been added to your itinerary!");
+      setAlert({
+        message:
+          "All recommended activities have been added to your itinerary!",
+        type: "success",
+      });
     } catch (error) {
       console.error("Failed to add all itinerary items:", error);
-      alert(
-        "Failed to add all activities. Please check the console for details.",
-      );
+      setAlert({
+        message:
+          "Failed to add all activities. Please check the console for details.",
+        type: "danger",
+      });
     }
   };
 
@@ -160,6 +184,19 @@ export function TripAssistancePage() {
 
   return (
     <div className="d-flex flex-column">
+      {alert && (
+        <div
+          className={`alert alert-${alert.type} alert-dismissible fade show`}
+          role="alert"
+        >
+          {alert.message}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setAlert(null)}
+          ></button>
+        </div>
+      )}
       <h2>AI Assisted Chat</h2>
 
       {/* Chat messages */}
