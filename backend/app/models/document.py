@@ -3,7 +3,7 @@ from datetime import datetime
 from bson import ObjectId
 
 class Document(BaseModel):
-    id: ObjectId = Field(default_factory=ObjectId, alias="_id")
+    id: str = Field(default_factory=lambda: str(ObjectId()), alias="_id")
     filename: str
     content_type: str
     gcs_path: str
@@ -14,7 +14,3 @@ class Document(BaseModel):
 
     class Config:
         validate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {
-            ObjectId: str
-        }
