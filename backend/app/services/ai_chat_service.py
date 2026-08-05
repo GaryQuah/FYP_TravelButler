@@ -83,12 +83,15 @@ async def add_message_to_ai_chat(collection: AsyncIOMotorCollection, ai_chat_id:
                 "text": msg["message"]
             })
 
+    itinerary = chat.get("ai_recommendations", []) if chat else []
+
     # Get AI response
     async with httpx.AsyncClient() as client:
         response = await client.post("http://localhost:8000/api/gemini/chat", json={
             "message": message,
             "history": history,
-            "country": country
+            "country": country,
+            "itinerary": itinerary
         })
         response.raise_for_status()
         ai_response = response.json()

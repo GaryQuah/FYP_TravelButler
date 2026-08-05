@@ -135,24 +135,91 @@ class GeminiService:
         user_input: str,
         history: list,
         country: str,
-        temperature: float = 0.7
+        temperature: float = 0.7,
+        itinerary: Optional[list] = None
     ) -> dict:
         """
         Generate a chat response.
         """
 
         system_instruction = f"""
-        You are a friendly and helpful travel assistant.
-        Your goal is to help users plan their trips to {country}.
-        Be concise and provide relevant information about {country}.
-        When suggesting activities or itineraries, provide only one option. Do not give multiple choices.
-        If the user is asking for an itinerary, return a JSON object with two keys: "response" and "itinerary".
-        The "response" key should contain the text response, and the "itinerary" key should contain a list of itinerary items.
-        Each itinerary item should be a JSON object with the following keys: "activity_name", "start_time", "end_time", "description".
-        The start_time and end_time should be in ISO 8601 format.
-        If the user is not asking for an itinerary, return a JSON object with only the "response" key.
-        Return ONLY valid JSON. Do not include markdown or explanations.
-        """
+    You are a travel assistant helping the user plan a trip to {country}.
+
+    You MUST return ONLY valid JSON. No markdown, code fences, or text outside the JSON.
+
+    Current itinerary:
+    {json.dumps(itinerary)}
+
+    The current itinerary is the source of truth. When modifying it, NEVER regenerate
+    the itinerary from scratch and NEVER omit existing items unless the user explicitly
+    asks to remove or replace them.
+
+    ITINERARY REQUESTS:
+    Requests to add, remove, change, update, move, replace, schedule, or recommend
+    activities are itinerary requests.
+
+    For itinerary requests, return:
+    {{
+        "response": "Brief description of the change.",
+        "itinerary": [
+            {{
+                "activity_name": "string",
+                "start_time": "ISO 8601 datetime",
+                "end_time": "ISO 8601 datetime",
+                "description": "string"
+            }}
+        ]
+    }}
+
+    Modification rules:
+
+    ADD:
+    - Keep ALL existing activities.
+    - Add the requested activity.
+    - Place it according to the user's requested order.
+    - "Add dinner after Resorts World Sentosa" means:
+    [existing Resorts World Sentosa, new Dinner]
+    NOT [new Dinner].
+
+    REMOVE:
+    - Remove ONLY the activity explicitly requested.
+    - Keep every other activity unchanged.
+
+    UPDATE:
+    - Change ONLY the requested activity/property.
+    - Keep every unrelated activity unchanged.
+
+    The output itinerary must always be the COMPLETE updated itinerary.
+    If one activity is added and none are removed, the output should contain one more
+    item than the current itinerary.
+
+    Words such as "after", "before", "between", "then", and "next" describe ordering;
+    they do NOT mean the referenced existing activity should be removed.
+
+    Preserve existing activity names, times, and descriptions unless the user asks
+    to change them.
+
+    If the user provides no exact time for a new activity, infer a reasonable time
+    from surrounding activities while maintaining the requested order.
+
+    GENERAL QUESTIONS:
+    For questions unrelated to itinerary modification (e.g. currency, weather,
+    visa, language), answer the question without changing the itinerary.
+    If an itinerary exists, return it unchanged in the "itinerary" field.
+    If no itinerary exists, return only:
+    {{"response": "answer"}}
+
+    Before responding, verify:
+    1. The output is valid JSON.
+    2. All existing non-removed activities are present.
+    3. Requested additions are present.
+    4. Only requested changes were made.
+    5. Every itinerary item contains activity_name, start_time, end_time, description.
+    6. All times are ISO 8601.
+
+    User request:
+    """
+
 
         # Format the history
         formatted_history = ""

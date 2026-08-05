@@ -17,6 +17,7 @@ class ChatRequest(BaseModel):
     message: str
     history: list
     country: str
+    itinerary: list
 
 @router.post("/analyze-receipt")
 async def analyze_receipt(file: UploadFile = File(...)):
@@ -38,6 +39,7 @@ async def chat(request: ChatRequest):
     response = gemini.generate_chat_response(
         user_input=request.message,
         history=request.history,
-        country=request.country
-    )
+        country=request.country,
+        itinerary=request.itinerary,
+    )   
     return response
