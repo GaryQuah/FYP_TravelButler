@@ -1,10 +1,6 @@
-import { HomePageViewModel } from "../viewmodels/HomePageViewModel";
-
 import Navbar from "../components/navigation/Navbar";
 
 export function SuggestionsPage() {
-  const {} = HomePageViewModel();
-
   return (
     <>
       <div className="container">
