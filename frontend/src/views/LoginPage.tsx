@@ -6,6 +6,45 @@ import { loginOrRegisterUser } from "../api";
 import { useEffect, useState } from "react";
 import "../assets/css/LoginPage.css";
 import backgroundImage from "../assets/images/loginpage/background.jpg";
+import FeatureCard from "../components/cards/FeatureCard";
+
+const features = [
+  {
+    icon: "bi-clock-history",
+    title: "Availability Tracking",
+    description:
+      "Find common dates with your group members for hassle-free planning.",
+  },
+  {
+    icon: "bi-wallet2",
+    title: "Budget Tracking",
+    description:
+      "Track expenses and split costs fairly. Upload receipts and organize spending automatically.",
+  },
+  {
+    icon: "bi-lightbulb",
+    title: "AI Assisted Itinerary Planning",
+    description:
+      "Not sure what to do? Let our AI assistant suggest activities for you to pick from.",
+  },
+  {
+    icon: "bi-calendar-event",
+    title: "Calendar Sync",
+    description: "Export activities directly into Google Calendar.",
+  },
+  {
+    icon: "bi-chat-dots-fill",
+    title: "Group Communication",
+    description: "Chat in real time, vote on activities using polls",
+  },
+
+  {
+    icon: "bi-filetype-doc",
+    title: "Document hub",
+    description:
+      "Store and access your documents such as passports, visa and plane tickets easily.",
+  },
+];
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -113,111 +152,15 @@ export function LoginPage() {
         {/* Feature Section */}
         <div className="features-section">
           <div className="row g-3">
-            {/* Budget */}
-            <div className="col-md-6">
-              <div className="feature-card">
-                <div className="feature-icon">
-                  <i className="bi bi-wallet2"></i>
-                </div>
-
-                <div>
-                  <h6>Budget Tracking</h6>
-                  <p>Track expenses and split costs fairly.</p>
-                </div>
+            {features.map((feature, index) => (
+              <div className="col-md-6" key={index}>
+                <FeatureCard
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                />
               </div>
-            </div>
-
-            {/* Receipt */}
-            <div className="col-md-6">
-              <div className="feature-card">
-                <div className="feature-icon">
-                  <i className="bi bi-receipt"></i>
-                </div>
-
-                <div>
-                  <h6>Receipt Scanner</h6>
-                  <p>Upload receipts and organize spending automatically.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Calendar */}
-            <div className="col-md-6">
-              <div className="feature-card">
-                <div className="feature-icon">
-                  <i className="bi bi-calendar-event"></i>
-                </div>
-
-                <div>
-                  <h6>Calendar Sync</h6>
-                  <p>Export activities directly into Google Calendar.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Polls */}
-            <div className="col-md-6">
-              <div className="feature-card">
-                <div className="feature-icon">
-                  <i className="bi bi-chat-dots-fill"></i>
-                </div>
-
-                <div>
-                  <h6>Group Communication</h6>
-                  <p>Chat in real time, vote on activities using polls</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Availability */}
-            <div className="col-md-6">
-              <div className="feature-card">
-                <div className="feature-icon">
-                  <i className="bi bi-clock-history"></i>
-                </div>
-
-                <div>
-                  <h6>Availability Tracking</h6>
-                  <p>
-                    Find common dates with your group members for hassle-free
-                    planning.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* AI Suggestions */}
-            <div className="col-md-6">
-              <div className="feature-card">
-                <div className="feature-icon">
-                  <i className="bi bi-lightbulb"></i>
-                </div>
-
-                <div>
-                  <h6>AI Assited Itinerary Planning</h6>
-                  <p>
-                    Not sure what to do? Let our AI assistant suggest activities
-                    for you to pick from.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-6">
-              <div className="feature-card">
-                <div className="feature-icon">
-                  <i className="bi-filetype-doc"></i>
-                </div>
-
-                <div>
-                  <h6>Document hub</h6>
-                  <p>
-                    Store and access your documents such as passports, visa and
-                    plane tickets easily.
-                  </p>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

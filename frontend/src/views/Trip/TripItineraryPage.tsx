@@ -14,11 +14,7 @@ import type { Itinerary, ItineraryCreationData } from "../../models";
 
 export function TripItineraryPage() {
   const { tripId } = useParams<{ tripId: string }>();
-  const {
-    trip,
-    loading: tripLoading,
-    error: tripError,
-  } = useTripDetails();
+  const { trip, loading: tripLoading, error: tripError } = useTripDetails();
   const {
     itineraries,
     loading: itinerariesLoading,
@@ -227,11 +223,11 @@ export function TripItineraryPage() {
                 );
               }
 
-              const sortedItineraries = [...itineraries].sort(
-                (a, b) =>
-                  new Date(a.start_time).getTime() -
-                  new Date(b.start_time).getTime(),
-              );
+              const sortedItineraries = [...itineraries].sort((a, b) => {
+                const aDateTime = `${a.date}T${a.start_time}`;
+                const bDateTime = `${b.date}T${b.start_time}`;
+                return aDateTime.localeCompare(bDateTime);
+              });
 
               let lastDate: string | null = null;
 

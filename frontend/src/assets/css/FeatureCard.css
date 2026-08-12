@@ -1,0 +1,26 @@
+/* FeatureCard.css */
+.feature-card {
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  height: 100%;
+}
+
+.feature-icon {
+  font-size: 2rem;
+  margin-right: 20px;
+  color: #5a67d8;
+}
+
+.feature-card h6 {
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.feature-card p {
+  margin-bottom: 0;
+  color: #6c757d;
+}
