@@ -11,6 +11,7 @@ import {
 import { analyzeDescription } from "../../api/gemini.ts";
 import { addExpenditure } from "../../api/budget.ts";
 import type { Itinerary, ItineraryCreationData } from "../../models";
+import { formatTimeFromString } from "../../utils/dateUtils";
 
 export function TripItineraryPage() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -223,10 +224,12 @@ export function TripItineraryPage() {
                 );
               }
 
+              console.log(
+                "[TripItineraryPage] Rendering itineraries:",
+                itineraries,
+              );
               const sortedItineraries = [...itineraries].sort((a, b) => {
-                const aDateTime = new Date(a.start_time).toISOString();
-                const bDateTime = new Date(b.start_time).toISOString();
-                return aDateTime.localeCompare(bDateTime);
+                return a.start_time.localeCompare(b.start_time);
               });
 
               let lastDate: string | null = null;
@@ -259,8 +262,8 @@ export function TripItineraryPage() {
                       <ItineraryCard
                         id={item.id}
                         activity_name={item.activity_name}
-                        start_time={item.start_time}
-                        end_time={item.end_time}
+                        start_time={formatTimeFromString(item.start_time)}
+                        end_time={formatTimeFromString(item.end_time)}
                         description={item.description}
                         onDelete={deleteItinerary}
                         onEdit={handleEditItinerary}

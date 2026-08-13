@@ -317,8 +317,8 @@ export function TripDocumentPage() {
     try {
       await addItinerary(tripId, {
         activity_name: itineraryDraft.activity_name.trim(),
-        start_time: new Date(itineraryDraft.start_time),
-        end_time: new Date(itineraryDraft.end_time),
+        start_time: itineraryDraft.start_time,
+        end_time: itineraryDraft.end_time,
         description: itineraryDraft.description.trim(),
       });
       setAlert({

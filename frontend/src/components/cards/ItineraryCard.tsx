@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { formatTime } from "../../utils/dateUtils";
 import { createSingleCalendarEvent } from "../../api";
 
 interface ItineraryCardProps {
   id: string;
   activity_name: string;
-  start_time: Date;
-  end_time: Date;
+  start_time: string;
+  end_time: string;
   description: string;
   onDelete: (itineraryId: string) => void;
   onEdit: (itineraryId: string) => void;
@@ -87,7 +86,7 @@ const ItineraryCard = ({
         </div>
 
         <div className="mb-2 text-muted">
-          {formatTime(start_time)} - {formatTime(end_time)}
+          {start_time} - {end_time}
         </div>
 
         <p className="card-text mb-auto">{description}</p>

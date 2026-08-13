@@ -10,12 +10,7 @@ export async function getItineraries(tripId: string): Promise<Itinerary[]> {
     throw new Error("Failed to fetch itineraries");
   }
   const itineraries = await response.json();
-  // Convert string dates to Date objects
-  return itineraries.map((itinerary: any) => ({
-    ...itinerary,
-    start_time: parseUtcDateString(itinerary.start_time),
-    end_time: parseUtcDateString(itinerary.end_time),
-  }));
+  return itineraries;
 }
 
 export async function addItinerary(
@@ -69,12 +64,7 @@ export async function getItinerariesByIds(
     throw new Error("Failed to fetch itineraries");
   }
   const itineraries = await response.json();
-  // Convert string dates to Date objects
-  return itineraries.map((itinerary: any) => ({
-    ...itinerary,
-    start_time: parseUtcDateString(itinerary.start_time),
-    end_time: parseUtcDateString(itinerary.end_time),
-  }));
+  return itineraries;
 }
 
 export async function updateItinerary(
@@ -95,10 +85,5 @@ export async function updateItinerary(
     throw new Error("Failed to update itinerary");
   }
   const updatedItinerary = await response.json();
-  // Convert string dates to Date objects
-  return {
-    ...updatedItinerary,
-    start_time: parseUtcDateString(updatedItinerary.start_time),
-    end_time: parseUtcDateString(updatedItinerary.end_time),
-  };
+  return updatedItinerary;
 }
