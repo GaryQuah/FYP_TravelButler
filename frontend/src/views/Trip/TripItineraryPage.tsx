@@ -224,8 +224,8 @@ export function TripItineraryPage() {
               }
 
               const sortedItineraries = [...itineraries].sort((a, b) => {
-                const aDateTime = `${a.date}T${a.start_time}`;
-                const bDateTime = `${b.date}T${b.start_time}`;
+                const aDateTime = new Date(a.start_time).toISOString();
+                const bDateTime = new Date(b.start_time).toISOString();
                 return aDateTime.localeCompare(bDateTime);
               });
 

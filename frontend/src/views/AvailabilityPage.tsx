@@ -205,14 +205,6 @@ function AvailabilityPage() {
     <>
       <Navbar />
       <div className="container py-4">
-        <style>{`
-        .window-item:hover {
-          background-color: #f1f3f5;
-          cursor: pointer;
-          transition: 0.2s;
-        }
-      `}</style>
-
         {showAddUserModal && (
           <AddUserModal
             onClose={() => setShowAddUserModal(false)}
