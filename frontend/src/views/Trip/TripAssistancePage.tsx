@@ -30,7 +30,15 @@ export function TripAssistancePage() {
   useEffect(() => {
     if (trip?.ai_chat_id) {
       getAIChat(trip.ai_chat_id)
-        .then(setChat)
+        .then((chat) => {
+          setChat(chat);
+          if (chat.ai_recommendations) {
+            console.log(
+              "Initial AI Recommendations on load:",
+              chat.ai_recommendations,
+            );
+          }
+        })
         .catch((err) => console.error("Failed to load chat:", err));
     }
   }, [trip?.ai_chat_id]);
@@ -81,31 +89,23 @@ export function TripAssistancePage() {
         return;
       }
 
+      const formatTimeFromString = (dateTimeString: string): string => {
+        const timePart = dateTimeString.split("T")[1];
+        if (timePart) {
+          const [hours, minutes] = timePart.split(":");
+          return `${hours}:${minutes}`;
+        }
+        return ""; // Fallback
+      };
+
       const itineraryPromises = chat.ai_recommendations.map((item) => {
-        const startTimeObj = new Date(item.start_time);
-        const endTimeObj = new Date(item.end_time);
-
-        const startTimeString = `${String(startTimeObj.getUTCHours()).padStart(
-          2,
-          "0",
-        )}:${String(startTimeObj.getUTCMinutes()).padStart(
-          2,
-          "0",
-        )}:${String(startTimeObj.getUTCSeconds()).padStart(2, "0")}`;
-        const endTimeString = `${String(endTimeObj.getUTCHours()).padStart(
-          2,
-          "0",
-        )}:${String(endTimeObj.getUTCMinutes()).padStart(2, "0")}:${String(
-          endTimeObj.getUTCSeconds(),
-        ).padStart(2, "0")}`;
-
-        const newStartTime = new Date(`${dateString}T${startTimeString}Z`);
-        const newEndTime = new Date(`${dateString}T${endTimeString}Z`);
+        const startTime = formatTimeFromString(item.start_time);
+        const endTime = formatTimeFromString(item.end_time);
 
         const newItem = {
           ...item,
-          start_time: newStartTime,
-          end_time: newEndTime,
+          start_time: `${dateString}T${startTime}`,
+          end_time: `${dateString}T${endTime}`,
         };
         return addItinerary(tripId, newItem);
       });
@@ -130,6 +130,7 @@ export function TripAssistancePage() {
   };
 
   const sendMessage = async () => {
+    console.log("Send button clicked, sendMessage function started...");
     if (!input.trim() || !trip?.ai_chat_id || !user) return;
 
     const userMessage: ChatMessage = {
@@ -165,6 +166,12 @@ export function TripAssistancePage() {
         messageToSend,
         trip.country,
       );
+      if (updatedChat.ai_recommendations) {
+        console.log(
+          "Newly received AI Recommendations:",
+          updatedChat.ai_recommendations,
+        );
+      }
       setChat(updatedChat);
     } catch (error) {
       console.error("Failed to send message:", error);

@@ -11,13 +11,7 @@ export async function createTrip(tripData: TripCreationData): Promise<Trip> {
     throw new Error("Failed to create trip");
   }
   const newTrip = await response.json();
-  // Convert string dates to Date objects
-  return {
-    ...newTrip,
-    start_date: new Date(newTrip.start_date),
-    end_date: new Date(newTrip.end_date),
-    ai_chat_id: newTrip.ai_chat_id,
-  };
+  return newTrip;
 }
 
 export async function deleteTrip(tripId: string): Promise<void> {
@@ -42,13 +36,7 @@ export async function getTripDetails(tripId: string): Promise<Trip> {
     throw new Error("Failed to fetch trip details");
   }
   const trip = await response.json();
-  // Convert string dates to Date objects
-  return {
-    ...trip,
-    start_date: new Date(trip.start_date),
-    end_date: new Date(trip.end_date),
-    ai_chat_id: trip.ai_chat_id,
-  };
+  return trip;
 }
 
 export async function getTripMembers(tripId: string): Promise<User[]> {
@@ -69,13 +57,7 @@ export async function getTrips(): Promise<Trip[]> {
     throw new Error("Failed to fetch trips");
   }
   const trips = await response.json();
-  // Convert string dates to Date objects
-  return trips.map((trip: any) => ({
-    ...trip,
-    start_date: new Date(trip.start_date),
-    end_date: new Date(trip.end_date),
-    ai_chat_id: trip.ai_chat_id,
-  }));
+  return trips;
 }
 
 export async function updateTrip(
@@ -91,11 +73,5 @@ export async function updateTrip(
     throw new Error("Failed to update trip");
   }
   const updatedTrip = await response.json();
-  // Convert string dates to Date objects
-  return {
-    ...updatedTrip,
-    start_date: new Date(updatedTrip.start_date),
-    end_date: new Date(updatedTrip.end_date),
-    ai_chat_id: updatedTrip.ai_chat_id,
-  };
+  return updatedTrip;
 }

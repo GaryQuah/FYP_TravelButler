@@ -317,8 +317,8 @@ export function TripDocumentPage() {
     try {
       await addItinerary(tripId, {
         activity_name: itineraryDraft.activity_name.trim(),
-        start_time: new Date(itineraryDraft.start_time),
-        end_time: new Date(itineraryDraft.end_time),
+        start_time: itineraryDraft.start_time,
+        end_time: itineraryDraft.end_time,
         description: itineraryDraft.description.trim(),
       });
       setAlert({
@@ -493,82 +493,6 @@ export function TripDocumentPage() {
                   onClick={handleSaveItinerary}
                 >
                   Create Itinerary
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeAction?.type === "budget" && (
-        <div
-          className="modal d-block"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-        >
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Create Budget Entry</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={moveToNextAnalysisAction}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <p>
-                  We found budget-related details in your image. Please confirm
-                  or edit before creating.
-                </p>
-                <input
-                  className="form-control mb-2"
-                  placeholder="Item"
-                  value={budgetDraft.item}
-                  onChange={(e) =>
-                    setBudgetDraft((prev) => ({
-                      ...prev,
-                      item: e.target.value,
-                    }))
-                  }
-                />
-                <input
-                  className="form-control mb-2"
-                  type="number"
-                  placeholder="Amount"
-                  value={budgetDraft.amount}
-                  onChange={(e) =>
-                    setBudgetDraft((prev) => ({
-                      ...prev,
-                      amount: e.target.value,
-                    }))
-                  }
-                />
-                <input
-                  className="form-control"
-                  placeholder="Category"
-                  value={budgetDraft.category}
-                  onChange={(e) =>
-                    setBudgetDraft((prev) => ({
-                      ...prev,
-                      category: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={moveToNextAnalysisAction}
-                >
-                  Skip
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleSaveBudget}
-                >
-                  Create Budget Entry
                 </button>
               </div>
             </div>

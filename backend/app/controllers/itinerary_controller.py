@@ -56,7 +56,12 @@ async def add_new_itinerary(
     new_itinerary = await create_itinerary(itineraries_collection, trips_collection, trip_id, itinerary_data)
     if not new_itinerary:
         raise HTTPException(status_code=500, detail="Failed to create itinerary")
-    return new_itinerary
+    
+    response_itinerary = new_itinerary.copy()
+    response_itinerary["start_time"] = new_itinerary["start_time"].isoformat()
+    response_itinerary["end_time"] = new_itinerary["end_time"].isoformat()
+    
+    return Itinerary.model_validate(response_itinerary)
 
 @router.get("/{trip_id}")
 async def get_all_itineraries_for_trip(
@@ -97,7 +102,12 @@ async def update_itinerary_endpoint(
     updated_itinerary = await update_itinerary(itineraries_collection, itinerary_id, itinerary_data)
     if not updated_itinerary:
         raise HTTPException(status_code=404, detail="Itinerary not found")
-    return updated_itinerary
+        
+    response_itinerary = updated_itinerary.copy()
+    response_itinerary["start_time"] = updated_itinerary["start_time"].isoformat()
+    response_itinerary["end_time"] = updated_itinerary["end_time"].isoformat()
+    
+    return Itinerary.model_validate(response_itinerary)
 
 
 @router.delete("/{trip_id}/{itinerary_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -31,6 +31,17 @@ export const formatTime = (date: Date | string): string => {
   return `${hours}:${minutes}`;
 };
 
+// Extracts time (HH:mm) from a date-time string without timezone conversion
+export const formatTimeFromString = (dateTimeString: string): string => {
+  console.log("[formatTimeFromString] Received dateTimeString:", dateTimeString);
+  const timePart = dateTimeString.split('T')[1];
+  if (timePart) {
+    const [hours, minutes] = timePart.split(':');
+    return `${hours}:${minutes}`;
+  }
+  return "09:00"; // Fallback
+};
+
 // Converts a UTC ISO string to a local time string (HH:mm)
 export const convertUtcToLocalTime = (utcString: string): string => {
   const date = new Date(utcString);

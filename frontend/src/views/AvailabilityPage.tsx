@@ -205,14 +205,6 @@ function AvailabilityPage() {
     <>
       <Navbar />
       <div className="container py-4">
-        <style>{`
-        .window-item:hover {
-          background-color: #f1f3f5;
-          cursor: pointer;
-          transition: 0.2s;
-        }
-      `}</style>
-
         {showAddUserModal && (
           <AddUserModal
             onClose={() => setShowAddUserModal(false)}
@@ -312,12 +304,21 @@ function AvailabilityPage() {
               <input
                 type="number"
                 className="form-control"
-                value={minConsecutiveDays}
+                value={minConsecutiveDays || ""}
                 min={1}
-                onChange={(e) => setMinConsecutiveDays(Number(e.target.value))}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow empty input to clear the field, otherwise parse as integer
+                  if (value === "") {
+                    setMinConsecutiveDays(0); // Or some other default/empty state
+                  } else {
+                    const num = parseInt(value, 10);
+                    if (!isNaN(num) && num > 0) {
+                      setMinConsecutiveDays(num);
+                    }
+                  }
+                }}
               />
-
-              <hr />
 
               <h6>Legend</h6>
               <div className="d-flex flex-column gap-1">
