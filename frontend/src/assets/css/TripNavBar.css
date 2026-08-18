@@ -1,192 +1,199 @@
 :root {
+  --primary: #60a5fa;
+  --secondary: #67e8f9;
 
-    --primary:#60a5fa;
-    --secondary:#67e8f9;
-
-    --gradient:
-        linear-gradient(
-            135deg,
-            var(--primary),
-            var(--secondary)
-        );
+  --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
 }
 
 /* ============================
    Sidebar
 ============================ */
 
-.trip-sidebar{
-
-    width:260px;
-
-    min-height:100vh;
-
-    padding:28px 20px;
-
-    background:white;
-
-    border-right:1px solid #e5e7eb;
-
-    box-shadow:
-        4px 0 20px rgba(15,23,42,.05);
-
-    display:flex;
-
-    flex-direction:column;
+.trip-sidebar {
+  width: 260px;
+  min-height: 100vh;
+  padding: 28px 20px;
+  background: white;
+  border-right: 1px solid #e5e7eb;
+  box-shadow: 4px 0 20px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  position: -webkit-sticky; /* For Safari */
+  position: sticky;
+  top: 100px;
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+  z-index: 40;
 }
 
 /* ============================
    Logo
 ============================ */
 
-.trip-sidebar-brand{
+.trip-sidebar-brand {
+  margin-bottom: 40px;
 
-    margin-bottom:40px;
-
-    text-align:center;
+  text-align: center;
 }
 
-.trip-sidebar-brand i{
+.trip-sidebar-brand i {
+  font-size: 3rem;
 
-    font-size:3rem;
+  background: var(--gradient);
 
-    background:var(--gradient);
+  -webkit-background-clip: text;
 
-    -webkit-background-clip:text;
-
-    -webkit-text-fill-color:transparent;
+  -webkit-text-fill-color: transparent;
 }
 
-.trip-sidebar-brand h5{
+.trip-sidebar-brand h5 {
+  margin-top: 12px;
 
-    margin-top:12px;
+  font-weight: 800;
 
-    font-weight:800;
-
-    color:#0f172a;
+  color: #0f172a;
 }
 
-.trip-sidebar-brand small{
+.trip-sidebar-brand small {
+  color: #64748b;
 
-    color:#64748b;
-
-    font-weight:600;
+  font-weight: 600;
 }
 
 /* ============================
    Navigation
 ============================ */
 
-.trip-sidebar-links{
+.trip-sidebar-links {
+  display: flex;
 
-    display:flex;
+  flex-direction: column;
 
-    flex-direction:column;
-
-    gap:12px;
+  gap: 12px;
 }
 
-.trip-nav-btn{
+.trip-nav-btn {
+  display: flex;
 
-    display:flex;
+  align-items: center;
 
-    align-items:center;
+  gap: 14px;
 
-    gap:14px;
+  border: none;
 
-    border:none;
+  background: none;
 
-    background:none;
+  width: 100%;
 
-    width:100%;
+  padding: 14px 18px;
 
-    padding:14px 18px;
+  border-radius: 16px;
 
-    border-radius:16px;
+  color: #334155;
 
-    color:#334155;
+  font-size: 0.98rem;
 
-    font-size:.98rem;
+  font-weight: 700;
 
-    font-weight:700;
+  transition: all 0.25s ease;
 
-    transition:
-        all .25s ease;
-
-    cursor:pointer;
+  cursor: pointer;
 }
 
-.trip-nav-btn i{
+.trip-nav-btn i {
+  font-size: 1.15rem;
 
-    font-size:1.15rem;
+  width: 24px;
 
-    width:24px;
-
-    text-align:center;
+  text-align: center;
 }
 
-.trip-nav-btn:hover{
+.trip-nav-btn:hover {
+  background: #eff6ff;
 
-    background:#eff6ff;
+  color: #2563eb;
 
-    color:#2563eb;
-
-    transform:translateX(5px);
+  transform: translateX(5px);
 }
 
-.trip-nav-btn.active{
+.trip-nav-btn.active {
+  background: var(--gradient);
 
-    background:var(--gradient);
+  color: white;
 
-    color:white;
-
-    box-shadow:
-        0 10px 20px rgba(96,165,250,.35);
+  box-shadow: 0 10px 20px rgba(96, 165, 250, 0.35);
 }
 
-.trip-nav-btn.active:hover{
+.trip-nav-btn.active:hover {
+  color: white;
 
-    color:white;
+  transform: translateX(5px);
+}
 
-    transform:translateX(5px);
+.sub-nav {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.sub-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: none;
+  width: 100%;
+  padding: 10px 15px;
+  border-radius: 10px;
+  color: #4a5568;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sub-nav-btn:hover {
+  background-color: #f0f4f8;
+  color: #2c5282;
+}
+
+.sub-nav-btn.active {
+  background-color: #e2e8f0;
+  color: #2c5282;
+  font-weight: 700;
 }
 
 /* ============================
    Responsive
 ============================ */
 
-@media(max-width:992px){
-
-    .trip-sidebar{
-
-        width:220px;
-    }
+@media (max-width: 992px) {
+  .trip-sidebar {
+    width: 220px;
+  }
 }
 
-@media(max-width:768px){
+@media (max-width: 768px) {
+  .trip-sidebar {
+    width: 80px;
 
-    .trip-sidebar{
+    padding: 20px 12px;
+  }
 
-        width:80px;
+  .trip-sidebar-brand h5,
+  .trip-sidebar-brand small,
+  .trip-nav-btn span {
+    display: none;
+  }
 
-        padding:20px 12px;
-    }
+  .trip-nav-btn {
+    justify-content: center;
+  }
 
-    .trip-sidebar-brand h5,
-    .trip-sidebar-brand small,
-    .trip-nav-btn span{
-
-        display:none;
-    }
-
-    .trip-nav-btn{
-
-        justify-content:center;
-    }
-
-    .trip-nav-btn i{
-
-        margin:0;
-    }
-
+  .trip-nav-btn i {
+    margin: 0;
+  }
 }
