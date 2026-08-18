@@ -8,7 +8,7 @@ import {
   TripDetailsProvider,
 } from "../../hooks/useTripDetails";
 import { inviteUserToTrip } from "../../api";
-import { formatSimpleDate } from "../../utils/dateUtils";
+import { formatFullDateTime } from "../../utils/dateUtils";
 import "../../assets/css/LoginPage.css";
 import homeBanner from "../../assets/images/dashboard/sunset.jpg";
 
@@ -89,8 +89,8 @@ function TripLayoutContent() {
                   <h1 className="display-5 fst-italic">{trip.trip_name}</h1>
                   <h3 className="display-8 fst-italic">{trip.country}</h3>
                   <p className="mb-3">
-                    {formatSimpleDate(trip.start_date)} -{" "}
-                    {formatSimpleDate(trip.end_date)}
+                    {formatFullDateTime(new Date(trip.start_date))} -{" "}
+                    {formatFullDateTime(new Date(trip.end_date))}
                   </p>
                   <p className="lead">{trip.description}</p>
                 </div>
