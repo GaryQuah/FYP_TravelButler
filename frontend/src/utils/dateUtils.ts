@@ -11,18 +11,6 @@ export const formatFullDateTime = (date: Date): string => {
   }).format(new Date(date));
 };
 
-// Formats a date into a "YYYY-MM-DD HH:mm:ss" string
-export const formatSimpleDateTime = (date: Date | string): string => {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, "0");
-    const day = d.getDate().toString().padStart(2, "0");
-    const hours = d.getHours().toString().padStart(2, "0");
-    const minutes = d.getMinutes().toString().padStart(2, "0");
-    const seconds = d.getSeconds().toString().padStart(2, "0");
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-};
-
 // Formats a date into a simple time string (HH:mm) e.g, "10:30"
 export const formatTime = (date: Date | string): string => {
   const d = new Date(date);
@@ -39,7 +27,7 @@ export const formatTimeFromString = (dateTimeString: string): string => {
     const [hours, minutes] = timePart.split(':');
     return `${hours}:${minutes}`;
   }
-  return "09:00"; // Fallback
+  return ""; // Fallback
 };
 
 // Converts a UTC ISO string to a local time string (HH:mm)
@@ -55,4 +43,14 @@ export const parseUtcDateString = (dateString: string): Date => {
     return new Date(dateString + "Z");
   }
   return new Date(dateString);
+};
+
+export const getDatesBetween = (startDate: Date, endDate: Date): Date[] => {
+  const dates = [];
+  let currentDate = new Date(startDate);
+  while (currentDate <= endDate) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  return dates;
 };

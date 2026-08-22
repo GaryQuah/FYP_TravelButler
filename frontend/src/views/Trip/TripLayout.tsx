@@ -10,6 +10,7 @@ import {
 import { inviteUserToTrip } from "../../api";
 import { formatFullDateTime } from "../../utils/dateUtils";
 import "../../assets/css/LoginPage.css";
+import "../../assets/css/TripLayout.css";
 import homeBanner from "../../assets/images/dashboard/sunset.jpg";
 
 export function TripLayout() {
@@ -61,7 +62,7 @@ function TripLayoutContent() {
       <div className="d-flex">
         <TripNavbar />
 
-        <div className="container-fluid p-4">
+        <div className="main-content container-fluid p-4">
           {/* Trip header */}
           <div className="row mb-4">
             <div className="col-md-8">
@@ -89,8 +90,8 @@ function TripLayoutContent() {
                   <h1 className="display-5 fst-italic">{trip.trip_name}</h1>
                   <h3 className="display-8 fst-italic">{trip.country}</h3>
                   <p className="mb-3">
-                    {formatFullDateTime(trip.start_date)} -{" "}
-                    {formatFullDateTime(trip.end_date)}
+                    {formatFullDateTime(new Date(trip.start_date))} -{" "}
+                    {formatFullDateTime(new Date(trip.end_date))}
                   </p>
                   <p className="lead">{trip.description}</p>
                 </div>

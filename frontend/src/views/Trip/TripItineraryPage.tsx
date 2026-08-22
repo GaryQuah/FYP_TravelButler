@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import ItineraryCard from "../../components/cards/ItineraryCard";
 import AddItineraryModal from "../../components/modals/AddItineraryModal";
 import { useItineraries } from "../../hooks/UseItineraries";
@@ -15,6 +15,7 @@ import { formatTimeFromString } from "../../utils/dateUtils";
 
 export function TripItineraryPage() {
   const { tripId } = useParams<{ tripId: string }>();
+  const location = useLocation();
   const { trip, loading: tripLoading, error: tripError } = useTripDetails();
   const {
     itineraries,
@@ -37,6 +38,16 @@ export function TripItineraryPage() {
   const [editingItinerary, setEditingItinerary] = useState<Itinerary | null>(
     null,
   );
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace("#", "");
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }, [location]);
 
   const handleEditItinerary = (itineraryId: string) => {
     const itineraryToEdit = itineraries.find((item) => item.id === itineraryId);
@@ -235,15 +246,15 @@ export function TripItineraryPage() {
               let lastDate: string | null = null;
 
               return sortedItineraries.map((item) => {
-                const itemDate = new Date(item.start_time).toLocaleDateString(
-                  undefined,
-                  {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  },
-                );
+                const itemDate = item.start_time.split("T")[0];
+                const formattedDate = new Date(
+                  item.start_time,
+                ).toLocaleDateString(undefined, {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                });
 
                 const showHeader = itemDate !== lastDate;
                 if (showHeader) {
@@ -253,8 +264,11 @@ export function TripItineraryPage() {
                 return (
                   <React.Fragment key={item.id}>
                     {showHeader && (
-                      <div className="col-12 mt-4">
-                        <h2>{itemDate}</h2>
+                      <div
+                        id={itemDate}
+                        className="col-12 mt-4 date-header-anchor"
+                      >
+                        <h2>{formattedDate}</h2>
                         <hr />
                       </div>
                     )}
