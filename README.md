@@ -1,19 +1,58 @@
 # FYP
 
-Full stack + GenAI implementation for a Travel Butler Web App
+This project presents the design and development of a Travel Butler Application that leverages Generative AI (Gen-AI) to provide personalised travel planning and assistance. 
 
-Front end instructions
+This project aims to create a centralized AI assisted application, simplifying trip planning by hosting multiple core features within a centralised travel planning application while ensuring an intuitive and simple user experience.
 
-to run front end:
-`cd .\frontend\; npm run dev`
+#
 
-Back end instructions
+Travel planning is time-consuming and often becomes a fragmented process where travellers need to use multiple software to plan, communicate, budget and look for common dates.
 
-to run back end:
-`cd .\backend\; poetry run uvicorn app.main:app --reload`
+Existing travel planning websites and applications are available for users to use for travel planning, but often require users to manually enter and organise large amounts of information, increasing effort and may create friction between users and the applications. 
 
-Architecture:
+#
 
-This project uses MongoDB as its database.
+Recent advancements in Artificial Intelligence, particularly Generative AI, have enabled systems to understand natural language and generate meaningful, context-aware responses. This creates an opportunity to develop a travel planner to reduce the effort in travel planning, automating mundane tasks and simplifying the user input required to plan a trip.
 
-[Check out my learning notes](LEARNING.md)
+This Travel Butler Application seeks to address these challenges by consolidating travel planning tasks into a single intelligent platform and enhancing user experience by automating user tasks. 
+
+#
+
+The main objectives of this project are:
+
+To design and develop a Travel Butler Application with Gen-AI capabilities, enhancing and simplifying the user travel planning experience.
+To demonstrate the practical application of full-stack development concepts in a real-world system.
+
+# 
+
+The scope of this project includes:
+Development of a full-stack web application consisting of both frontend and backend components.
+Frontend implementation for user interaction, input handling, and result visualisation.
+Backend implementation for business logic, data management, and integration with Gen-AI services or other external API services.
+Basic user authentication and preference handling.
+## Run Locally
+
+### Frontend
+To run the frontend
+
+Install dependencies
+
+```bash
+npm install
+```
+
+```bash
+cd .\frontend\; npm run dev
+```
+### Backend
+To run the backend
+
+Install dependencies
+
+```bash
+poetry install
+```
+
+```bash
+cd .\backend\; poetry run uvicorn app.main:app --reload
+```
