@@ -10,6 +10,7 @@ import {
 import { inviteUserToTrip } from "../../api";
 import { formatFullDateTime } from "../../utils/dateUtils";
 import "../../assets/css/LoginPage.css";
+import "../../assets/css/TripLayout.css";
 import homeBanner from "../../assets/images/dashboard/sunset.jpg";
 
 export function TripLayout() {
@@ -61,7 +62,7 @@ function TripLayoutContent() {
       <div className="d-flex">
         <TripNavbar />
 
-        <div className="container-fluid p-4">
+        <div className="main-content container-fluid p-4">
           {/* Trip header */}
           <div className="row mb-4">
             <div className="col-md-8">
