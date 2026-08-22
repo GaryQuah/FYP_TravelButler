@@ -1,0 +1,9 @@
+.image-preview-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1;
+  border: 1px solid #ccc;
+  background: #fff;
+  padding: 5px;
+}

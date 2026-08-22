@@ -139,10 +139,7 @@ export function HomePage() {
             {alert.message}
           </Alert>
         )}
-        <div
-          className="home-banner mb-4"
-          style={{ backgroundImage: `url(${homeBanner})` }}
-        >
+        <div className="home-banner mb-4">
           <div className="home-banner-overlay"></div>
           <div className="home-banner-content">
             <h1 className="display-4 fw-bold">Welcome to TravelMate</h1>

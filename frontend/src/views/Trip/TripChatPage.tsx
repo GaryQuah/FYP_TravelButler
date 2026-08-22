@@ -5,6 +5,7 @@ import { useUser } from "../../models/UserContext";
 import { addChatMessage, getChat } from "../../api";
 import type { ChatMessage, Chat } from "../../models";
 import { convertUtcToLocalTime } from "../../utils/dateUtils";
+import "../../assets/css/TripChatPage.css";
 
 export function TripChatPage() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -53,10 +54,7 @@ export function TripChatPage() {
       <h2>Trip Chat</h2>
 
       {/* Chat messages */}
-      <div
-        className="flex-grow-1 border rounded p-3 mb-3 overflow-auto"
-        style={{ maxHeight: "60vh" }}
-      >
+      <div className="flex-grow-1 border rounded p-3 mb-3 overflow-auto chat-container">
         {chat?.messages?.map((msg: ChatMessage) => (
           <div
             key={`${msg.timestamp}-${msg.user_id}`}
@@ -67,12 +65,11 @@ export function TripChatPage() {
             }`}
           >
             <div
-              className={`p-2 rounded ${
+              className={`p-2 rounded chat-bubble ${
                 msg.user_id === user?.user_id
                   ? "bg-primary text-white"
                   : "bg-light border"
               }`}
-              style={{ maxWidth: "60%" }}
             >
               <div className="small fw-bold">
                 {memberNames[msg.user_id] || msg.user_id}

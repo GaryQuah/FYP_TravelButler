@@ -7,6 +7,7 @@ import { MiniItineraryCard } from "../../components/cards/MiniItineraryCard";
 import { formatTime } from "../../utils/dateUtils";
 import { ItineraryModal } from "../../components/modals/ItineraryModal";
 import { DateSelectionModal } from "../../components/modals/DateSelectionModal";
+import "../../assets/css/TripAssistancePage.css";
 
 import { addAIChatMessage, getAIChat, addItinerary } from "../../api";
 import type { ChatMessage, AiChat, ItineraryCreationData } from "../../models";
@@ -207,10 +208,7 @@ export function TripAssistancePage() {
       <h2>AI Assisted Chat</h2>
 
       {/* Chat messages */}
-      <div
-        className="flex-grow-1 border rounded p-3 mb-3 overflow-auto"
-        style={{ maxHeight: "60vh" }}
-      >
+      <div className="flex-grow-1 border rounded p-3 mb-3 overflow-auto chat-container">
         {chat?.messages?.map((msg: ChatMessage, index: number) => {
           let messageContent = msg.message;
           if (msg.user_id === "assistant") {
@@ -232,12 +230,11 @@ export function TripAssistancePage() {
               }`}
             >
               <div
-                className={`p-2 rounded ${
+                className={`p-2 rounded chat-bubble ${
                   msg.user_id === "assistant"
                     ? "bg-light border"
                     : "bg-primary text-white"
                 }`}
-                style={{ maxWidth: "60%" }}
               >
                 <div className="small fw-bold">
                   {msg.user_id === "assistant"
@@ -279,10 +276,7 @@ export function TripAssistancePage() {
         })}
         {isThinking && (
           <div className="mb-3 d-flex justify-content-start">
-            <div
-              className="p-2 rounded bg-light border"
-              style={{ maxWidth: "60%" }}
-            >
+            <div className="p-2 rounded bg-light border chat-bubble">
               <div className="small fw-bold">AI Assistant</div>
               <div>typing...</div>
             </div>

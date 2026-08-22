@@ -1,0 +1,7 @@
+.chat-container {
+  max-height: 60vh;
+}
+
+.chat-bubble {
+  max-width: 60%;
+}

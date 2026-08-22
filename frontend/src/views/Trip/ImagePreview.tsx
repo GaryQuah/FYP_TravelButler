@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../../assets/css/ImagePreview.css";
 
 interface ImagePreviewProps {
   src: string;
@@ -15,21 +16,12 @@ export function ImagePreview({ src, alt, children }: ImagePreviewProps) {
       onMouseLeave={() => setIsHovering(false)}
       style={{ position: "relative", display: "inline-block" }}
     >
+      {/* _blank: Open in a new tab , noreferrer: Prevents referrer information from being sent with the request. */}
       <a href={src} target="_blank" rel="noopener noreferrer">
         {children}
       </a>
       {isHovering && (
-        <div
-          style={{
-            position: "absolute",
-            top: "100%",
-            left: "0",
-            zIndex: 1,
-            border: "1px solid #ccc",
-            background: "#fff",
-            padding: "5px",
-          }}
-        >
+        <div className="image-preview-container">
           <img src={src} alt={alt} style={{ maxWidth: "200px" }} />
         </div>
       )}

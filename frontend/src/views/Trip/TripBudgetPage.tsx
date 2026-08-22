@@ -26,13 +26,9 @@ import {
   Modal,
 } from "react-bootstrap";
 import { analyzeReceipt } from "../../api/gemini";
+import "../../assets/css/TripBudgetPage.css";
 
-import type {
-  TripBudget,
-  ExpenseItem,
-  Category,
-  Contributor,
-} from "../../models/budget";
+import type { TripBudget, ExpenseItem, Category } from "../../models/budget";
 
 import { BAR_COLORS } from "../../models/budget";
 
@@ -302,7 +298,7 @@ export function TripBudgetPage() {
       ===================================================== */}
 
       <Card className="mb-4">
-        <Card.Body style={{ height: 320 }}>
+        <Card.Body className="chart-container">
           <ResponsiveContainer>
             <BarChart data={chartData}>
               <CartesianGrid />
@@ -346,7 +342,7 @@ export function TripBudgetPage() {
                 <tr key={p.id}>
                   <td>{p.name}</td>
 
-                  <td style={{ width: 200 }}>
+                  <td className="paid-amount-input">
                     <Form.Control
                       type="number"
                       value={p.paidAmount}
@@ -406,7 +402,7 @@ export function TripBudgetPage() {
               <input
                 type="file"
                 ref={fileInputRef}
-                style={{ display: "none" }}
+                className="hidden-file-input"
                 onChange={handleFileChange}
                 accept="image/*"
               />
