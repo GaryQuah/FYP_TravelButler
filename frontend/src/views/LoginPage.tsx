@@ -1,7 +1,7 @@
 import { GoogleLogin } from "@react-oauth/google";
 import WelcomeTypewriter from "../components/WelcomeTypewriter";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../models/UserContext";
+import { useUser } from "../contexts/UserContext";
 import { loginOrRegisterUser } from "../api";
 import { useEffect, useState } from "react";
 import "../assets/css/LoginPage.css";

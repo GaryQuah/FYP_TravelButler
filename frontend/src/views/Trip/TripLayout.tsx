@@ -1,3 +1,4 @@
+/* Uses Outlet to render the content of the trip layout, prevents rendering the hero banner e.t.c multiple times. */
 import { Outlet, useParams } from "react-router-dom";
 import { useState } from "react";
 import Navbar from "../../components/navigation/Navbar";
@@ -59,34 +60,18 @@ function TripLayoutContent() {
   return (
     <>
       <Navbar />
-      <div className="d-flex">
-        <TripNavbar />
-
-        <div className="main-content container-fluid p-4">
+      <TripNavbar />
+      <div className="main-content">
+        <div className="container-fluid p-4">
           {/* Trip header */}
           <div className="row mb-4">
             <div className="col-md-8">
               <div
-                className="p-4 text-white rounded h-100 d-flex flex-column"
-                style={{
-                  backgroundImage: `url(${homeBanner})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  position: "relative",
-                }}
+                className="p-4 text-white rounded h-100 d-flex flex-column trip-layout-container"
+                style={{ backgroundImage: `url(${homeBanner})` }}
               >
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    borderRadius: "inherit",
-                  }}
-                ></div>
-                <div style={{ position: "relative", zIndex: 1 }}>
+                <div className="trip-layout-overlay"></div>
+                <div className="trip-layout-content">
                   <h1 className="display-5 fst-italic">{trip.trip_name}</h1>
                   <h3 className="display-8 fst-italic">{trip.country}</h3>
                   <p className="mb-3">
@@ -119,7 +104,6 @@ function TripLayoutContent() {
               </ul>
             </div>
           </div>
-
           <Outlet />
         </div>
       </div>

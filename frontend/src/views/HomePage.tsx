@@ -9,7 +9,7 @@ import {
   type TripCreationData,
 } from "../models";
 import { useTrips } from "../hooks/UseTrip";
-import { useUser } from "../models/UserContext";
+import { useUser } from "../contexts/UserContext";
 import { useAvailabilityTrackers } from "../hooks/useAvailabilityTrackers";
 import AvailabilityTrackerCard from "../components/cards/AvailabilityTrackerCard";
 import AvailabilityTrackerModal from "../components/modals/AvailabilityTrackerModal";
@@ -139,10 +139,7 @@ export function HomePage() {
             {alert.message}
           </Alert>
         )}
-        <div
-          className="home-banner mb-4"
-          style={{ backgroundImage: `url(${homeBanner})` }}
-        >
+        <div className="home-banner mb-4">
           <div className="home-banner-overlay"></div>
           <div className="home-banner-content">
             <h1 className="display-4 fw-bold">Welcome to TravelMate</h1>

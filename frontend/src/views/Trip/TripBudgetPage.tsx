@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { getTripBudget } from "../../api/budget";
-import { getAuthHeaders } from "../../api/auth";
+import { getTripBudget, updateTripBudget } from "../../api/budget";
 import {
   BarChart,
   Bar,
@@ -26,13 +25,9 @@ import {
   Modal,
 } from "react-bootstrap";
 import { analyzeReceipt } from "../../api/gemini";
+import "../../assets/css/TripBudgetPage.css";
 
-import type {
-  TripBudget,
-  ExpenseItem,
-  Category,
-  Contributor,
-} from "../../models/budget";
+import type { TripBudget, ExpenseItem, Category } from "../../models/budget";
 
 import { BAR_COLORS } from "../../models/budget";
 
@@ -76,26 +71,17 @@ export function TripBudgetPage() {
   }, [trip]);
 
   const amountPerPerson = useMemo(() => {
-    console.log("--- Budget Calculation ---");
-    console.log("Total Expenditure:", totalTravelExpenditure);
-    console.log("Trip data:", trip);
-
     if (!trip) {
-      console.log("Result: 0 (no trip data)");
       return 0;
     }
 
     const contributorCount = trip.contributors.length;
-    console.log("Number of contributors:", contributorCount);
 
     if (contributorCount === 0) {
-      console.log("Result: 0 (no contributors)");
       return 0;
     }
 
     const result = totalTravelExpenditure / contributorCount;
-    console.log("Final Result (per person):", result);
-    console.log("--------------------------");
 
     return result;
   }, [trip, totalTravelExpenditure]);
@@ -120,21 +106,11 @@ export function TripBudgetPage() {
      Actions
   ========================================================= */
 
-  const updateTripBudget = async (updatedTrip: TripBudget) => {
+  const updateTripBudgetApi = async (updatedTrip: TripBudget) => {
     if (!trip) return;
     try {
-      const response = await fetch(`/api/budget/${trip.id}`, {
-        method: "PUT",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(updatedTrip),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTrip(data);
-      } else {
-        console.error("Failed to update trip budget");
-      }
+      const data = await updateTripBudget(updatedTrip);
+      setTrip(data);
     } catch (error) {
       console.error("Error updating trip budget:", error);
     }
@@ -302,7 +278,7 @@ export function TripBudgetPage() {
       ===================================================== */}
 
       <Card className="mb-4">
-        <Card.Body style={{ height: 320 }}>
+        <Card.Body className="chart-container">
           <ResponsiveContainer>
             <BarChart data={chartData}>
               <CartesianGrid />
@@ -346,7 +322,7 @@ export function TripBudgetPage() {
                 <tr key={p.id}>
                   <td>{p.name}</td>
 
-                  <td style={{ width: 200 }}>
+                  <td className="paid-amount-input">
                     <Form.Control
                       type="number"
                       value={p.paidAmount}
@@ -406,7 +382,7 @@ export function TripBudgetPage() {
               <input
                 type="file"
                 ref={fileInputRef}
-                style={{ display: "none" }}
+                className="hidden-file-input"
                 onChange={handleFileChange}
                 accept="image/*"
               />

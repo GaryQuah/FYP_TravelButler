@@ -3,10 +3,14 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/navigation/Navbar";
-import { useUser } from "../models/UserContext";
+import { useUser } from "../contexts/UserContext";
 import type { User } from "../models";
 import { inviteUserToTracker } from "../api/user";
-import { getTrackerMembers } from "../api/availability";
+import {
+  getTrackerMembers,
+  getTrackerData,
+  saveAvailability,
+} from "../api/availability";
 import AddUserModal from "../components/modals/AddUserModal";
 import AddTripModal from "../components/modals/AddTripModal";
 import { useTrips } from "../hooks/UseTrip";
@@ -67,19 +71,9 @@ function AvailabilityPage() {
     if (!trackerId || !currentUser) return;
     setLoading(true);
     try {
-      // Fetch tracker details (you might still need this for other info)
-      const trackerResponse = await fetch(
-        `/api/availability-trackers/${trackerId}`,
-        {
-          headers: {
-            "X-User-Id": currentUser.user_id,
-          },
-        },
-      );
-      const trackerData = await trackerResponse.json();
+      const trackerData = await getTrackerData(trackerId);
       setTracker(trackerData);
 
-      // Fetch all members in one go
       const fetchedUsers = await getTrackerMembers(trackerId);
       setUsers(fetchedUsers);
       setSelectedUserIds(fetchedUsers.map((u) => u.user_id));
@@ -121,14 +115,7 @@ function AvailabilityPage() {
   const saveChanges = async () => {
     if (!trackerId || !currentUser) return;
     try {
-      await fetch(
-        `/api/availability-trackers/${trackerId}/availability/${currentUser.user_id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(draft),
-        },
-      );
+      await saveAvailability(trackerId, currentUser.user_id, draft);
       setAvailability((prev: AvailabilityMap) => ({
         ...prev,
         [currentUser.user_id]: draft,

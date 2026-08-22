@@ -2,11 +2,12 @@ import { useState, useMemo, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
-import { useUser } from "../../models/UserContext";
+import { useUser } from "../../contexts/UserContext";
 import { MiniItineraryCard } from "../../components/cards/MiniItineraryCard";
 import { formatTime } from "../../utils/dateUtils";
 import { ItineraryModal } from "../../components/modals/ItineraryModal";
 import { DateSelectionModal } from "../../components/modals/DateSelectionModal";
+import "../../assets/css/TripAssistancePage.css";
 
 import { addAIChatMessage, getAIChat, addItinerary } from "../../api";
 import type { ChatMessage, AiChat, ItineraryCreationData } from "../../models";
@@ -32,12 +33,6 @@ export function TripAssistancePage() {
       getAIChat(trip.ai_chat_id)
         .then((chat) => {
           setChat(chat);
-          if (chat.ai_recommendations) {
-            console.log(
-              "Initial AI Recommendations on load:",
-              chat.ai_recommendations,
-            );
-          }
         })
         .catch((err) => console.error("Failed to load chat:", err));
     }
@@ -130,7 +125,6 @@ export function TripAssistancePage() {
   };
 
   const sendMessage = async () => {
-    console.log("Send button clicked, sendMessage function started...");
     if (!input.trim() || !trip?.ai_chat_id || !user) return;
 
     const userMessage: ChatMessage = {
@@ -166,12 +160,6 @@ export function TripAssistancePage() {
         messageToSend,
         trip.country,
       );
-      if (updatedChat.ai_recommendations) {
-        console.log(
-          "Newly received AI Recommendations:",
-          updatedChat.ai_recommendations,
-        );
-      }
       setChat(updatedChat);
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -207,10 +195,7 @@ export function TripAssistancePage() {
       <h2>AI Assisted Chat</h2>
 
       {/* Chat messages */}
-      <div
-        className="flex-grow-1 border rounded p-3 mb-3 overflow-auto"
-        style={{ maxHeight: "60vh" }}
-      >
+      <div className="flex-grow-1 border rounded p-3 mb-3 overflow-auto chat-container">
         {chat?.messages?.map((msg: ChatMessage, index: number) => {
           let messageContent = msg.message;
           if (msg.user_id === "assistant") {
@@ -232,12 +217,11 @@ export function TripAssistancePage() {
               }`}
             >
               <div
-                className={`p-2 rounded ${
+                className={`p-2 rounded chat-bubble ${
                   msg.user_id === "assistant"
                     ? "bg-light border"
                     : "bg-primary text-white"
                 }`}
-                style={{ maxWidth: "60%" }}
               >
                 <div className="small fw-bold">
                   {msg.user_id === "assistant"
@@ -279,10 +263,7 @@ export function TripAssistancePage() {
         })}
         {isThinking && (
           <div className="mb-3 d-flex justify-content-start">
-            <div
-              className="p-2 rounded bg-light border"
-              style={{ maxWidth: "60%" }}
-            >
+            <div className="p-2 rounded bg-light border chat-bubble">
               <div className="small fw-bold">AI Assistant</div>
               <div>typing...</div>
             </div>

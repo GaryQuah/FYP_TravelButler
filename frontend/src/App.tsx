@@ -15,7 +15,7 @@ import {
   TripDocumentPage,
 } from "./views/Trip";
 
-import { UserProvider } from "./models/UserContext";
+import { UserProvider } from "./contexts/UserContext";
 import RequireAuth from "./components/auth/RequireAuth";
 
 function App() {
@@ -26,7 +26,10 @@ function App() {
         <Route element={<RequireAuth />}>
           <Route path="/Home" element={<HomePage />} />
           <Route path="/Suggestions" element={<SuggestionsPage />} />
-          <Route path="/availability/:trackerId" element={<AvailabilityPage />} />
+          <Route
+            path="/availability/:trackerId"
+            element={<AvailabilityPage />}
+          />
           <Route path="/settings" element={<SettingsPage />} />
 
           {/* Trip routes */}

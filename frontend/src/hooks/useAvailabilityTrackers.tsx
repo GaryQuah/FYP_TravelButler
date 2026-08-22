@@ -8,7 +8,7 @@ import type {
   AvailabilityTracker,
   AvailabilityTrackerCreationData,
 } from "../models";
-import { useUser } from "../models/UserContext";
+import { useUser } from "../contexts/UserContext";
 
 export function useAvailabilityTrackers() {
   const [trackers, setTrackers] = useState<AvailabilityTracker[]>([]);

@@ -1,0 +1,11 @@
+.chart-container {
+  height: 320px;
+}
+
+.paid-amount-input {
+  width: 200px;
+}
+
+.hidden-file-input {
+  display: none;
+}

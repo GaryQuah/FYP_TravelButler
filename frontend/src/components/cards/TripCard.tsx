@@ -10,9 +10,9 @@ interface CardProps {
 }
 
 const Card = ({ trip, onDelete, onEdit }: CardProps) => {
-  const dateRange = `${formatFullDateTime(trip.start_date)} - ${formatFullDateTime(
-    trip.end_date,
-  )}`;
+  const dateRange = `${formatFullDateTime(
+    trip.start_date,
+  )} - ${formatFullDateTime(trip.end_date)}`;
 
   const handleDelete = () => {
     if (

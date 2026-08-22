@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button, Card, Form, Modal, ProgressBar, Stack } from "react-bootstrap";
-import { useUser } from "../../models/UserContext";
+import { useUser } from "../../contexts/UserContext";
 import {
   createPoll as apiCreatePoll,
   deletePoll as apiDeletePoll,
