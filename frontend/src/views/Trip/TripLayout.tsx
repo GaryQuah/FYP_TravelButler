@@ -60,10 +60,9 @@ function TripLayoutContent() {
   return (
     <>
       <Navbar />
-      <div className="d-flex">
-        <TripNavbar />
-
-        <div className="main-content container-fluid p-4">
+      <TripNavbar />
+      <div className="main-content">
+        <div className="container-fluid p-4">
           {/* Trip header */}
           <div className="row mb-4">
             <div className="col-md-8">
@@ -105,7 +104,6 @@ function TripLayoutContent() {
               </ul>
             </div>
           </div>
-
           <Outlet />
         </div>
       </div>

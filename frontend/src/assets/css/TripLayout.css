@@ -18,3 +18,8 @@
   position: relative;
   z-index: 1;
 }
+
+.main-content {
+  margin-left: 260px; /* Same as sidebar width */
+  box-sizing: border-box;
+}

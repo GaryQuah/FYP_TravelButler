@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { getTripBudget } from "../../api/budget";
-import { getAuthHeaders } from "../../api/auth";
+import { getTripBudget, updateTripBudget } from "../../api/budget";
 import {
   BarChart,
   Bar,
@@ -116,21 +115,11 @@ export function TripBudgetPage() {
      Actions
   ========================================================= */
 
-  const updateTripBudget = async (updatedTrip: TripBudget) => {
+  const updateTripBudgetApi = async (updatedTrip: TripBudget) => {
     if (!trip) return;
     try {
-      const response = await fetch(`/api/budget/${trip.id}`, {
-        method: "PUT",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(updatedTrip),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTrip(data);
-      } else {
-        console.error("Failed to update trip budget");
-      }
+      const data = await updateTripBudget(updatedTrip);
+      setTrip(data);
     } catch (error) {
       console.error("Error updating trip budget:", error);
     }
