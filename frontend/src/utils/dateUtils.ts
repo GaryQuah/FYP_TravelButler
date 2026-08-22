@@ -1,6 +1,6 @@
 
 // Formats a date into a long, human-readable string with weekday. e.g, "Monday, August 19, 2024, 10:00 AM"
-export const formatFullDateTime = (date: Date): string => {
+export const formatFullDateTime = (date: Date | string): string => {
   return new Intl.DateTimeFormat("en-US", {
     weekday: "long",
     year: "numeric",
@@ -21,7 +21,6 @@ export const formatTime = (date: Date | string): string => {
 
 // Extracts time (HH:mm) from a date-time string without timezone conversion
 export const formatTimeFromString = (dateTimeString: string): string => {
-  console.log("[formatTimeFromString] Received dateTimeString:", dateTimeString);
   const timePart = dateTimeString.split('T')[1];
   if (timePart) {
     const [hours, minutes] = timePart.split(':');

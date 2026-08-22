@@ -11,7 +11,7 @@ import { addItinerary } from "../../api/itinerary";
 import { addExpenditure } from "../../api/budget";
 
 import { UploadDocumentModal } from "../../components/modals/UploadDocumentModal";
-import "./TripDocumentPage.css";
+import "../../assets/css/TripDocumentPage.css";
 
 type AnalysisActionType = "itinerary" | "budget";
 
@@ -229,11 +229,8 @@ export function TripDocumentPage() {
     if (!tripId) return;
     try {
       const data = await getDocuments(tripId);
-      console.log("Fetched documents:", data);
       setDocuments(data);
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -272,7 +269,6 @@ export function TripDocumentPage() {
 
     try {
       await uploadDocument(tripId, file, name, description);
-      console.log("File uploaded successfully");
       fetchDocuments();
       setIsModalOpen(false);
 

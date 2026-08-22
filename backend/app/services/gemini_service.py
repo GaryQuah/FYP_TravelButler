@@ -38,15 +38,6 @@ class GeminiService:
         self.client = genai.Client(api_key=self.api_key)
         self.model = model
 
-    def list_models(self):
-        """
-        Print all available Gemini models.
-        """
-        print("Available Gemini models:\n")
-
-        for model in self.client.models.list():
-            print(model.name)
-
     def generate_text(
         self,
         prompt: str,

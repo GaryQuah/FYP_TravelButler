@@ -37,21 +37,20 @@ class DocumentService:
         return blob.public_url
 
     async def get_documents_for_trip(self, trip_id):
-        print(f"Fetching documents for trip_id: {trip_id}")
         trip = await self.db.trips.find_one({"_id": ObjectId(trip_id)})
-        print(f"Found trip: {trip}")
+        #print(f"Found trip: {trip}")
         if not trip or not trip.get("document_ids"):
-            print("Trip not found or has no document_ids")
+            #print("Trip not found or has no document_ids")
             return []
 
         document_ids = trip.get("document_ids")
-        print(f"Document IDs: {document_ids}")
+        #print(f"Document IDs: {document_ids}")
 
         documents = await self.db.documents.find(
             {"_id": {"$in": trip["document_ids"]}}
         ).to_list(100)
         
-        print(f"Found documents from DB: {documents}")
+        #print(f"Found documents from DB: {documents}")
 
         for doc in documents:
             blob = self.storage_client.bucket(self.bucket_name).blob(doc["gcs_path"])

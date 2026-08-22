@@ -235,10 +235,6 @@ export function TripItineraryPage() {
                 );
               }
 
-              console.log(
-                "[TripItineraryPage] Rendering itineraries:",
-                itineraries,
-              );
               const sortedItineraries = [...itineraries].sort((a, b) => {
                 return a.start_time.localeCompare(b.start_time);
               });

@@ -33,12 +33,9 @@ export function SettingsPage() {
       setError(null);
       setSuccess(null);
       const result = await connectGoogleCalendar(codeResponse);
-      console.log("Backend response:", result);
       setGoogleConnected(true);
       setSuccess("Google Calendar connected successfully!");
     } catch (err: any) {
-      console.error("Full error:", err);
-
       setError(
         `Failed to connect Google Calendar: ${
           err?.response?.data?.detail || err?.message || JSON.stringify(err)

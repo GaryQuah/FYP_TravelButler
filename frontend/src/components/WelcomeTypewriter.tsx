@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./WelcomeTypewriter.css";
+import "../assets/css/WelcomeTypewriter.css";
 
 interface WelcomeTypewriterProps {
   phrases?: string[];

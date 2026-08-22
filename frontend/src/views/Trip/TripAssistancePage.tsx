@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
-import { useUser } from "../../models/UserContext";
+import { useUser } from "../../contexts/UserContext";
 import { MiniItineraryCard } from "../../components/cards/MiniItineraryCard";
 import { formatTime } from "../../utils/dateUtils";
 import { ItineraryModal } from "../../components/modals/ItineraryModal";
@@ -33,12 +33,6 @@ export function TripAssistancePage() {
       getAIChat(trip.ai_chat_id)
         .then((chat) => {
           setChat(chat);
-          if (chat.ai_recommendations) {
-            console.log(
-              "Initial AI Recommendations on load:",
-              chat.ai_recommendations,
-            );
-          }
         })
         .catch((err) => console.error("Failed to load chat:", err));
     }
@@ -131,7 +125,6 @@ export function TripAssistancePage() {
   };
 
   const sendMessage = async () => {
-    console.log("Send button clicked, sendMessage function started...");
     if (!input.trim() || !trip?.ai_chat_id || !user) return;
 
     const userMessage: ChatMessage = {
@@ -167,12 +160,6 @@ export function TripAssistancePage() {
         messageToSend,
         trip.country,
       );
-      if (updatedChat.ai_recommendations) {
-        console.log(
-          "Newly received AI Recommendations:",
-          updatedChat.ai_recommendations,
-        );
-      }
       setChat(updatedChat);
     } catch (error) {
       console.error("Failed to send message:", error);

@@ -1,6 +1,6 @@
 import React from "react";
-import "./Navbar.css";
-import { useUser } from "../../models/UserContext";
+import "../../assets/css/Navbar.css";
+import { useUser } from "../../contexts/UserContext.tsx";
 import { useNavigate, useLocation } from "react-router-dom";
 import WelcomeTypewriter from "../WelcomeTypewriter.tsx";
 import { logoutUser } from "../../api/user";
@@ -77,7 +77,10 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="welcome-name">{user?.name}</div>
-          <button className="btn btn-outline-light btn-sm ms-3" onClick={handleLogout}>
+          <button
+            className="btn btn-outline-light btn-sm ms-3"
+            onClick={handleLogout}
+          >
             Logout
           </button>
         </div>

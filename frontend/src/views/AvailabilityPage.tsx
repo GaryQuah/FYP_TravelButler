@@ -3,7 +3,7 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/navigation/Navbar";
-import { useUser } from "../models/UserContext";
+import { useUser } from "../contexts/UserContext";
 import type { User } from "../models";
 import { inviteUserToTracker } from "../api/user";
 import {

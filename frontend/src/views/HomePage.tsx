@@ -9,7 +9,7 @@ import {
   type TripCreationData,
 } from "../models";
 import { useTrips } from "../hooks/UseTrip";
-import { useUser } from "../models/UserContext";
+import { useUser } from "../contexts/UserContext";
 import { useAvailabilityTrackers } from "../hooks/useAvailabilityTrackers";
 import AvailabilityTrackerCard from "../components/cards/AvailabilityTrackerCard";
 import AvailabilityTrackerModal from "../components/modals/AvailabilityTrackerModal";

@@ -71,26 +71,17 @@ export function TripBudgetPage() {
   }, [trip]);
 
   const amountPerPerson = useMemo(() => {
-    console.log("--- Budget Calculation ---");
-    console.log("Total Expenditure:", totalTravelExpenditure);
-    console.log("Trip data:", trip);
-
     if (!trip) {
-      console.log("Result: 0 (no trip data)");
       return 0;
     }
 
     const contributorCount = trip.contributors.length;
-    console.log("Number of contributors:", contributorCount);
 
     if (contributorCount === 0) {
-      console.log("Result: 0 (no contributors)");
       return 0;
     }
 
     const result = totalTravelExpenditure / contributorCount;
-    console.log("Final Result (per person):", result);
-    console.log("--------------------------");
 
     return result;
   }, [trip, totalTravelExpenditure]);
