@@ -24,6 +24,23 @@ export async function analyzeReceipt(file: File) {
   return response.json();
 }
 
+export async function analyzeItinerary(itinerary: any[]) {
+  const response = await fetch(`${BASE_URL}/analyze-itinerary`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ itinerary }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to analyze itinerary");
+  }
+
+  return response.json();
+}
+
 export async function analyzeDescription(description: string) {
   const response = await fetch(`${BASE_URL}/analyze-description`, {
     method: "POST",

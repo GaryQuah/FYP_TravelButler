@@ -1,5 +1,8 @@
+from .mock_gemini_data import MOCK_ITINERARY_ANALYSIS
+import logging
 import os
 import json
+import re
 from typing import Optional
 
 from google import genai
@@ -37,6 +40,7 @@ class GeminiService:
 
         self.client = genai.Client(api_key=self.api_key)
         self.model = model
+        self.logger = logging.getLogger(__name__)
 
     def generate_text(
         self,
@@ -104,7 +108,8 @@ class GeminiService:
 
         response_text = self.generate_text(
             prompt=prompt,
-            temperature=temperature
+            temperature=temperature,
+            max_output_tokens=4096
         )
 
         try:
@@ -127,7 +132,8 @@ class GeminiService:
         history: list,
         country: str,
         temperature: float = 0.7,
-        itinerary: Optional[list] = None
+        itinerary: Optional[list] = None,
+         max_output_tokens: int = 8192
     ) -> dict:
         """
         Generate a chat response.
@@ -211,7 +217,6 @@ class GeminiService:
     User request:
     """
 
-
         # Format the history
         formatted_history = ""
         for message in history:
@@ -227,7 +232,8 @@ class GeminiService:
         response_text = self.generate_text(
             prompt=prompt,
             system_instruction=system_instruction,
-            temperature=temperature
+            temperature=temperature,
+            max_output_tokens=max_output_tokens
         )
 
         print(response_text)
@@ -320,6 +326,74 @@ class GeminiService:
 
         except (json.JSONDecodeError, AttributeError):
             return {}
+
+    def analyze_itinerary(
+        self,
+        itinerary: list,
+        temperature: float = 0.7,
+        max_output_tokens: int = 8192
+    ) -> dict:
+        if os.getenv("MOCK_GEMINI_API", "False").lower() in ("true", "1", "t"):
+            return MOCK_ITINERARY_ANALYSIS
+        if os.getenv("MOCK_GEMINI_API", "False").lower() in ("true", "1", "t"):
+            return MOCK_ITINERARY_ANALYSIS
+        """
+        Analyze an itinerary and provide recommendations.
+        """
+
+        system_instruction = f"""
+        Analyze the following itinerary and provide recommendations for improvement.
+
+        Instructions:
+        1. Identify any gaps in the itinerary of 2 hours or more.
+        2. For each gap, recommend a relevant activity, including a name and description.
+        3. Return a list of recommendations in JSON format.
+        4. If there are no gaps, return an empty list.
+        5. Return ONLY valid JSON.
+        6. Do not include markdown or explanations.
+
+        Expected format:
+
+        {{
+            "recommendations": [
+                {{
+                    "activity_name": "string",
+                    "start_time": "ISO 8601 datetime for the start of the gap",
+                    "end_time": "ISO 8601 datetime for the end of the gap",
+                    "description": "string"
+                }}
+            ]
+        }}
+        """
+
+        prompt = f"""
+        Here is the itinerary to analyze:
+        {json.dumps(itinerary)}
+
+        Please provide your analysis in the requested JSON format.
+        Analysis:
+        """
+
+        response_text = self.generate_text(
+            prompt=prompt,
+            system_instruction=system_instruction,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens
+        )
+
+        print("raw response:", response_text)
+
+        try:
+            # Use regex to find the JSON block
+            match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if match:
+                json_str = match.group(0)
+                return json.loads(json_str)
+            else:
+                return {"recommendations": []}
+
+        except json.JSONDecodeError:
+            return {"recommendations": []}
 
     def extract_document(
         self,

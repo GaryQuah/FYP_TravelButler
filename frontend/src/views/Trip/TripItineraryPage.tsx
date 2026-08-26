@@ -2,16 +2,21 @@ import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import ItineraryCard from "../../components/cards/ItineraryCard";
 import AddItineraryModal from "../../components/modals/AddItineraryModal";
+import ItineraryAnalysisModal from "../../components/modals/ItineraryAnalysisModal";
+import { ItineraryModal } from "../../components/modals/ItineraryModal";
+import { DateSelectionModal } from "../../components/modals/DateSelectionModal";
 import { useItineraries } from "../../hooks/UseItineraries";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import {
   exportItinerariesToCalendar,
   getGoogleCalendarStatus,
 } from "../../api";
-import { analyzeDescription } from "../../api/gemini.ts";
+import { analyzeDescription, analyzeItinerary } from "../../api/gemini.ts";
 import { addExpenditure } from "../../api/budget.ts";
 import type { Itinerary, ItineraryCreationData } from "../../models";
 import { formatTimeFromString } from "../../utils/dateUtils";
+
+import "../..//assets/css/TripItineraryPage.css";
 
 export function TripItineraryPage() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -38,6 +43,99 @@ export function TripItineraryPage() {
   const [editingItinerary, setEditingItinerary] = useState<Itinerary | null>(
     null,
   );
+  const [analysis, setAnalysis] = useState<any | null>(null);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedItinerary, setSelectedItinerary] =
+    useState<ItineraryCreationData | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+
+
+  const handleAddToItinerary = (item: ItineraryCreationData) => {
+    setSelectedItinerary(item);
+    setIsModalOpen(true);
+  };
+
+  const handleAddAllToItinerary = async () => {
+    setIsDateModalOpen(true);
+  };
+
+
+
+  const handleSaveAllItineraries = async (date: Date) => {
+    if (!tripId || !analysis?.recommendations) return;
+
+    try {
+      const dateString = formatDateForInput(date);
+      if (!dateString) {
+        setAlert({ message: "Invalid date selected.", type: "danger" });
+        return;
+      }
+
+      const formatTimeFromString = (dateTimeString: string): string => {
+        const timePart = dateTimeString.split("T")[1];
+        if (timePart) {
+          const [hours, minutes] = timePart.split(":");
+          return `${hours}:${minutes}`;
+        }
+        return ""; // Fallback
+      };
+
+      const itineraryPromises = analysis.recommendations.map((rec: any) => {
+        const startTime = formatTimeFromString(rec.gap_start_time);
+        const endTime = formatTimeFromString(rec.gap_end_time);
+
+        const newItem = {
+          activity_name: rec.recommendation.activity_name,
+          start_time: `${dateString}T${startTime}`,
+          end_time: `${dateString}T${endTime}`,
+          description: rec.recommendation.description,
+        };
+        return addItinerary(newItem);
+      });
+
+      await Promise.all(itineraryPromises);
+
+      setIsDateModalOpen(false);
+      setAlert({
+        message:
+          "All recommended activities have been added to your itinerary!",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to add all itinerary items:", error);
+      setAlert({
+        message:
+          "Failed to add all activities. Please check the console for details.",
+        type: "danger",
+      });
+    }
+  };
+
+  const formatDateForInput = (date: Date | string | undefined) => {
+    if (!date) return undefined;
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleAnalyzeItinerary = async () => {
+    if (!itineraries || itineraries.length === 0) return;
+
+    setIsAnalyzing(true);
+    try {
+      const result = await analyzeItinerary(itineraries);
+      setAnalysis(result);
+      setShowAnalysisModal(true);
+    } catch (error) {
+      console.error("Failed to analyze itinerary:", error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   useEffect(() => {
     if (location.hash) {
@@ -57,19 +155,43 @@ export function TripItineraryPage() {
     }
   };
 
-  const handleSaveItinerary = async (itineraryData: ItineraryCreationData) => {
-    await addItinerary(itineraryData);
-    setShowModal(false);
-    if (itineraryData.description) {
-      try {
+  const handleSaveItinerary = async (data: ItineraryCreationData) => {
+    if (!tripId) return;
+    try {
+      await addItinerary(data);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Failed to add itinerary item:", error);
+    }
+  };
+
+  const handleSaveRecommendedItinerary = async (
+    itineraryData: ItineraryCreationData,
+  ) => {
+
+    try {
+      await addItinerary(itineraryData);
+      setIsModalOpen(false); // Correctly close the ItineraryModal
+
+      // Remove the added itinerary from the analysis recommendations
+      if (analysis && analysis.recommendations) {
+        const updatedRecommendations = analysis.recommendations.filter(
+          (rec: Itinerary) =>
+            rec.activity_name !== itineraryData.activity_name,
+        );
+        setAnalysis({ ...analysis, recommendations: updatedRecommendations });
+      }
+
+      // Handle expenditure analysis
+      if (itineraryData.description) {
         const result = await analyzeDescription(itineraryData.description);
         if (result && result.expenditure) {
           setExpenditure(result.expenditure);
           setShowConfirmation(true);
         }
-      } catch (error) {
-        console.error("Failed to analyze description:", error);
       }
+    } catch (error) {
+      console.error("Failed to save recommended itinerary:", error);
     }
   };
 
@@ -136,9 +258,24 @@ export function TripItineraryPage() {
 
   return (
     <>
+
       <div>
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>
           <i className="bi bi-plus-circle me-2"></i>Add Itinerary
+        </button>
+        <button
+          className="btn btn-info ms-2 btn-itinerary-analysis"
+          onClick={handleAnalyzeItinerary}
+          disabled={isAnalyzing}
+        >
+          {isAnalyzing ? (
+            "Analyzing..."
+          ) : (
+            <>
+              <i className="bi bi-cpu me-2"></i>
+              Itinerary Analysis
+            </>
+          )}
         </button>
         {googleConnected && itineraries && itineraries.length > 0 && (
           <button
@@ -186,6 +323,31 @@ export function TripItineraryPage() {
           initialData={editingItinerary ?? undefined}
         />
       )}
+
+      {showAnalysisModal && (
+        <ItineraryAnalysisModal
+          onClose={() => setShowAnalysisModal(false)}
+          analysis={analysis}
+          onAddToItinerary={handleAddToItinerary}
+          onAddAllToItinerary={handleAddAllToItinerary}
+        />
+      )}
+
+      <ItineraryModal
+        show={isModalOpen}
+        onHide={() => setIsModalOpen(false)}
+        onSave={handleSaveRecommendedItinerary}
+        itinerary={selectedItinerary}
+        tripStartDate={formatDateForInput(trip?.start_date)}
+        tripEndDate={formatDateForInput(trip?.end_date)}
+      />
+      <DateSelectionModal
+        show={isDateModalOpen}
+        onHide={() => setIsDateModalOpen(false)}
+        onSave={handleSaveAllItineraries}
+        minDate={formatDateForInput(trip?.start_date)}
+        maxDate={formatDateForInput(trip?.end_date)}
+      />
 
       {showConfirmation && expenditure && (
         <div
