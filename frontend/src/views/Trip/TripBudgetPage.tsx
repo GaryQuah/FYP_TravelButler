@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { getTripBudget, updateTripBudget } from "../../api/budget";
+import { getAuthHeaders } from "../../api/auth";
 import {
   BarChart,
   Bar,
@@ -23,11 +24,16 @@ import {
   Tab,
   Table,
   Modal,
+  Spinner,
 } from "react-bootstrap";
 import { analyzeReceipt } from "../../api/gemini";
-import "../../assets/css/TripBudgetPage.css";
 
-import type { TripBudget, ExpenseItem, Category } from "../../models/budget";
+import type {
+  TripBudget,
+  ExpenseItem,
+  Category,
+  Contributor,
+} from "../../models/budget";
 
 import { BAR_COLORS } from "../../models/budget";
 
@@ -38,6 +44,7 @@ export function TripBudgetPage() {
   const [showModal, setShowModal] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
   const [editableReceipt, setEditableReceipt] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     const fetchTripBudget = async () => {
@@ -106,7 +113,7 @@ export function TripBudgetPage() {
      Actions
   ========================================================= */
 
-  const updateTripBudgetApi = async (updatedTrip: TripBudget) => {
+  const handleUpdateTripBudget = async (updatedTrip: TripBudget) => {
     if (!trip) return;
     try {
       const data = await updateTripBudget(updatedTrip);
@@ -124,7 +131,7 @@ export function TripBudgetPage() {
         c.id === id ? { ...c, paidAmount: value } : c,
       ),
     };
-    updateTripBudget(updatedTrip);
+    handleUpdateTripBudget(updatedTrip);
   };
 
   const addExpense = (categoryId: string) => {
@@ -144,7 +151,7 @@ export function TripBudgetPage() {
         c.id === categoryId ? { ...c, expenses: [...c.expenses, expense] } : c,
       ),
     };
-    updateTripBudget(updatedTrip);
+    handleUpdateTripBudget(updatedTrip);
 
     setExpenseInputs((p) => ({
       ...p,
@@ -166,7 +173,7 @@ export function TripBudgetPage() {
       categories: [...trip.categories, newCategory],
     };
 
-    updateTripBudget(updatedTrip);
+    handleUpdateTripBudget(updatedTrip);
     setNewCategoryName(""); // Reset input field
   };
 
@@ -175,6 +182,7 @@ export function TripBudgetPage() {
   ) => {
     const file = event.target.files?.[0];
     if (file) {
+      setIsAnalyzing(true);
       try {
         const data = await analyzeReceipt(file);
         setReceiptData(data);
@@ -182,6 +190,8 @@ export function TripBudgetPage() {
         setShowModal(true);
       } catch (error) {
         console.error("Error analyzing receipt:", error);
+      } finally {
+        setIsAnalyzing(false);
       }
     }
   };
@@ -222,7 +232,7 @@ export function TripBudgetPage() {
       ),
     };
 
-    updateTripBudget(updatedTrip);
+    handleUpdateTripBudget(updatedTrip);
 
     setShowModal(false);
     setReceiptData(null);
@@ -278,7 +288,7 @@ export function TripBudgetPage() {
       ===================================================== */}
 
       <Card className="mb-4">
-        <Card.Body className="chart-container">
+        <Card.Body style={{ height: 320 }}>
           <ResponsiveContainer>
             <BarChart data={chartData}>
               <CartesianGrid />
@@ -322,7 +332,7 @@ export function TripBudgetPage() {
                 <tr key={p.id}>
                   <td>{p.name}</td>
 
-                  <td className="paid-amount-input">
+                  <td style={{ width: 200 }}>
                     <Form.Control
                       type="number"
                       value={p.paidAmount}
@@ -376,13 +386,25 @@ export function TripBudgetPage() {
               <Button
                 variant="success"
                 onClick={() => fileInputRef.current?.click()}
+                disabled={isAnalyzing}
               >
-                <i className="bi bi-upload me-2"></i>Upload Receipt
+                {isAnalyzing ? (
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <i className="bi bi-upload me-2"></i>
+                )}
+                {isAnalyzing ? " Analyzing..." : " Upload Receipt"}
               </Button>
               <input
                 type="file"
                 ref={fileInputRef}
-                className="hidden-file-input"
+                style={{ display: "none" }}
                 onChange={handleFileChange}
                 accept="image/*"
               />
