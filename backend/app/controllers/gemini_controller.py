@@ -43,3 +43,11 @@ async def chat(request: ChatRequest):
         itinerary=request.itinerary,
     )   
     return response
+
+class ItineraryAnalysisRequest(BaseModel):
+    itinerary: list
+
+@router.post("/analyze-itinerary")
+async def analyze_itinerary(request: ItineraryAnalysisRequest):
+    response = gemini.analyze_itinerary(itinerary=request.itinerary)
+    return response
