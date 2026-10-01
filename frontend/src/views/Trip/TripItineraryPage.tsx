@@ -51,7 +51,6 @@ export function TripItineraryPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
 
-
   const handleAddToItinerary = (item: ItineraryCreationData) => {
     setSelectedItinerary(item);
     setIsModalOpen(true);
@@ -60,8 +59,6 @@ export function TripItineraryPage() {
   const handleAddAllToItinerary = async () => {
     setIsDateModalOpen(true);
   };
-
-
 
   const handleSaveAllItineraries = async (date: Date) => {
     if (!tripId || !analysis?.recommendations) return;
@@ -168,7 +165,6 @@ export function TripItineraryPage() {
   const handleSaveRecommendedItinerary = async (
     itineraryData: ItineraryCreationData,
   ) => {
-
     try {
       await addItinerary(itineraryData);
       setIsModalOpen(false); // Correctly close the ItineraryModal
@@ -176,8 +172,7 @@ export function TripItineraryPage() {
       // Remove the added itinerary from the analysis recommendations
       if (analysis && analysis.recommendations) {
         const updatedRecommendations = analysis.recommendations.filter(
-          (rec: Itinerary) =>
-            rec.activity_name !== itineraryData.activity_name,
+          (rec: Itinerary) => rec.activity_name !== itineraryData.activity_name,
         );
         setAnalysis({ ...analysis, recommendations: updatedRecommendations });
       }
@@ -258,7 +253,6 @@ export function TripItineraryPage() {
 
   return (
     <>
-
       <div>
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>
           <i className="bi bi-plus-circle me-2"></i>Add Itinerary
@@ -434,8 +428,8 @@ export function TripItineraryPage() {
                       <ItineraryCard
                         id={item.id}
                         activity_name={item.activity_name}
-                        start_time={formatTimeFromString(item.start_time)}
-                        end_time={formatTimeFromString(item.end_time)}
+                        start_time={item.start_time}
+                        end_time={item.end_time}
                         description={item.description}
                         onDelete={deleteItinerary}
                         onEdit={handleEditItinerary}
