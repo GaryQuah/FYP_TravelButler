@@ -1,7 +1,7 @@
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { useItineraries } from "../../hooks/UseItineraries";
-import "../../assets/css/TripNavRar.css";
+import "../../assets/css/TripNavBar.css";
 
 interface NavItem {
   label: string;
