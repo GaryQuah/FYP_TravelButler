@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import {
   getGoogleCalendarStatus,
@@ -32,7 +32,7 @@ export function SettingsPage() {
     try {
       setError(null);
       setSuccess(null);
-      const result = await connectGoogleCalendar(codeResponse);
+      await connectGoogleCalendar(codeResponse);
       setGoogleConnected(true);
       setSuccess("Google Calendar connected successfully!");
     } catch (err: any) {

@@ -11,10 +11,9 @@ import {
   exportItinerariesToCalendar,
   getGoogleCalendarStatus,
 } from "../../api";
-import { analyzeDescription, analyzeItinerary } from "../../api/gemini.ts";
-import { addExpenditure } from "../../api/budget.ts";
+import { analyzeDescription, analyzeItinerary } from "../../api/gemini";
+import { addExpenditure } from "../../api/budget";
 import type { Itinerary, ItineraryCreationData } from "../../models";
-import { formatTimeFromString } from "../../utils/dateUtils";
 
 import "../..//assets/css/TripItineraryPage.css";
 
@@ -34,6 +33,7 @@ export function TripItineraryPage() {
   const [googleConnected, setGoogleConnected] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [, setAlert] = useState<{ message: string; type: string } | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [expenditure, setExpenditure] = useState<{
     amount: number;
@@ -50,10 +50,6 @@ export function TripItineraryPage() {
     useState<ItineraryCreationData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
-  const [alert, setAlert] = useState<{
-    message: string;
-    type: "success" | "danger";
-  } | null>(null);
 
   const handleAddToItinerary = (item: ItineraryCreationData) => {
     setSelectedItinerary(item);

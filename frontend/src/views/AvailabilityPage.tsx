@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { useParams, useNavigate } from "react-router-dom";
@@ -65,11 +65,9 @@ function AvailabilityPage() {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showAddTripModal, setShowAddTripModal] = useState(false);
   const [addUserError, setAddUserError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const fetchTrackerData = async () => {
     if (!trackerId || !currentUser) return;
-    setLoading(true);
     try {
       const trackerData = await getTrackerData(trackerId);
       setTracker(trackerData);
@@ -82,8 +80,6 @@ function AvailabilityPage() {
       setDraft(trackerData.availability?.[currentUser.user_id] || []);
     } catch (error) {
       console.error("Failed to fetch tracker data:", error);
-    } finally {
-      setLoading(false);
     }
   };
 

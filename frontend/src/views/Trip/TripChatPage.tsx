@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import { useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../contexts/UserContext";
 import { addChatMessage, getChat } from "../../api";
@@ -8,7 +7,6 @@ import { convertUtcToLocalTime } from "../../utils/dateUtils";
 import "../../assets/css/TripChatPage.css";
 
 export function TripChatPage() {
-  const { tripId } = useParams<{ tripId: string }>();
   const { trip, members } = useTripDetails();
   const { user } = useUser();
   const [input, setInput] = useState("");

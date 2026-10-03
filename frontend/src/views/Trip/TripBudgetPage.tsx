@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { getTripBudget, updateTripBudget } from "../../api/budget";
-import { getAuthHeaders } from "../../api/auth";
 import {
   BarChart,
   Bar,
@@ -28,12 +27,7 @@ import {
 } from "react-bootstrap";
 import { analyzeReceipt } from "../../api/gemini";
 
-import type {
-  TripBudget,
-  ExpenseItem,
-  Category,
-  Contributor,
-} from "../../models/budget";
+import type { TripBudget, ExpenseItem, Category } from "../../models/budget";
 
 import { BAR_COLORS } from "../../models/budget";
 
@@ -42,7 +36,7 @@ export function TripBudgetPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showModal, setShowModal] = useState(false);
-  const [receiptData, setReceiptData] = useState<any>(null);
+  const [, setReceiptData] = useState<any>(null);
   const [editableReceipt, setEditableReceipt] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 

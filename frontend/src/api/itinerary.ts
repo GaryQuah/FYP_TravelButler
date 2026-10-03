@@ -1,8 +1,6 @@
 import type { Itinerary, ItineraryCreationData } from "../models";
 import { getAuthHeaders } from "./auth";
 
-import { parseUtcDateString } from "../utils/dateUtils";
-
 export async function getItineraries(tripId: string): Promise<Itinerary[]> {
   const headers = await getAuthHeaders();
   const response = await fetch(`/api/itineraries/${tripId}`, { headers });
