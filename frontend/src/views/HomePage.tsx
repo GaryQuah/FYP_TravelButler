@@ -15,7 +15,6 @@ import AvailabilityTrackerCard from "../components/cards/AvailabilityTrackerCard
 import AvailabilityTrackerModal from "../components/modals/AvailabilityTrackerModal";
 import "../assets/css/HomePage.css";
 import { createTracker as apiCreateTracker } from "../api/home";
-import homeBanner from "../assets/images/dashboard/sunset.jpg";
 
 type AlertState = {
   show: boolean;

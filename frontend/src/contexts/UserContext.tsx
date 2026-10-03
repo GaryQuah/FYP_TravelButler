@@ -4,7 +4,7 @@ It provides a UserProvider component that wraps the app and manages the user sta
 The useUser hook allows components to easily access the user state and update it when needed.
 TODO: Is this the best way to manage user data? 
 */
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User } from "../models";
 import { clearAuthState } from "../api/auth";

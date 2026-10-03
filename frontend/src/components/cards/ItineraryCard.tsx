@@ -25,6 +25,13 @@ const ItineraryCard = ({
   const [addingToCalendar, setAddingToCalendar] = useState(false);
   const [added, setAdded] = useState(false);
 
+  const formatTime = (time: string) => {
+    return new Date(time).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   const handleDelete = () => {
     if (window.confirm(`Are you sure you want to delete "${activity_name}"?`)) {
       onDelete(id);
@@ -86,7 +93,7 @@ const ItineraryCard = ({
         </div>
 
         <div className="mb-2 text-muted">
-          {start_time} - {end_time}
+          {formatTime(start_time)} - {formatTime(end_time)}
         </div>
 
         <p className="card-text mb-auto">{description}</p>

@@ -4,3 +4,4 @@ export * from './itinerary';
 export * from './chat';
 export * from './ai_chat';
 export * from './availability_tracker';
+export * from './alert';

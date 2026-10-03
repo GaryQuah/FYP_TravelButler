@@ -43,14 +43,6 @@ async def logout(response: Response):
     clear_access_cookie(response)
     return {"success": True}
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_user_route(
-    user: User,
-    users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
-):
-    return await create_user(users_collection, user)
-
-
 @router.get("/me", response_model=User)
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user

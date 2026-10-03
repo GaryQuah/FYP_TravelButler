@@ -14,7 +14,8 @@ import {
 import { analyzeDescription, analyzeItinerary } from "../../api/gemini.ts";
 import { addExpenditure } from "../../api/budget.ts";
 import type { Itinerary, ItineraryCreationData } from "../../models";
-import { formatTimeFromString } from "../../utils/dateUtils";
+
+import "../..//assets/css/TripItineraryPage.css";
 
 import "../..//assets/css/TripItineraryPage.css";
 
@@ -34,6 +35,7 @@ export function TripItineraryPage() {
   const [googleConnected, setGoogleConnected] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [, setAlert] = useState<{ message: string; type: string } | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [expenditure, setExpenditure] = useState<{
     amount: number;
@@ -434,8 +436,8 @@ export function TripItineraryPage() {
                       <ItineraryCard
                         id={item.id}
                         activity_name={item.activity_name}
-                        start_time={formatTimeFromString(item.start_time)}
-                        end_time={formatTimeFromString(item.end_time)}
+                        start_time={item.start_time}
+                        end_time={item.end_time}
                         description={item.description}
                         onDelete={deleteItinerary}
                         onEdit={handleEditItinerary}

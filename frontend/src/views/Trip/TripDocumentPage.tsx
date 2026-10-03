@@ -8,7 +8,6 @@ import {
 } from "../../api/document";
 import { analyzeDocument } from "../../api/gemini";
 import { addItinerary } from "../../api/itinerary";
-import { addExpenditure } from "../../api/budget";
 
 import { UploadDocumentModal } from "../../components/modals/UploadDocumentModal";
 import "../../assets/css/TripDocumentPage.css";
@@ -27,23 +26,11 @@ interface ItineraryDraft {
   description: string;
 }
 
-interface BudgetDraft {
-  item: string;
-  amount: string;
-  category: string;
-}
-
 const EMPTY_ITINERARY_DRAFT: ItineraryDraft = {
   activity_name: "",
   start_time: "",
   end_time: "",
   description: "",
-};
-
-const EMPTY_BUDGET_DRAFT: BudgetDraft = {
-  item: "",
-  amount: "",
-  category: "Miscellaneous",
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -135,18 +122,6 @@ function buildItineraryDraft(payload: Record<string, unknown>): ItineraryDraft {
   };
 }
 
-function buildBudgetDraft(payload: Record<string, unknown>): BudgetDraft {
-  const item = getStringValue(payload, ["item", "merchant", "name", "title"]);
-  const amount = getStringValue(payload, ["amount", "total", "price"]);
-  const category = getStringValue(payload, ["category"]) || "Miscellaneous";
-
-  return {
-    item,
-    amount,
-    category,
-  };
-}
-
 function toRecordOrNull(value: unknown): Record<string, unknown> | null {
   return isRecord(value) ? value : null;
 }
@@ -207,8 +182,6 @@ export function TripDocumentPage() {
   const [itineraryDraft, setItineraryDraft] = useState<ItineraryDraft>(
     EMPTY_ITINERARY_DRAFT,
   );
-  const [budgetDraft, setBudgetDraft] =
-    useState<BudgetDraft>(EMPTY_BUDGET_DRAFT);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [alert, setAlert] = useState<{
@@ -244,8 +217,6 @@ export function TripDocumentPage() {
       setItineraryDraft(buildItineraryDraft(activeAction.payload));
       return;
     }
-
-    setBudgetDraft(buildBudgetDraft(activeAction.payload));
   }, [activeAction]);
 
   const moveToNextAnalysisAction = () => {
@@ -326,42 +297,6 @@ export function TripDocumentPage() {
       console.error("Failed to add itinerary item:", error);
       setAlert({
         message: "Failed to create itinerary item. Please try again.",
-        type: "danger",
-      });
-    }
-  };
-
-  const handleSaveBudget = async () => {
-    if (!tripId) return;
-
-    const parsedAmount = Number(budgetDraft.amount);
-    if (
-      !budgetDraft.item.trim() ||
-      !budgetDraft.category.trim() ||
-      Number.isNaN(parsedAmount)
-    ) {
-      setAlert({
-        message: "Please provide item, amount, and category.",
-        type: "danger",
-      });
-      return;
-    }
-
-    try {
-      await addExpenditure(tripId, {
-        item: budgetDraft.item.trim(),
-        amount: parsedAmount,
-        category: budgetDraft.category.trim(),
-      });
-      setAlert({
-        message: "Budget entry created successfully!",
-        type: "success",
-      });
-      moveToNextAnalysisAction();
-    } catch (error) {
-      console.error("Failed to add expenditure:", error);
-      setAlert({
-        message: "Failed to create budget entry. Please try again.",
         type: "danger",
       });
     }
