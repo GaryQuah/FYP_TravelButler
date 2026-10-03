@@ -50,6 +50,10 @@ export function TripItineraryPage() {
     useState<ItineraryCreationData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  const [alert, setAlert] = useState<{
+    message: string;
+    type: "success" | "danger";
+  } | null>(null);
 
   const handleAddToItinerary = (item: ItineraryCreationData) => {
     setSelectedItinerary(item);
