@@ -1,12 +1,9 @@
 import { apiFetch } from "./apiFetch";
-import { getAuthHeaders } from "./auth";
 
 const API_BASE_URL = "/api";
 
 export async function getGoogleCalendarStatus(): Promise<{ connected: boolean }> {
-  const response = await apiFetch(`${API_BASE_URL}/google-calendar/status`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`${API_BASE_URL}/google-calendar/status`);
   if (!response.ok) throw new Error("Failed to get Google Calendar status");
   return response.json();
 }
@@ -16,7 +13,6 @@ export async function connectGoogleCalendar(codeResponse: {
 }): Promise<{ success: boolean; message: string }> {
   const response = await apiFetch(`${API_BASE_URL}/google-calendar/connect`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify(codeResponse),
   });
   if (!response.ok) {
@@ -34,7 +30,6 @@ export async function disconnectGoogleCalendar(): Promise<{
 }> {
   const response = await apiFetch(`${API_BASE_URL}/google-calendar/disconnect`, {
     method: "DELETE",
-    headers: getAuthHeaders(),
   });
   if (!response.ok) throw new Error("Failed to disconnect Google Calendar");
   return response.json();
@@ -56,7 +51,6 @@ export async function exportItinerariesToCalendar(
     `${API_BASE_URL}/google-calendar/export-itineraries`,
     {
       method: "POST",
-      headers: getAuthHeaders(),
       body: JSON.stringify({ itinerary_ids }),
     },
   );
@@ -70,7 +64,6 @@ export async function createSingleCalendarEvent(
 ): Promise<{ success: boolean; event: any }> {
   const response = await apiFetch(`${API_BASE_URL}/google-calendar/events`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify(eventData),
   });
   if (!response.ok) throw new Error("Failed to create calendar event");

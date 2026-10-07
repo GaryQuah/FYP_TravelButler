@@ -1,11 +1,8 @@
 import type { AiChat } from "../models/ai_chat";
 import { apiFetch } from "./apiFetch";
-import { getAuthHeaders } from "./auth";
 
 export async function getAIChat(aiChatId: string): Promise<AiChat> {
-  const response = await apiFetch(`/api/ai-chats/${aiChatId}`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/api/ai-chats/${aiChatId}`);
   if (!response.ok) {
     throw new Error("Failed to fetch chat");
   }
@@ -20,7 +17,6 @@ export async function addAIChatMessage(
 ): Promise<AiChat> {
   const response = await apiFetch(`/api/ai-chats/${aiChatId}/messages`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify({ user_id: userId, message, country }),
   });
 

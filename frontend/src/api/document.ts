@@ -1,5 +1,4 @@
 import { apiFetch } from "./apiFetch";
-import { getAuthHeaders } from "./auth";
 
 export interface Document {
   id: string;
@@ -14,9 +13,7 @@ export interface Document {
 }
 
 export async function getDocuments(tripId: string): Promise<Document[]> {
-  const response = await apiFetch(`/api/trips/${tripId}/documents`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/api/trips/${tripId}/documents`);
   if (!response.ok) {
     throw new Error("Failed to fetch documents");
   }
@@ -34,14 +31,8 @@ export async function uploadDocument(
   formData.append("name", name);
   formData.append("description", description);
 
-  const headers: Record<string, string> = {
-    ...getAuthHeaders(),
-  } as Record<string, string>;
-  delete headers["Content-Type"];
-
   const response = await apiFetch(`/api/trips/${tripId}/documents`, {
     method: "POST",
-    headers,
     body: formData,
   });
 
@@ -57,7 +48,6 @@ export async function deleteDocument(
 ): Promise<void> {
   const response = await apiFetch(`/api/trips/${tripId}/documents/${documentId}`, {
     method: "DELETE",
-    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {

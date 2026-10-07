@@ -1,11 +1,9 @@
 import type { User, Trip, TripCreationData } from "../models";
 import { apiFetch } from "./apiFetch";
-import { getAuthHeaders } from "./auth";
 
 export async function createTrip(tripData: TripCreationData): Promise<Trip> {
   const response = await apiFetch(`/api/trips/`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify(tripData),
   });
   if (!response.ok) {
@@ -18,7 +16,6 @@ export async function createTrip(tripData: TripCreationData): Promise<Trip> {
 export async function deleteTrip(tripId: string): Promise<void> {
   const response = await apiFetch(`/api/trips/${tripId}`, {
     method: "DELETE",
-    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
@@ -30,9 +27,7 @@ export async function deleteTrip(tripId: string): Promise<void> {
 }
 
 export async function getTripDetails(tripId: string): Promise<Trip> {
-  const response = await apiFetch(`/api/trips/${tripId}`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/api/trips/${tripId}`);
   if (!response.ok) {
     throw new Error("Failed to fetch trip details");
   }
@@ -41,9 +36,7 @@ export async function getTripDetails(tripId: string): Promise<Trip> {
 }
 
 export async function getTripMembers(tripId: string): Promise<User[]> {
-  const response = await apiFetch(`/api/trips/${tripId}/members`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/api/trips/${tripId}/members`);
   if (!response.ok) {
     throw new Error("Failed to fetch trip members");
   }
@@ -51,9 +44,7 @@ export async function getTripMembers(tripId: string): Promise<User[]> {
 }
 
 export async function getTrips(): Promise<Trip[]> {
-  const response = await apiFetch("/api/trips/", {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch("/api/trips/");
   if (!response.ok) {
     throw new Error("Failed to fetch trips");
   }
@@ -67,7 +58,6 @@ export async function updateTrip(
 ): Promise<Trip> {
   const response = await apiFetch(`/api/trips/${tripId}`, {
     method: "PUT",
-    headers: getAuthHeaders(),
     body: JSON.stringify(tripData),
   });
   if (!response.ok) {
