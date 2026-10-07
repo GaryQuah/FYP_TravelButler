@@ -1,9 +1,10 @@
 import type { Itinerary, ItineraryCreationData } from "../models";
+import { apiFetch } from "./apiFetch";
 import { getAuthHeaders } from "./auth";
 
 export async function getItineraries(tripId: string): Promise<Itinerary[]> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`/api/itineraries/${tripId}`, { headers });
+  const response = await apiFetch(`/api/itineraries/${tripId}`, { headers });
   if (!response.ok) {
     throw new Error("Failed to fetch itineraries");
   }
@@ -16,7 +17,7 @@ export async function addItinerary(
   itineraryData: ItineraryCreationData,
 ): Promise<Itinerary> {
   const authHeaders = await getAuthHeaders();
-  const response = await fetch(`/api/itineraries/${tripId}`, {
+  const response = await apiFetch(`/api/itineraries/${tripId}`, {
     method: "POST",
     headers: {
       ...authHeaders,
@@ -36,7 +37,7 @@ export async function deleteItinerary(
   itineraryId: string,
 ): Promise<void> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`/api/itineraries/${tripId}/${itineraryId}`, {
+  const response = await apiFetch(`/api/itineraries/${tripId}/${itineraryId}`, {
     method: "DELETE",
     headers,
   });
@@ -50,7 +51,7 @@ export async function getItinerariesByIds(
   itineraryIds: string[],
 ): Promise<Itinerary[]> {
   const authHeaders = await getAuthHeaders();
-  const response = await fetch(`/api/itineraries/get_by_ids`, {
+  const response = await apiFetch(`/api/itineraries/get_by_ids`, {
     method: "POST",
     headers: {
       ...authHeaders,
@@ -71,7 +72,7 @@ export async function updateItinerary(
   itineraryData: Partial<ItineraryCreationData>,
 ): Promise<Itinerary> {
   const authHeaders = await getAuthHeaders();
-  const response = await fetch(`/api/itineraries/${tripId}/${itineraryId}`, {
+  const response = await apiFetch(`/api/itineraries/${tripId}/${itineraryId}`, {
     method: "PUT",
     headers: {
       ...authHeaders,

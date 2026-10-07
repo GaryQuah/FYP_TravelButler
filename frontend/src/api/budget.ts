@@ -1,6 +1,7 @@
 import { post } from "./utils";
 import { getAuthHeaders } from "./auth";
 import type { TripBudget } from "../models/budget";
+import { apiFetch } from "./apiFetch";
 
 export const addExpenditure = async (
   tripId: string,
@@ -10,7 +11,7 @@ export const addExpenditure = async (
 };
 
 export const getTripBudget = async (tripId: string) => {
-  const response = await fetch(`/api/budget/${tripId}`, {
+  const response = await apiFetch(`/api/budget/${tripId}`, {
     headers: getAuthHeaders(),
   });
   if (!response.ok) {
@@ -20,7 +21,7 @@ export const getTripBudget = async (tripId: string) => {
 };
 
 export const updateTripBudget = async (trip: TripBudget) => {
-  const response = await fetch(`/api/budget/${trip.id}`, {
+  const response = await apiFetch(`/api/budget/${trip.id}`, {
     method: "PUT",
     headers: getAuthHeaders(),
     body: JSON.stringify(trip),
