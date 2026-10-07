@@ -4,14 +4,22 @@ from app.models.document import Document
 from bson import ObjectId
 from bson.errors import InvalidId
 from motor.motor_asyncio import AsyncIOMotorClient
+from google.oauth2 import service_account
+from app.config import GCS_BUCKET_NAME, GCS_CREDENTIALS_INFO
 
 import datetime
 
 class DocumentService:
     def __init__(self, db: AsyncIOMotorClient):
         self.db = db
-        self.storage_client = storage.Client()
-        self.bucket_name = os.environ.get("GCS_BUCKET_NAME", "documents_1_fyp")
+        credentials = service_account.Credentials.from_service_account_info(
+            GCS_CREDENTIALS_INFO
+        )
+        self.storage_client = storage.Client(
+            project=GCS_CREDENTIALS_INFO["project_id"],
+            credentials=credentials,
+        )
+        self.bucket_name = GCS_BUCKET_NAME
 
     async def upload_file(self, file, filename, trip_id, content_type, user_id, name: str | None = None, description: str | None = None):
         bucket = self.storage_client.bucket(self.bucket_name)
