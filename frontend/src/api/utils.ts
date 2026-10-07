@@ -1,3 +1,4 @@
+import { apiFetch } from "./apiFetch";
 import { getAuthHeaders } from "./auth";
 
 export const post = async (url: string, body: any) => {
@@ -11,7 +12,7 @@ export const post = async (url: string, body: any) => {
     delete headers["Content-Type"];
   }
 
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     method: "POST",
     headers,
     body: isFormData ? body : JSON.stringify(body),

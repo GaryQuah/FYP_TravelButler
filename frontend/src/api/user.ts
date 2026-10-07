@@ -1,4 +1,5 @@
 import type { User } from "../models";
+import { apiFetch } from "./apiFetch";
 import { clearAuthState, getAuthHeaders } from "./auth";
 
 export interface LoginResponse {
@@ -10,7 +11,7 @@ export interface LoginResponse {
 export const loginOrRegisterUser = async (
   credential: string,
 ): Promise<LoginResponse | null> => {
-  const response = await fetch(`/api/users/login`, {
+  const response = await apiFetch(`/api/users/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -30,7 +31,7 @@ export async function inviteUserToTrip(
   tripId: string,
   email: string,
 ): Promise<void> {
-  const response = await fetch(`/api/trips/${tripId}/invite`, {
+  const response = await apiFetch(`/api/trips/${tripId}/invite`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify({ email }),
@@ -46,7 +47,7 @@ export const createUser = async (
   name: string,
   email: string,
 ): Promise<User> => {
-  const response = await fetch(`/api/users/`, {
+  const response = await apiFetch(`/api/users/`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify({ name, email }),
@@ -63,7 +64,7 @@ export async function inviteUserToTracker(
   trackerId: string,
   email: string,
 ): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/availability-trackers/${trackerId}/invite`,
     {
       method: "POST",
@@ -81,7 +82,7 @@ export async function inviteUserToTracker(
 }
 
 export async function getCurrentUser(): Promise<User> {
-  const response = await fetch(`/api/users/me`, {
+  const response = await apiFetch(`/api/users/me`, {
     headers: getAuthHeaders(),
   });
   if (!response.ok) {
@@ -91,7 +92,7 @@ export async function getCurrentUser(): Promise<User> {
 }
 
 export async function logoutUser(): Promise<void> {
-  await fetch(`/api/users/logout`, {
+  await apiFetch(`/api/users/logout`, {
     method: "POST",
     headers: getAuthHeaders(),
   });

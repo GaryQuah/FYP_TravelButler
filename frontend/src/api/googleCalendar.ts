@@ -1,9 +1,10 @@
+import { apiFetch } from "./apiFetch";
 import { getAuthHeaders } from "./auth";
 
 const API_BASE_URL = "/api";
 
 export async function getGoogleCalendarStatus(): Promise<{ connected: boolean }> {
-  const response = await fetch(`${API_BASE_URL}/google-calendar/status`, {
+  const response = await apiFetch(`${API_BASE_URL}/google-calendar/status`, {
     headers: getAuthHeaders(),
   });
   if (!response.ok) throw new Error("Failed to get Google Calendar status");
@@ -13,7 +14,7 @@ export async function getGoogleCalendarStatus(): Promise<{ connected: boolean }>
 export async function connectGoogleCalendar(codeResponse: {
   code: string;
 }): Promise<{ success: boolean; message: string }> {
-  const response = await fetch(`${API_BASE_URL}/google-calendar/connect`, {
+  const response = await apiFetch(`${API_BASE_URL}/google-calendar/connect`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(codeResponse),
@@ -31,7 +32,7 @@ export async function disconnectGoogleCalendar(): Promise<{
   success: boolean;
   message: string;
 }> {
-  const response = await fetch(`${API_BASE_URL}/google-calendar/disconnect`, {
+  const response = await apiFetch(`${API_BASE_URL}/google-calendar/disconnect`, {
     method: "DELETE",
     headers: getAuthHeaders(),
   });
@@ -51,7 +52,7 @@ export async function exportItinerariesToCalendar(
   errors: Array<{ itinerary_id: string; error: string }>;
   message: string;
 }> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/google-calendar/export-itineraries`,
     {
       method: "POST",
@@ -67,7 +68,7 @@ export async function exportItinerariesToCalendar(
 export async function createSingleCalendarEvent(
   eventData: any,
 ): Promise<{ success: boolean; event: any }> {
-  const response = await fetch(`${API_BASE_URL}/google-calendar/events`, {
+  const response = await apiFetch(`${API_BASE_URL}/google-calendar/events`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(eventData),

@@ -4,10 +4,11 @@ import type {
   AvailabilityTrackerCreationData,
   User,
 } from "../models";
+import { apiFetch } from "./apiFetch";
 import { getAuthHeaders } from "./auth";
 
 export async function getAvailabilityTrackers(): Promise<AvailabilityTracker[]> {
-  const response = await fetch(`/api/availability-trackers/`, {
+  const response = await apiFetch(`/api/availability-trackers/`, {
     headers: getAuthHeaders(),
   });
   if (!response.ok) {
@@ -17,7 +18,7 @@ export async function getAvailabilityTrackers(): Promise<AvailabilityTracker[]> 
 }
 
 export async function getTrackerMembers(trackerId: string): Promise<User[]> {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/availability-trackers/${trackerId}/members`,
     {
       headers: getAuthHeaders(),
@@ -33,7 +34,7 @@ export async function updateAvailabilityTracker(
   trackerId: string,
   trackerData: Partial<AvailabilityTrackerCreationData>,
 ): Promise<AvailabilityTracker> {
-  const response = await fetch(`/api/availability-trackers/${trackerId}`, {
+  const response = await apiFetch(`/api/availability-trackers/${trackerId}`, {
     method: "PUT",
     headers: getAuthHeaders(),
     body: JSON.stringify(trackerData),
@@ -45,7 +46,7 @@ export async function updateAvailabilityTracker(
 }
 
 export async function deleteAvailabilityTracker(trackerId: string): Promise<void> {
-  const response = await fetch(`/api/availability-trackers/${trackerId}`, {
+  const response = await apiFetch(`/api/availability-trackers/${trackerId}`, {
     method: "DELETE",
     headers: getAuthHeaders(),
   });
@@ -55,7 +56,7 @@ export async function deleteAvailabilityTracker(trackerId: string): Promise<void
 }
 
 export async function getTrackerData(trackerId: string) {
-  const response = await fetch(`/api/availability-trackers/${trackerId}`, {
+  const response = await apiFetch(`/api/availability-trackers/${trackerId}`, {
     headers: getAuthHeaders(),
   });
   if (!response.ok) {
@@ -69,7 +70,7 @@ export async function saveAvailability(
   userId: string,
   dates: string[],
 ) {
-  const response = await fetch(
+  const response = await apiFetch(
     `/api/availability-trackers/${trackerId}/availability/${userId}`,
     {
       method: "PUT",
