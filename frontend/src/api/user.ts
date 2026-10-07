@@ -24,7 +24,12 @@ export const loginOrRegisterUser = async (
     return null;
   }
 
-  return response.json();
+  const data: LoginResponse = await response.json();
+
+  localStorage.setItem("access_token", data.access_token);
+  localStorage.setItem("user", JSON.stringify(data.user));
+
+  return data;
 };
 
 export async function inviteUserToTrip(
