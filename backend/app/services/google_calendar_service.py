@@ -32,8 +32,13 @@ async def exchange_code_for_tokens(code: str) -> GoogleCalendarTokens:
         )
         
         if response.status_code != 200:
-            logger.error(f"Google token exchange failed: {response.status_code} {response.text}")
-            response.raise_for_status()
+            logger.error(
+                f"Google token exchange failed: "
+                f"{response.status_code} {response.text}"
+            )
+            raise ValueError(
+                f"Google token exchange failed: {response.text}"
+            )
             
         token_data = response.json()
         
