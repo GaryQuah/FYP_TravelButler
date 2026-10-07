@@ -1,20 +1,14 @@
 
 import { apiFetch } from './apiFetch';
-import { getAuthHeaders } from './auth';
 
 const BASE_URL = '/api/gemini';
 
 export async function analyzeReceipt(file: File) {
   const formData = new FormData();
   formData.append('file', file);
-  const headers: Record<string, string> = {
-    ...getAuthHeaders(),
-  } as Record<string, string>;
-  delete headers["Content-Type"];
 
   const response = await apiFetch(`${BASE_URL}/analyze-receipt`, {
     method: 'POST',
-    headers,
     body: formData,
   });
 
@@ -29,7 +23,6 @@ export async function analyzeItinerary(itinerary: any[]) {
   const response = await apiFetch(`${BASE_URL}/analyze-itinerary`, {
     method: "POST",
     headers: {
-      ...getAuthHeaders(),
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ itinerary }),
@@ -46,7 +39,6 @@ export async function analyzeDescription(description: string) {
   const response = await apiFetch(`${BASE_URL}/analyze-description`, {
     method: "POST",
     headers: {
-      ...getAuthHeaders(),
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ description }),
@@ -62,14 +54,9 @@ export async function analyzeDescription(description: string) {
 export async function analyzeDocument(file: File) {
   const formData = new FormData();
   formData.append('file', file);
-  const headers: Record<string, string> = {
-    ...getAuthHeaders(),
-  } as Record<string, string>;
-  delete headers["Content-Type"];
 
   const response = await apiFetch(`${BASE_URL}/analyze-document`, {
     method: 'POST',
-    headers,
     body: formData,
   });
 

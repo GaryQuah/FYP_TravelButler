@@ -5,12 +5,9 @@ import type {
   User,
 } from "../models";
 import { apiFetch } from "./apiFetch";
-import { getAuthHeaders } from "./auth";
 
 export async function getAvailabilityTrackers(): Promise<AvailabilityTracker[]> {
-  const response = await apiFetch(`/api/availability-trackers/`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/api/availability-trackers/`);
   if (!response.ok) {
     throw new Error("Failed to fetch availability trackers");
   }
@@ -19,10 +16,7 @@ export async function getAvailabilityTrackers(): Promise<AvailabilityTracker[]> 
 
 export async function getTrackerMembers(trackerId: string): Promise<User[]> {
   const response = await apiFetch(
-    `/api/availability-trackers/${trackerId}/members`,
-    {
-      headers: getAuthHeaders(),
-    },
+    `/api/availability-trackers/${trackerId}/members`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch tracker members");
@@ -36,7 +30,6 @@ export async function updateAvailabilityTracker(
 ): Promise<AvailabilityTracker> {
   const response = await apiFetch(`/api/availability-trackers/${trackerId}`, {
     method: "PUT",
-    headers: getAuthHeaders(),
     body: JSON.stringify(trackerData),
   });
   if (!response.ok) {
@@ -45,10 +38,11 @@ export async function updateAvailabilityTracker(
   return response.json();
 }
 
-export async function deleteAvailabilityTracker(trackerId: string): Promise<void> {
+export async function deleteAvailabilityTracker(
+  trackerId: string,
+): Promise<void> {
   const response = await apiFetch(`/api/availability-trackers/${trackerId}`, {
     method: "DELETE",
-    headers: getAuthHeaders(),
   });
   if (!response.ok) {
     throw new Error("Failed to delete availability tracker");
@@ -56,9 +50,7 @@ export async function deleteAvailabilityTracker(trackerId: string): Promise<void
 }
 
 export async function getTrackerData(trackerId: string) {
-  const response = await apiFetch(`/api/availability-trackers/${trackerId}`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/api/availability-trackers/${trackerId}`);
   if (!response.ok) {
     throw new Error("Failed to fetch tracker data");
   }

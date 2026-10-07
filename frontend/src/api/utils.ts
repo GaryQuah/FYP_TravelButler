@@ -1,12 +1,9 @@
 import { apiFetch } from "./apiFetch";
-import { getAuthHeaders } from "./auth";
 
 export const post = async (url: string, body: any) => {
   const isFormData = body instanceof FormData;
 
-  const headers: Record<string, string> = {
-    ...getAuthHeaders(),
-  } as Record<string, string>;
+  const headers: Record<string, string> = {};
 
   if (isFormData) {
     delete headers["Content-Type"];

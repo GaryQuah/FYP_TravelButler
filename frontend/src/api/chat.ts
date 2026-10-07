@@ -1,11 +1,8 @@
 import type { Chat } from "../models/chat";
 import { apiFetch } from "./apiFetch";
-import { getAuthHeaders } from "./auth";
 
 export async function getChat(chatId: string): Promise<Chat> {
-  const response = await apiFetch(`/api/chats/${chatId}`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/api/chats/${chatId}`);
   if (!response.ok) {
     throw new Error("Failed to fetch chat");
   }
@@ -19,7 +16,6 @@ export async function addChatMessage(
 ): Promise<Chat> {
   const response = await apiFetch(`/api/chats/${chatId}/messages`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify({ user_id: userId, message }),
   });
 

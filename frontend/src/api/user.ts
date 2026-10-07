@@ -1,6 +1,6 @@
 import type { User } from "../models";
 import { apiFetch } from "./apiFetch";
-import { clearAuthState, getAuthHeaders } from "./auth";
+import { clearAuthState } from "./auth";
 
 export interface LoginResponse {
   access_token: string;
@@ -33,7 +33,6 @@ export async function inviteUserToTrip(
 ): Promise<void> {
   const response = await apiFetch(`/api/trips/${tripId}/invite`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify({ email }),
   });
 
@@ -49,7 +48,6 @@ export const createUser = async (
 ): Promise<User> => {
   const response = await apiFetch(`/api/users/`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify({ name, email }),
   });
 
@@ -68,7 +66,6 @@ export async function inviteUserToTracker(
     `/api/availability-trackers/${trackerId}/invite`,
     {
       method: "POST",
-      headers: getAuthHeaders(),
       body: JSON.stringify({ email }),
     },
   );
@@ -82,9 +79,7 @@ export async function inviteUserToTracker(
 }
 
 export async function getCurrentUser(): Promise<User> {
-  const response = await apiFetch(`/api/users/me`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/api/users/me`);
   if (!response.ok) {
     throw new Error("Failed to fetch current user");
   }
@@ -94,7 +89,6 @@ export async function getCurrentUser(): Promise<User> {
 export async function logoutUser(): Promise<void> {
   await apiFetch(`/api/users/logout`, {
     method: "POST",
-    headers: getAuthHeaders(),
   });
   clearAuthState();
 }

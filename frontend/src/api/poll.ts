@@ -1,10 +1,7 @@
 import { apiFetch } from "./apiFetch";
-import { getAuthHeaders } from "./auth";
 
 export const fetchPolls = async (tripId: string) => {
-  const response = await apiFetch(`/api/trip/${tripId}/polls`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await apiFetch(`/api/trip/${tripId}/polls`);
   if (!response.ok) {
     const errorData = await response
       .json()
@@ -20,7 +17,6 @@ export const createPoll = async (
 ) => {
   const response = await apiFetch(`/api/trip/${tripId}/polls`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify(pollData),
   });
   if (!response.ok) {
@@ -41,7 +37,6 @@ export const voteOnPoll = async (
     `/api/trip/${tripId}/polls/${pollId}/options/${optionId}/vote`,
     {
       method: "POST",
-      headers: getAuthHeaders(),
     },
   );
   if (!response.ok) {
@@ -56,7 +51,6 @@ export const voteOnPoll = async (
 export const deletePoll = async (tripId: string, pollId: string) => {
   const response = await apiFetch(`/api/trip/${tripId}/polls/${pollId}`, {
     method: "DELETE",
-    headers: getAuthHeaders(),
   });
   if (!response.ok) {
     const errorData = await response
