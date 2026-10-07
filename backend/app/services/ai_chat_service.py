@@ -51,11 +51,14 @@ async def get_ai_chat_by_id(collection: AsyncIOMotorCollection, ai_chat_id: str)
         return ai_chat_serializer(chat)
     return None
 
-import httpx
+import asyncio
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.chat import Message
+from app.services.gemini_service import GeminiService
 from bson import ObjectId
 from datetime import datetime
+
+gemini = GeminiService()
 
 async def add_message_to_ai_chat(collection: AsyncIOMotorCollection, ai_chat_id: str, user_id: str, message: str, country: str):
     """
@@ -85,16 +88,13 @@ async def add_message_to_ai_chat(collection: AsyncIOMotorCollection, ai_chat_id:
 
     itinerary = chat.get("ai_recommendations", []) if chat else []
 
-    # Get AI response
-    async with httpx.AsyncClient() as client:
-        response = await client.post("http://localhost:8000/api/gemini/chat", json={
-            "message": message,
-            "history": history,
-            "country": country,
-            "itinerary": itinerary
-        })
-        response.raise_for_status()
-        ai_response = response.json()
+    ai_response = await asyncio.to_thread(
+        gemini.generate_chat_response,
+        user_input=message,
+        history=history,
+        country=country,
+        itinerary=itinerary,
+    )
 
     ai_response_text = ai_response.get("response", "")
     itinerary = ai_response.get("itinerary")
