@@ -60,10 +60,11 @@ export function SettingsPage() {
     flow: "auth-code",
     scope:
       "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events",
+    redirect_uri: window.location.origin,
 
     onSuccess: (codeResponse) => {
       handleConnectSuccess({
-        code: codeResponse.code, // 👈 ONLY send code
+        code: codeResponse.code,
       });
     },
 
