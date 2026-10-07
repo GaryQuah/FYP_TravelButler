@@ -23,7 +23,8 @@ app = FastAPI(lifespan=lifespan, debug=DEBUG)
 # CORS configuration to allow requests from the frontend on localhost:5173
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://fyp-travel-butler.vercel.app", "https://fyp-travel-butler-git-production-gary-6b97.vercel.app"],
+    allow_origins=["http://localhost:5173", "https://fyp-travel-butler.vercel.app", 
+                   "https://fyp-travel-butler-git-production-gary-6b97.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
