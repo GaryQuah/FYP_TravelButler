@@ -11,7 +11,7 @@ class DocumentService:
     def __init__(self, db: AsyncIOMotorClient):
         self.db = db
         self.storage_client = storage.Client()
-        self.bucket_name = os.environ.get("GCS_BUCKET_NAME", "your-gcs-bucket-name")
+        self.bucket_name = os.environ.get("GCS_BUCKET_NAME", "documents_1_fyp")
 
     async def upload_file(self, file, filename, trip_id, content_type, user_id, name: str | None = None, description: str | None = None):
         bucket = self.storage_client.bucket(self.bucket_name)
@@ -34,7 +34,11 @@ class DocumentService:
             {"$push": {"document_ids": result.inserted_id}}
         )
 
-        return blob.public_url
+        return blob.generate_signed_url(
+            version="v4",
+            expiration=datetime.timedelta(minutes=15),
+            method="GET",
+        )
 
     async def get_documents_for_trip(self, trip_id):
         trip = await self.db.trips.find_one({"_id": ObjectId(trip_id)})

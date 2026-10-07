@@ -9,7 +9,7 @@ class Document(BaseModel):
     gcs_path: str
     name: str | None = None
     description: str | None = None
-    created_at: datetime = datetime.now()
+    created_at: datetime = Field(default_factory=datetime.now)
     user_id: str
 
     class Config:
