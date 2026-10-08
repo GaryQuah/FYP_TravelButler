@@ -1,3 +1,4 @@
+import LoadingOverlay from "../../components/LoadingOverlay";
 /* Uses Outlet to render the content of the trip layout, prevents rendering the hero banner e.t.c multiple times. */
 import { Outlet, useParams } from "react-router-dom";
 import { useState } from "react";
@@ -45,10 +46,6 @@ function TripLayoutContent() {
     }
   };
 
-  if (loading) {
-    return <div>Loading trip details...</div>;
-  }
-
   if (error) {
     return <div>{error}</div>;
   }
@@ -59,6 +56,7 @@ function TripLayoutContent() {
 
   return (
     <>
+      <LoadingOverlay show={loading} />
       <Navbar />
       <TripNavbar />
       <div className="main-content">

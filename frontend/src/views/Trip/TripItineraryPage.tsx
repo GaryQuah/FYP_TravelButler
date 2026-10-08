@@ -1,3 +1,4 @@
+import LoadingOverlay from "../../components/LoadingOverlay";
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import ItineraryCard from "../../components/cards/ItineraryCard";
@@ -53,7 +54,6 @@ export function TripItineraryPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
 
-
   const handleAddToItinerary = (item: ItineraryCreationData) => {
     setSelectedItinerary(item);
     setIsModalOpen(true);
@@ -62,8 +62,6 @@ export function TripItineraryPage() {
   const handleAddAllToItinerary = async () => {
     setIsDateModalOpen(true);
   };
-
-
 
   const handleSaveAllItineraries = async (date: Date) => {
     if (!tripId || !analysis?.recommendations) return;
@@ -170,7 +168,6 @@ export function TripItineraryPage() {
   const handleSaveRecommendedItinerary = async (
     itineraryData: ItineraryCreationData,
   ) => {
-
     try {
       await addItinerary(itineraryData);
       setIsModalOpen(false); // Correctly close the ItineraryModal
@@ -178,8 +175,7 @@ export function TripItineraryPage() {
       // Remove the added itinerary from the analysis recommendations
       if (analysis && analysis.recommendations) {
         const updatedRecommendations = analysis.recommendations.filter(
-          (rec: Itinerary) =>
-            rec.activity_name !== itineraryData.activity_name,
+          (rec: Itinerary) => rec.activity_name !== itineraryData.activity_name,
         );
         setAnalysis({ ...analysis, recommendations: updatedRecommendations });
       }
@@ -196,6 +192,9 @@ export function TripItineraryPage() {
       console.error("Failed to save recommended itinerary:", error);
     }
   };
+
+  if (tripLoading || itinerariesLoading) {
+  }
 
   const handleUpdateItinerary = async (
     itineraryData: ItineraryCreationData,
@@ -214,45 +213,9 @@ export function TripItineraryPage() {
     }
   };
 
-  if (tripLoading) {
-    return <div>Loading trip details...</div>;
-  }
-
   if (tripError) {
     return <div>{tripError}</div>;
   }
-
-  useEffect(() => {
-    checkGoogleCalendarStatus();
-  }, []);
-
-  const checkGoogleCalendarStatus = async () => {
-    try {
-      const status = await getGoogleCalendarStatus();
-      setGoogleConnected(status.connected);
-    } catch (err) {
-      console.error("Failed to check Google Calendar status:", err);
-    }
-  };
-
-  const handleExportEntireTrip = async () => {
-    if (!itineraries || itineraries.length === 0) return;
-
-    setExportLoading(true);
-    setExportMessage(null);
-
-    try {
-      const itineraryIds = itineraries.map((item) => item.id);
-      const result = await exportItinerariesToCalendar(itineraryIds);
-      setExportMessage(
-        `${result.message} ${result.created_events.length} events created.`,
-      );
-    } catch (err: any) {
-      setExportMessage(`Export failed: ${err.message}`);
-    } finally {
-      setExportLoading(false);
-    }
-  };
 
   if (!trip) {
     return <div>Trip not found.</div>;
@@ -260,7 +223,7 @@ export function TripItineraryPage() {
 
   return (
     <>
-
+      <LoadingOverlay show={tripLoading || itinerariesLoading} />
       <div>
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>
           <i className="bi bi-plus-circle me-2"></i>Add Itinerary
@@ -385,7 +348,6 @@ export function TripItineraryPage() {
 
       <div className="row">
         <div className="col-12">
-          {itinerariesLoading && <p>Loading itinerary...</p>}
           {itinerariesError && (
             <p className="text-danger">{itinerariesError}</p>
           )}

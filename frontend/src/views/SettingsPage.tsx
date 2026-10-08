@@ -1,3 +1,4 @@
+import LoadingOverlay from "../components/LoadingOverlay";
 import { useState, useEffect } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import {
@@ -73,12 +74,9 @@ export function SettingsPage() {
     },
   });
 
-  if (loading) {
-    return <div className="container mt-5">Loading settings...</div>;
-  }
-
   return (
     <div>
+      <LoadingOverlay show={loading} />
       <Navbar />
 
       <div className="container mt-5">

@@ -1,0 +1,103 @@
+.lo-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(15, 23, 42, 0.45); /* translucent tint */
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px); /* frosted-glass effect */
+  animation: lo-fade-in 0.08s ease-out;
+}
+
+.lo-hourglass {
+  width: 56px;
+  height: 80px;
+  animation: lo-flip 2.4s ease-in-out infinite;
+}
+
+.lo-label {
+  color: #fff;
+  font: 500 15px/1.4 system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* Sand drains from top bulb, fills bottom bulb */
+.lo-sand-top {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: lo-drain 2.4s linear infinite;
+}
+
+.lo-sand-bottom {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: lo-fill 2.4s linear infinite;
+}
+
+.lo-stream {
+  animation: lo-stream 2.4s linear infinite;
+}
+
+/* Flip happens in the last 20% of the cycle, then sand resets */
+@keyframes lo-flip {
+  0%,
+  80% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(180deg);
+  }
+}
+
+@keyframes lo-drain {
+  0% {
+    transform: scaleY(1);
+  }
+  80%,
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes lo-fill {
+  0% {
+    transform: scaleY(0);
+  }
+  80%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes lo-stream {
+  0%,
+  78% {
+    opacity: 1;
+  }
+  80%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes lo-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lo-hourglass,
+  .lo-sand-top,
+  .lo-sand-bottom,
+  .lo-stream {
+    animation-duration: 6s;
+  }
+}

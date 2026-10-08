@@ -244,288 +244,288 @@ export function TripBudgetPage() {
   /* =========================================================
      UI
   ========================================================= */
-
   if (!trip) {
     return <div>Loading...</div>;
   }
-
   return (
-    <Container fluid className="py-4">
-      <h2 className="mb-3">{trip.tripName} Budget Tracker</h2>
+    <>
+      <Container fluid className="py-4">
+        <h2 className="mb-3">{trip.tripName} Budget Tracker</h2>
 
-      {/* =====================================================
+        {/* =====================================================
           SUMMARY
       ===================================================== */}
 
-      <Row className="mb-4">
-        <Col md={6}>
-          <Card>
-            <Card.Body>
-              <h5>Total Travel Expenditure</h5>
-              <h3>${totalTravelExpenditure.toLocaleString()}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
+        <Row className="mb-4">
+          <Col md={6}>
+            <Card>
+              <Card.Body>
+                <h5>Total Travel Expenditure</h5>
+                <h3>${totalTravelExpenditure.toLocaleString()}</h3>
+              </Card.Body>
+            </Card>
+          </Col>
 
-        <Col md={6}>
-          <Card>
-            <Card.Body>
-              <h5>Per Person</h5>
-              <h3>${amountPerPerson.toFixed(2)}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+          <Col md={6}>
+            <Card>
+              <Card.Body>
+                <h5>Per Person</h5>
+                <h3>${amountPerPerson.toFixed(2)}</h3>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
 
-      {/* =====================================================
+        {/* =====================================================
           BAR CHART (NOW ABOVE PERSON SECTION)
       ===================================================== */}
 
-      <Card className="mb-4">
-        <Card.Body style={{ height: 320 }}>
-          <ResponsiveContainer>
-            <BarChart data={chartData}>
-              <CartesianGrid />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
+        <Card className="mb-4">
+          <Card.Body style={{ height: 320 }}>
+            <ResponsiveContainer>
+              <BarChart data={chartData}>
+                <CartesianGrid />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
 
-              <Bar dataKey="total">
-                {chartData.map((entry, i) => (
-                  <Cell
-                    key={`cell-${entry.name}-${i}`}
-                    fill={BAR_COLORS[i % BAR_COLORS.length]}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </Card.Body>
-      </Card>
+                <Bar dataKey="total">
+                  {chartData.map((entry, i) => (
+                    <Cell
+                      key={`cell-${entry.name}-${i}`}
+                      fill={BAR_COLORS[i % BAR_COLORS.length]}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Card.Body>
+        </Card>
 
-      {/* =====================================================
+        {/* =====================================================
           EXPENDITURE PER PERSON 
       ===================================================== */}
 
-      <Card className="mb-4">
-        <Card.Body>
-          <h4 className="mb-3">Expenditure Per Person</h4>
+        <Card className="mb-4">
+          <Card.Body>
+            <h4 className="mb-3">Expenditure Per Person</h4>
 
-          <Table bordered responsive>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Paid Amount</th>
-                <th>Expected</th>
-                <th>Balance</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {perPersonSummary.map((p) => (
-                <tr key={p.id}>
-                  <td>{p.name}</td>
-
-                  <td style={{ width: 200 }}>
-                    <Form.Control
-                      type="number"
-                      value={p.paidAmount}
-                      onChange={(e) =>
-                        updatePaidAmount(p.id, Number(e.target.value))
-                      }
-                    />
-                  </td>
-
-                  <td>${amountPerPerson.toFixed(2)}</td>
-
-                  <td>
-                    {p.owed > 0 ? (
-                      <span className="text-danger fw-bold">
-                        Owes ${p.owed.toFixed(2)}
-                      </span>
-                    ) : (
-                      <span className="text-success fw-bold">
-                        Gets back ${Math.abs(p.owed).toFixed(2)}
-                      </span>
-                    )}
-                  </td>
+            <Table bordered responsive>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Paid Amount</th>
+                  <th>Expected</th>
+                  <th>Balance</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Card.Body>
-      </Card>
+              </thead>
 
-      {/* =====================================================
+              <tbody>
+                {perPersonSummary.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.name}</td>
+
+                    <td style={{ width: 200 }}>
+                      <Form.Control
+                        type="number"
+                        value={p.paidAmount}
+                        onChange={(e) =>
+                          updatePaidAmount(p.id, Number(e.target.value))
+                        }
+                      />
+                    </td>
+
+                    <td>${amountPerPerson.toFixed(2)}</td>
+
+                    <td>
+                      {p.owed > 0 ? (
+                        <span className="text-danger fw-bold">
+                          Owes ${p.owed.toFixed(2)}
+                        </span>
+                      ) : (
+                        <span className="text-success fw-bold">
+                          Gets back ${Math.abs(p.owed).toFixed(2)}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card.Body>
+        </Card>
+
+        {/* =====================================================
           ADD NEW CATEGORY
       ===================================================== */}
 
-      <Card className="mb-4">
-        <Card.Body>
-          <h4 className="mb-3">Add New Category or Upload Receipt</h4>
-          <Row>
-            <Col>
-              <Form.Control
-                placeholder="Category Name"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-              />
-            </Col>
-            <Col md="auto">
-              <Button onClick={addCategory}>
-                <i className="bi bi-plus-circle me-2"></i>Add Category
-              </Button>
-            </Col>
-            <Col md="auto">
-              <Button
-                variant="success"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isAnalyzing}
-              >
-                {isAnalyzing ? (
-                  <Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <i className="bi bi-upload me-2"></i>
-                )}
-                {isAnalyzing ? " Analyzing..." : " Upload Receipt"}
-              </Button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                onChange={handleFileChange}
-                accept="image/*"
-              />
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+        <Card className="mb-4">
+          <Card.Body>
+            <h4 className="mb-3">Add New Category or Upload Receipt</h4>
+            <Row>
+              <Col>
+                <Form.Control
+                  placeholder="Category Name"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                />
+              </Col>
+              <Col md="auto">
+                <Button onClick={addCategory}>
+                  <i className="bi bi-plus-circle me-2"></i>Add Category
+                </Button>
+              </Col>
+              <Col md="auto">
+                <Button
+                  variant="success"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isAnalyzing}
+                >
+                  {isAnalyzing ? (
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <i className="bi bi-upload me-2"></i>
+                  )}
+                  {isAnalyzing ? " Analyzing..." : " Upload Receipt"}
+                </Button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                />
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
 
-      {/* =====================================================
+        {/* =====================================================
           CATEGORY BREAKDOWN
       ===================================================== */}
 
-      <Tabs>
-        {trip.categories.map((category) => (
-          <Tab key={category.id} eventKey={category.id} title={category.name}>
-            <Card className="mt-3">
-              <Card.Body>
-                <Row className="mb-3">
-                  <Col>
-                    <Form.Control
-                      placeholder="Expense title"
-                      value={expenseInputs[category.id]?.title || ""}
-                      onChange={(e) =>
-                        setExpenseInputs((p) => ({
-                          ...p,
-                          [category.id]: {
-                            ...p[category.id],
-                            title: e.target.value,
-                          },
-                        }))
-                      }
-                    />
-                  </Col>
+        <Tabs>
+          {trip.categories.map((category) => (
+            <Tab key={category.id} eventKey={category.id} title={category.name}>
+              <Card className="mt-3">
+                <Card.Body>
+                  <Row className="mb-3">
+                    <Col>
+                      <Form.Control
+                        placeholder="Expense title"
+                        value={expenseInputs[category.id]?.title || ""}
+                        onChange={(e) =>
+                          setExpenseInputs((p) => ({
+                            ...p,
+                            [category.id]: {
+                              ...p[category.id],
+                              title: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </Col>
 
-                  <Col>
-                    <Form.Control
-                      type="number"
-                      placeholder="Amount"
-                      value={expenseInputs[category.id]?.amount || ""}
-                      onChange={(e) =>
-                        setExpenseInputs((p) => ({
-                          ...p,
-                          [category.id]: {
-                            ...p[category.id],
-                            amount: e.target.value,
-                          },
-                        }))
-                      }
-                    />
-                  </Col>
+                    <Col>
+                      <Form.Control
+                        type="number"
+                        placeholder="Amount"
+                        value={expenseInputs[category.id]?.amount || ""}
+                        onChange={(e) =>
+                          setExpenseInputs((p) => ({
+                            ...p,
+                            [category.id]: {
+                              ...p[category.id],
+                              amount: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </Col>
 
-                  <Col md="auto">
-                    <Button onClick={() => addExpense(category.id)}>
-                      <i className="bi bi-plus me-2"></i>Add Expense
-                    </Button>
-                  </Col>
-                </Row>
+                    <Col md="auto">
+                      <Button onClick={() => addExpense(category.id)}>
+                        <i className="bi bi-plus me-2"></i>Add Expense
+                      </Button>
+                    </Col>
+                  </Row>
 
-                <Table bordered hover>
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Amount</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {category.expenses.map((e) => (
-                      <tr key={e.id}>
-                        <td>{e.title}</td>
-                        <td>${e.amount}</td>
+                  <Table bordered hover>
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Amount</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </Card.Body>
-            </Card>
-          </Tab>
-        ))}
-      </Tabs>
+                    </thead>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Expense</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {editableReceipt && (
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Item</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="item"
-                  value={editableReceipt.item}
-                  onChange={handleModalInputChange}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Amount</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="amount"
-                  value={editableReceipt.amount}
-                  onChange={handleModalInputChange}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Category</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="category"
-                  value={editableReceipt.category}
-                  onChange={handleModalInputChange}
-                />
-              </Form.Group>
-            </Form>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleSaveExpense}>
-            Save Expense
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </Container>
+                    <tbody>
+                      {category.expenses.map((e) => (
+                        <tr key={e.id}>
+                          <td>{e.title}</td>
+                          <td>${e.amount}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </Card.Body>
+              </Card>
+            </Tab>
+          ))}
+        </Tabs>
+
+        <Modal show={showModal} onHide={() => setShowModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Expense</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {editableReceipt && (
+              <Form>
+                <Form.Group className="mb-3">
+                  <Form.Label>Item</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="item"
+                    value={editableReceipt.item}
+                    onChange={handleModalInputChange}
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Amount</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="amount"
+                    value={editableReceipt.amount}
+                    onChange={handleModalInputChange}
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Category</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="category"
+                    value={editableReceipt.category}
+                    onChange={handleModalInputChange}
+                  />
+                </Form.Group>
+              </Form>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleSaveExpense}>
+              Save Expense
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </Container>
+    </>
   );
 }
