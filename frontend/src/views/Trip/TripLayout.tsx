@@ -51,7 +51,7 @@ function TripLayoutContent() {
   }
 
   if (!trip) {
-    return <div>Trip not found.</div>;
+    //return <div>Trip not found.</div>;
   }
 
   return (
