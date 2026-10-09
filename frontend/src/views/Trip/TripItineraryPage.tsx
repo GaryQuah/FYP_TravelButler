@@ -246,10 +246,6 @@ export function TripItineraryPage() {
     }
   };
 
-  if (tripError) {
-    return <div>{tripError}</div>;
-  }
-
   return (
     <>
       <LoadingOverlay show={tripLoading || itinerariesLoading} />

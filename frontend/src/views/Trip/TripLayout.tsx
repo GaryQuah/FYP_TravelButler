@@ -46,12 +46,12 @@ function TripLayoutContent() {
     }
   };
 
-  if (error) {
-    return <div>{error}</div>;
+  if (loading || !trip) {
+    return <LoadingOverlay show={true} />;
   }
 
-  if (!trip) {
-    //return <div>Trip not found.</div>;
+  if (error) {
+    return <div>{error}</div>;
   }
 
   return (
