@@ -12,6 +12,7 @@ import {
   exportItinerariesToCalendar,
   getGoogleCalendarStatus,
 } from "../../api";
+
 import { analyzeDescription, analyzeItinerary } from "../../api/gemini.ts";
 import { addExpenditure } from "../../api/budget.ts";
 import type { Itinerary, ItineraryCreationData } from "../../models";
@@ -53,6 +54,19 @@ export function TripItineraryPage() {
     useState<ItineraryCreationData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+
+  useEffect(() => {
+    const checkGoogleCalendarStatus = async () => {
+      try {
+        const status = await getGoogleCalendarStatus();
+        setGoogleConnected(status.connected);
+      } catch (error) {
+        console.error("Failed to check Google Calendar status:", error);
+      }
+    };
+
+    checkGoogleCalendarStatus();
+  }, []);
 
   const handleAddToItinerary = (item: ItineraryCreationData) => {
     setSelectedItinerary(item);
@@ -165,6 +179,28 @@ export function TripItineraryPage() {
     }
   };
 
+  const handleExportEntireTrip = async () => {
+    if (!itineraries?.length) return;
+
+    setExportLoading(true);
+    setExportMessage(null);
+    try {
+      const result = await exportItinerariesToCalendar(
+        itineraries.map((itinerary) => itinerary.id),
+      );
+      setExportMessage(
+        result.errors.length > 0
+          ? `Export completed with ${result.errors.length} error(s).`
+          : result.message || "Itineraries exported successfully.",
+      );
+    } catch (error) {
+      console.error("Failed to export itineraries:", error);
+      setExportMessage("Export failed. Please try again.");
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   const handleSaveRecommendedItinerary = async (
     itineraryData: ItineraryCreationData,
   ) => {
@@ -192,9 +228,6 @@ export function TripItineraryPage() {
       console.error("Failed to save recommended itinerary:", error);
     }
   };
-
-  if (tripLoading || itinerariesLoading) {
-  }
 
   const handleUpdateItinerary = async (
     itineraryData: ItineraryCreationData,

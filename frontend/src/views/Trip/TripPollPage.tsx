@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button, Card, Form, Modal, ProgressBar, Stack } from "react-bootstrap";
+import LoadingOverlay from "../../components/LoadingOverlay";
 import { useUser } from "../../contexts/UserContext";
 import {
   createPoll as apiCreatePoll,
@@ -129,6 +130,7 @@ export function TripPollPage() {
 
   return (
     <>
+      <LoadingOverlay show={isLoading} />
       <div className="row">
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center mb-4">
