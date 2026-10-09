@@ -24,7 +24,7 @@ import "../..//assets/css/TripItineraryPage.css";
 export function TripItineraryPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const location = useLocation();
-  const { trip, loading: tripLoading, error: tripError } = useTripDetails();
+  const { trip, loading: tripLoading } = useTripDetails();
   const {
     itineraries,
     loading: itinerariesLoading,
