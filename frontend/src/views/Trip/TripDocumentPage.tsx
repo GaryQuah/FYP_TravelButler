@@ -10,6 +10,7 @@ import { analyzeDocument } from "../../api/gemini";
 import { addItinerary } from "../../api/itinerary";
 
 import { UploadDocumentModal } from "../../components/modals/UploadDocumentModal";
+import LoadingOverlay from "../../components/LoadingOverlay";
 import "../../assets/css/TripDocumentPage.css";
 
 type AnalysisActionType = "itinerary" | "budget";
@@ -184,6 +185,7 @@ export function TripDocumentPage() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [alert, setAlert] = useState<{
     message: string;
     type: "success" | "danger";
@@ -207,7 +209,12 @@ export function TripDocumentPage() {
   };
 
   useEffect(() => {
-    fetchDocuments();
+    const loadInitialDocuments = async () => {
+      setIsLoading(true);
+      await fetchDocuments();
+      setIsLoading(false);
+    };
+    loadInitialDocuments();
   }, [tripId]);
 
   useEffect(() => {
@@ -448,6 +455,8 @@ export function TripDocumentPage() {
           </div>
         </div>
       )}
+
+      <LoadingOverlay show={isLoading} />
 
       <div className="document-list mt-4">
         <div className="document-header">

@@ -7,6 +7,7 @@ import { MiniItineraryCard } from "../../components/cards/MiniItineraryCard";
 import { formatTime } from "../../utils/dateUtils";
 import { ItineraryModal } from "../../components/modals/ItineraryModal";
 import { DateSelectionModal } from "../../components/modals/DateSelectionModal";
+import LoadingOverlay from "../../components/LoadingOverlay";
 import "../../assets/css/TripAssistancePage.css";
 
 import { addAIChatMessage, getAIChat, addItinerary } from "../../api";
@@ -27,6 +28,7 @@ export function TripAssistancePage() {
     message: string;
     type: "success" | "danger";
   } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (trip?.ai_chat_id) {
@@ -34,7 +36,10 @@ export function TripAssistancePage() {
         .then((chat) => {
           setChat(chat);
         })
-        .catch((err) => console.error("Failed to load chat:", err));
+        .catch((err) => console.error("Failed to load chat:", err))
+        .finally(() => setIsLoading(false));
+    } else if (trip) {
+      setIsLoading(false);
     }
   }, [trip?.ai_chat_id]);
 
@@ -179,6 +184,7 @@ export function TripAssistancePage() {
 
   return (
     <div className="d-flex flex-column">
+      <LoadingOverlay show={isLoading} />
       {alert && (
         <div
           className={`alert alert-${alert.type} alert-dismissible fade show`}
