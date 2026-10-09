@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { getTripBudget, updateTripBudget } from "../../api/budget";
+import LoadingOverlay from "../../components/LoadingOverlay";
 import {
   BarChart,
   Bar,
@@ -39,15 +40,21 @@ export function TripBudgetPage() {
   const [, setReceiptData] = useState<any>(null);
   const [editableReceipt, setEditableReceipt] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTripBudget = async () => {
-      if (!tripId) return;
+      if (!tripId) {
+        setIsLoading(false);
+        return;
+      }
       try {
         const data = await getTripBudget(tripId);
         setTrip(data);
       } catch (error) {
         console.error("Error fetching trip budget:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -244,8 +251,12 @@ export function TripBudgetPage() {
   /* =========================================================
      UI
   ========================================================= */
+  if (isLoading) {
+    return <LoadingOverlay show={true} />;
+  }
+
   if (!trip) {
-    return <div>Loading...</div>;
+    return <div>Could not load trip data.</div>;
   }
   return (
     <>
