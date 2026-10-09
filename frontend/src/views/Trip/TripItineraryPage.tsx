@@ -250,7 +250,7 @@ export function TripItineraryPage() {
     return <div>{tripError}</div>;
   }
 
-  if (!trip) {
+  if (!trip && !tripLoading) {
     return <div>Trip not found.</div>;
   }
 
