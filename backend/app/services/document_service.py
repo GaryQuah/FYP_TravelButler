@@ -6,6 +6,8 @@ from bson.errors import InvalidId
 from motor.motor_asyncio import AsyncIOMotorClient
 from google.oauth2 import service_account
 from app.config import GCS_BUCKET_NAME, GCS_CREDENTIALS_INFO
+from uuid import uuid4
+from pathlib import Path
 
 import datetime
 
@@ -40,6 +42,24 @@ class DocumentService:
         update_result = await self.db.trips.update_one(
             {"_id": ObjectId(trip_id)},
             {"$push": {"document_ids": result.inserted_id}}
+        )
+
+        return blob.generate_signed_url(
+            version="v4",
+            expiration=datetime.timedelta(minutes=15),
+            method="GET",
+        )
+
+    async def upload_trip_image(self, file, filename, trip_id, content_type):
+        extension = Path(filename or "").suffix.lower()
+        filename = f"trip-images/{trip_id}/{uuid4()}{extension}"
+        bucket = self.storage_client.bucket(self.bucket_name)
+        blob = bucket.blob(filename)
+        blob.upload_from_file(file, content_type=content_type)
+
+        await self.db.trips.update_one(
+            {"_id": ObjectId(trip_id)},
+            {"$set": {"trip_image": filename}},
         )
 
         return blob.generate_signed_url(

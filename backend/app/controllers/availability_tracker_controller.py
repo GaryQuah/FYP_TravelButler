@@ -7,6 +7,7 @@ from app.utils.jwt import get_current_user
 from app.services.availability_tracker_service import (
     get_tracker_members,
     add_user_to_tracker_by_email,
+    add_tracker_user_names,
 )
 from typing import List
 from app.dependencies import require_tracker_member
@@ -24,12 +25,13 @@ router = APIRouter(prefix="/api/availability-trackers", tags=["availability-trac
 @router.get("/", response_model=List[AvailabilityTracker])
 async def get_all_trackers_route(
     current_user: User = Depends(get_current_user),
-    db: AsyncIOMotorCollection = Depends(get_availability_collection)
+    db: AsyncIOMotorCollection = Depends(get_availability_collection),
+    users_db: AsyncIOMotorCollection = Depends(get_users_collection),
 ):
     trackers = await availability_tracker_service.get_all_trackers(
         db, current_user.user_id
     )
-    return trackers
+    return await add_tracker_user_names(trackers, users_db)
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=AvailabilityTracker)
 async def create_tracker_route(
@@ -59,13 +61,15 @@ async def update_tracker_route(
     tracker_id: str,
     tracker_data: AvailabilityTrackerUpdateRequest,
     db: AsyncIOMotorCollection = Depends(get_availability_collection),
+    users_db: AsyncIOMotorCollection = Depends(get_users_collection),
     current_user: User = Depends(get_current_user),
 ):
     await require_tracker_member(db, tracker_id, current_user.user_id)
     updated_tracker = await availability_tracker_service.update_tracker(db, tracker_id, tracker_data)
     if not updated_tracker:
         raise HTTPException(status_code=404, detail="Tracker not found")
-    return updated_tracker
+    trackers = await add_tracker_user_names([updated_tracker], users_db)
+    return trackers[0]
 
 @router.delete("/{tracker_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_tracker_route(

@@ -66,3 +66,20 @@ export async function updateTrip(
   const updatedTrip = await response.json();
   return updatedTrip;
 }
+
+export async function uploadTripImage(
+  tripId: string,
+  file: File,
+): Promise<{ trip_image: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await apiFetch(`/api/trips/${tripId}/image`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) {
+    throw new Error("Failed to upload trip image");
+  }
+  return response.json();
+}

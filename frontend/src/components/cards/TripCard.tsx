@@ -25,6 +25,17 @@ const Card = ({ trip, onDelete, onEdit }: CardProps) => {
   return (
     <div className="card mb-4 shadow-sm h-100">
       <div className="card-body d-flex flex-column">
+        <div className="trip-card-image mb-3">
+          {trip.trip_image ? (
+            <img
+              src={trip.trip_image}
+              alt={`${trip.trip_name} cover`}
+              className="w-100 h-100 object-fit-cover rounded"
+            />
+          ) : (
+            <div className="trip-card-image-placeholder" aria-hidden="true" />
+          )}
+        </div>
         <div className="d-flex justify-content-between align-items-start">
           <div>
             <h3 className="mb-0">{trip.trip_name}</h3>
