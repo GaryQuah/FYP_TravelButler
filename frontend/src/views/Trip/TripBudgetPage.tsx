@@ -41,6 +41,16 @@ export function TripBudgetPage() {
   const [editableReceipt, setEditableReceipt] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingExpense, setEditingExpense] = useState<{
+    categoryId: string;
+    expenseId: string;
+    title: string;
+    amount: string;
+  } | null>(null);
+  const [editingCategory, setEditingCategory] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     const fetchTripBudget = async () => {
@@ -176,6 +186,91 @@ export function TripBudgetPage() {
 
     handleUpdateTripBudget(updatedTrip);
     setNewCategoryName(""); // Reset input field
+  };
+
+  const saveExpenseEdit = () => {
+    if (!trip || !editingExpense || !editingExpense.title.trim()) return;
+
+    if (!editingExpense.amount.trim()) return;
+    const amount = Number(editingExpense.amount);
+    if (!Number.isFinite(amount)) return;
+
+    const updatedTrip = {
+      ...trip,
+      categories: trip.categories.map((category) =>
+        category.id === editingExpense.categoryId
+          ? {
+              ...category,
+              expenses: category.expenses.map((expense) =>
+                expense.id === editingExpense.expenseId
+                  ? {
+                      ...expense,
+                      title: editingExpense.title.trim(),
+                      amount,
+                    }
+                  : expense,
+              ),
+            }
+          : category,
+      ),
+    };
+
+    handleUpdateTripBudget(updatedTrip);
+    setEditingExpense(null);
+  };
+
+  const deleteExpense = (categoryId: string, expenseId: string) => {
+    if (!trip || !window.confirm("Delete this expense?")) return;
+
+    const updatedTrip = {
+      ...trip,
+      categories: trip.categories.map((category) =>
+        category.id === categoryId
+          ? {
+              ...category,
+              expenses: category.expenses.filter(
+                (expense) => expense.id !== expenseId,
+              ),
+            }
+          : category,
+      ),
+    };
+
+    handleUpdateTripBudget(updatedTrip);
+  };
+
+  const saveCategoryEdit = () => {
+    if (!trip || !editingCategory || !editingCategory.name.trim()) return;
+
+    const updatedTrip = {
+      ...trip,
+      categories: trip.categories.map((category) =>
+        category.id === editingCategory.id
+          ? { ...category, name: editingCategory.name.trim() }
+          : category,
+      ),
+    };
+
+    handleUpdateTripBudget(updatedTrip);
+    setEditingCategory(null);
+  };
+
+  const deleteCategory = (categoryId: string, categoryName: string) => {
+    if (
+      !trip ||
+      !window.confirm(
+        `Delete the "${categoryName}" category and all of its expenses?`,
+      )
+    ) {
+      return;
+    }
+
+    const updatedTrip = {
+      ...trip,
+      categories: trip.categories.filter((category) => category.id !== categoryId),
+    };
+
+    handleUpdateTripBudget(updatedTrip);
   };
 
   const handleFileChange = async (
@@ -386,7 +481,7 @@ export function TripBudgetPage() {
                   <i className="bi bi-plus-circle me-2"></i>Add Category
                 </Button>
               </Col>
-              <Col md="auto">
+              <Col md="auto" className="text-end">
                 <Button
                   variant="success"
                   onClick={() => fileInputRef.current?.click()}
@@ -426,6 +521,36 @@ export function TripBudgetPage() {
             <Tab key={category.id} eventKey={category.id} title={category.name}>
               <Card className="mt-3">
                 <Card.Body>
+                  <Row className="mb-3 align-items-center">
+                    <Col>
+                      <h4 className="mb-0">{category.name}</h4>
+                    </Col>
+                    <Col md="auto">
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        className="me-2"
+                        onClick={() =>
+                          setEditingCategory({
+                            id: category.id,
+                            name: category.name,
+                          })
+                        }
+                      >
+                        <i className="bi bi-pencil me-1"></i>Edit Category
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() =>
+                          deleteCategory(category.id, category.name)
+                        }
+                      >
+                        <i className="bi bi-trash me-1"></i>Delete Category
+                      </Button>
+                    </Col>
+                  </Row>
+
                   <Row className="mb-3">
                     <Col>
                       <Form.Control
@@ -471,7 +596,8 @@ export function TripBudgetPage() {
                     <thead>
                       <tr>
                         <th>Title</th>
-                        <th>Amount</th>
+                        <th className="text-end">Amount</th>
+                        <th className="text-end">Actions</th>
                       </tr>
                     </thead>
 
@@ -479,7 +605,31 @@ export function TripBudgetPage() {
                       {category.expenses.map((e) => (
                         <tr key={e.id}>
                           <td>{e.title}</td>
-                          <td>${e.amount}</td>
+                          <td className="text-end">${e.amount}</td>
+                          <td className="text-end">
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              className="me-2"
+                              onClick={() =>
+                                setEditingExpense({
+                                  categoryId: category.id,
+                                  expenseId: e.id,
+                                  title: e.title,
+                                  amount: String(e.amount),
+                                })
+                              }
+                            >
+                              <i className="bi bi-pencil me-1"></i>Edit
+                            </Button>
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => deleteExpense(category.id, e.id)}
+                            >
+                              <i className="bi bi-trash me-1"></i>Delete
+                            </Button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -489,6 +639,99 @@ export function TripBudgetPage() {
             </Tab>
           ))}
         </Tabs>
+
+        <Modal
+          show={editingExpense !== null}
+          onHide={() => setEditingExpense(null)}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Edit Expense</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {editingExpense && (
+              <Form>
+                <Form.Group className="mb-3">
+                  <Form.Label>Title</Form.Label>
+                  <Form.Control
+                    value={editingExpense.title}
+                    onChange={(e) =>
+                      setEditingExpense({
+                        ...editingExpense,
+                        title: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Amount</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={editingExpense.amount}
+                    onChange={(e) =>
+                      setEditingExpense({
+                        ...editingExpense,
+                        amount: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </Form>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setEditingExpense(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={saveExpenseEdit}
+              disabled={
+                !editingExpense?.title.trim() ||
+                !editingExpense?.amount.trim() ||
+                !Number.isFinite(Number(editingExpense?.amount))
+              }
+            >
+              Save Expense
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={editingCategory !== null}
+          onHide={() => setEditingCategory(null)}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Edit Category</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {editingCategory && (
+              <Form.Group>
+                <Form.Label>Category Name</Form.Label>
+                <Form.Control
+                  value={editingCategory.name}
+                  onChange={(e) =>
+                    setEditingCategory({
+                      ...editingCategory,
+                      name: e.target.value,
+                    })
+                  }
+                />
+              </Form.Group>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setEditingCategory(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={saveCategoryEdit}
+              disabled={!editingCategory?.name.trim()}
+            >
+              Save Category
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
         <Modal show={showModal} onHide={() => setShowModal(false)}>
           <Modal.Header closeButton>
