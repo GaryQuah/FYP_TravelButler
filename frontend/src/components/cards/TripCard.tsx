@@ -31,6 +31,13 @@ const Card = ({ trip, onDelete, onEdit }: CardProps) => {
             <h5 className="mb-0">{trip.country}</h5>
           </div>
           <div className="btn-group">
+            <Link
+              to={`/trip/${trip.trip_id}/itinerary`}
+              className="btn btn-sm btn-outline-primary"
+              aria-label={`View trip ${trip.trip_name}`}
+            >
+              View Trip
+            </Link>
             <button
               className="btn btn-sm btn-outline-secondary"
               onClick={() => onEdit(trip)}
@@ -51,14 +58,6 @@ const Card = ({ trip, onDelete, onEdit }: CardProps) => {
         <div className="mb-2 text-muted">{dateRange}</div>
 
         <p className="card-text mb-auto">{trip.description}</p>
-
-        {/*TODO: Add image upload support for the trip card, and display the image here if it exists*/}
-        <Link
-          to={`/trip/${trip.trip_id}/itinerary`}
-          className="btn btn-outline-primary mt-3 align-self-start"
-        >
-          View Trip
-        </Link>
       </div>
     </div>
   );
