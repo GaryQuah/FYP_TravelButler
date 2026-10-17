@@ -91,6 +91,19 @@ export async function getCurrentUser(): Promise<User> {
   return response.json();
 }
 
+export async function updateUsername(name: string): Promise<User> {
+  const response = await apiFetch(`/api/users/me`, {
+    method: "PUT",
+    body: JSON.stringify({ name }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update username");
+  }
+
+  return response.json();
+}
+
 export async function logoutUser(): Promise<void> {
   await apiFetch(`/api/users/logout`, {
     method: "POST",

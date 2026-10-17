@@ -6,13 +6,19 @@ import {
   connectGoogleCalendar,
   disconnectGoogleCalendar,
 } from "../api";
+import { updateUsername } from "../api/user";
 import Navbar from "../components/navigation/Navbar";
+import { useUser } from "../contexts/UserContext";
 
 export function SettingsPage() {
+  const { user, setUser } = useUser();
   const [googleConnected, setGoogleConnected] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [accountError, setAccountError] = useState<string | null>(null);
+  const [accountSuccess, setAccountSuccess] = useState<string | null>(null);
+  const [calendarError, setCalendarError] = useState<string | null>(null);
+  const [calendarSuccess, setCalendarSuccess] = useState<string | null>(null);
+  const [username, setUsername] = useState(user?.name || "");
 
   useEffect(() => {
     checkGoogleCalendarStatus();
@@ -23,7 +29,7 @@ export function SettingsPage() {
       const status = await getGoogleCalendarStatus();
       setGoogleConnected(status.connected);
     } catch (err) {
-      setError("Failed to check Google Calendar status");
+      setCalendarError("Failed to check Google Calendar status");
     } finally {
       setLoading(false);
     }
@@ -31,13 +37,13 @@ export function SettingsPage() {
 
   const handleConnectSuccess = async (codeResponse: { code: string }) => {
     try {
-      setError(null);
-      setSuccess(null);
+      setCalendarError(null);
+      setCalendarSuccess(null);
       await connectGoogleCalendar(codeResponse);
       setGoogleConnected(true);
-      setSuccess("Google Calendar connected successfully!");
+      setCalendarSuccess("Google Calendar connected successfully!");
     } catch (err: any) {
-      setError(
+      setCalendarError(
         `Failed to connect Google Calendar: ${
           err?.response?.data?.detail || err?.message || JSON.stringify(err)
         }`,
@@ -47,13 +53,30 @@ export function SettingsPage() {
 
   const handleDisconnect = async () => {
     try {
-      setError(null);
-      setSuccess(null);
+      setCalendarError(null);
+      setCalendarSuccess(null);
       await disconnectGoogleCalendar();
       setGoogleConnected(false);
-      setSuccess("Google Calendar disconnected successfully!");
+      setCalendarSuccess("Google Calendar disconnected successfully!");
     } catch (err) {
-      setError("Failed to disconnect Google Calendar");
+      setCalendarError("Failed to disconnect Google Calendar");
+    }
+  };
+
+  const handleUpdateUsername = async () => {
+    if (!username) {
+      setAccountError("Username cannot be empty");
+      return;
+    }
+
+    try {
+      setAccountError(null);
+      setAccountSuccess(null);
+      const updatedUser = await updateUsername(username);
+      setUser(updatedUser);
+      setAccountSuccess("Username updated successfully!");
+    } catch (err) {
+      setAccountError("Failed to update username");
     }
   };
 
@@ -70,7 +93,7 @@ export function SettingsPage() {
 
     onError: (error) => {
       console.error(error);
-      setError("Google login failed");
+      setCalendarError("Google login failed");
     },
   });
 
@@ -85,14 +108,45 @@ export function SettingsPage() {
 
         <div className="card mb-4">
           <div className="card-body">
+            <h5 className="card-title">Account Settings</h5>
+            {accountError && (
+              <div className="alert alert-danger">{accountError}</div>
+            )}
+            {accountSuccess && (
+              <div className="alert alert-success">{accountSuccess}</div>
+            )}
+            <div className="mb-3">
+              <label htmlFor="username" className="form-label">
+                Username
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <button className="btn btn-primary" onClick={handleUpdateUsername}>
+              Update Username
+            </button>
+          </div>
+        </div>
+
+        <div className="card mb-4">
+          <div className="card-body">
             <h5 className="card-title">Google Calendar Integration</h5>
             <p className="card-text">
               Connect your Google Calendar to export trip itineraries directly
               to your calendar.
             </p>
 
-            {error && <div className="alert alert-danger">{error}</div>}
-            {success && <div className="alert alert-success">{success}</div>}
+            {calendarError && (
+              <div className="alert alert-danger">{calendarError}</div>
+            )}
+            {calendarSuccess && (
+              <div className="alert alert-success">{calendarSuccess}</div>
+            )}
 
             {googleConnected ? (
               <div>
