@@ -5,6 +5,19 @@ from datetime import datetime
 from app.services.user_service import get_user_by_email, get_users_by_ids
 from app.services.chat_service import create_chat
 from app.services.ai_chat_service import create_ai_chat
+from app.config import GCS_BUCKET_NAME, GCS_CREDENTIALS_INFO
+from google.cloud import storage
+from google.oauth2 import service_account
+import datetime
+
+_storage_credentials = service_account.Credentials.from_service_account_info(
+    GCS_CREDENTIALS_INFO
+)
+_storage_client = storage.Client(
+    project=GCS_CREDENTIALS_INFO["project_id"],
+    credentials=_storage_credentials,
+)
+
 def trip_serializer(trip) -> dict:
     """
     Serializes a trip document from MongoDB into a dictionary,
@@ -12,6 +25,16 @@ def trip_serializer(trip) -> dict:
     Note this is due to ObjectId from MongoDB not being JSON serializable, so we convert it to a string.
     """
     # Create a new list of chat messages with serialized timestamps
+
+    trip_image = trip.get("trip_image")
+    if trip_image and not trip_image.startswith(("http://", "https://")):
+        trip_image = _storage_client.bucket(GCS_BUCKET_NAME).blob(
+            trip_image
+        ).generate_signed_url(
+            version="v4",
+            expiration=datetime.timedelta(minutes=15),
+            method="GET",
+        )
 
     return {
         "trip_id": str(trip["_id"]),
@@ -25,6 +48,7 @@ def trip_serializer(trip) -> dict:
         "country": trip.get("country", ""),
         "chat_id": trip.get("chat_id"),
         "ai_chat_id": trip.get("ai_chat_id"),
+        "trip_image": trip_image,
     }
 
 async def get_all_trips(collection: AsyncIOMotorCollection, user_id: str):

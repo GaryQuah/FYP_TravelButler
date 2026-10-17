@@ -66,7 +66,9 @@ function TripLayoutContent() {
             <div className="col-md-8">
               <div
                 className="p-4 text-white rounded h-100 d-flex flex-column trip-layout-container"
-                style={{ backgroundImage: `url(${homeBanner})` }}
+                style={{
+                  backgroundImage: `url(${trip.trip_image || homeBanner})`,
+                }}
               >
                 <div className="trip-layout-overlay"></div>
                 <div className="trip-layout-content">

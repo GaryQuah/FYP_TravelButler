@@ -12,6 +12,7 @@ def tracker_serializer(tracker) -> dict:
         "id": str(tracker["_id"]),
         "name": tracker["name"],
         "user_ids": tracker["user_ids"],
+        "min_consecutive_days": tracker.get("min_consecutive_days", 3),
         "availability": tracker.get("availability", {}),
     }
 
@@ -23,6 +24,22 @@ async def get_all_trackers(collection: AsyncIOMotorCollection, user_id: str):
     cursor = collection.find({"user_ids": user_id})
     async for tracker in cursor:
         trackers.append(tracker_serializer(tracker))
+    return trackers
+
+async def add_tracker_user_names(
+    trackers: list[dict],
+    users_collection: AsyncIOMotorCollection,
+) -> list[dict]:
+    user_ids = [user_id for tracker in trackers for user_id in tracker["user_ids"]]
+    users = await get_users_by_ids(users_collection, user_ids) if user_ids else []
+    names_by_id = {user["user_id"]: user["name"] for user in users}
+
+    for tracker in trackers:
+        tracker["user_names"] = [
+            names_by_id[user_id]
+            for user_id in tracker["user_ids"]
+            if user_id in names_by_id
+        ]
     return trackers
 
 async def create_tracker(collection: AsyncIOMotorCollection, tracker_data: AvailabilityTrackerCreationRequest):

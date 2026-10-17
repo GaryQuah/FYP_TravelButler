@@ -53,7 +53,12 @@ export function useAvailabilityTrackers() {
       );
       setTrackers((prevTrackers) =>
         prevTrackers.map((tracker) =>
-          tracker.id === trackerId ? updatedTracker : tracker,
+          tracker.id === trackerId
+            ? {
+                ...updatedTracker,
+                user_names: updatedTracker.user_names ?? tracker.user_names,
+              }
+            : tracker,
         ),
       );
     } catch (error) {

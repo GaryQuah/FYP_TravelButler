@@ -47,3 +47,9 @@ except json.JSONDecodeError as exc:
     ) from exc
 
 DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"}
+
+ALLOW_ORIGINS = [
+    origin.strip()
+    for origin in os.environ["ALLOW_ORIGINS"].split(",")
+    if origin.strip()
+]

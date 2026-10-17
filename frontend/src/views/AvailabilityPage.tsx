@@ -10,6 +10,7 @@ import {
   getTrackerMembers,
   getTrackerData,
   saveAvailability,
+  updateAvailabilityTracker,
 } from "../api/availability";
 import AddUserModal from "../components/modals/AddUserModal";
 import AddTripModal from "../components/modals/AddTripModal";
@@ -71,6 +72,7 @@ function AvailabilityPage() {
     try {
       const trackerData = await getTrackerData(trackerId);
       setTracker(trackerData);
+      setMinConsecutiveDays(trackerData.min_consecutive_days ?? 3);
 
       const fetchedUsers = await getTrackerMembers(trackerId);
       setUsers(fetchedUsers);
@@ -296,8 +298,16 @@ function AvailabilityPage() {
                     setMinConsecutiveDays(0); // Or some other default/empty state
                   } else {
                     const num = parseInt(value, 10);
-                    if (!isNaN(num) && num > 0) {
+                    if (!isNaN(num) && num > 0 && trackerId) {
                       setMinConsecutiveDays(num);
+                      updateAvailabilityTracker(trackerId, {
+                        min_consecutive_days: num,
+                      }).catch((error) => {
+                        console.error(
+                          "Failed to update minimum consecutive days:",
+                          error,
+                        );
+                      });
                     }
                   }
                 }}

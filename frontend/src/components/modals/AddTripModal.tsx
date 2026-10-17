@@ -15,12 +15,18 @@ type TripFormState = {
 
 interface Props {
   onClose: () => void;
-  // The onSave prop should expect the data in the format required by the API.
-  onSave: (tripData: Omit<TripCreationData, "user_ids">) => void;
+  onSave: (
+    tripData: Omit<TripCreationData, "user_ids">,
+    imageFile: File | null,
+  ) => Promise<void>;
   initialData?: Partial<TripFormState>;
 }
 
-const AddTripModal: React.FC<Props> = ({ onClose, onSave, initialData }) => {
+const AddTripModal: React.FC<Props> = ({
+  onClose,
+  onSave,
+  initialData,
+}) => {
   const [formData, setFormData] = useState<TripFormState>({
     trip_name: initialData?.trip_name || "",
     start_date: initialData?.start_date || null,
@@ -28,6 +34,7 @@ const AddTripModal: React.FC<Props> = ({ onClose, onSave, initialData }) => {
     description: initialData?.description || "",
     country: initialData?.country || "",
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -56,14 +63,15 @@ const AddTripModal: React.FC<Props> = ({ onClose, onSave, initialData }) => {
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (formData.start_date && formData.end_date) {
       const tripDataToSave = {
         ...formData,
         start_date: formData.start_date.toISOString(),
         end_date: formData.end_date.toISOString(),
       };
-      onSave(tripDataToSave);
+
+      await onSave(tripDataToSave, imageFile);
       onClose();
     } else {
       // Optionally, handle the case where dates are not selected
@@ -139,6 +147,19 @@ const AddTripModal: React.FC<Props> = ({ onClose, onSave, initialData }) => {
               value={formData.description}
               onChange={handleChange}
             />
+
+            <div className="mb-3">
+              <label htmlFor="trip-image" className="form-label">
+                Trip Image (optional)
+              </label>
+              <input
+                id="trip-image"
+                type="file"
+                accept="image/*"
+                className="form-control"
+                onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+              />
+            </div>
 
             <div className="d-flex justify-content-end">
               <button className="btn btn-secondary me-2" onClick={onClose}>

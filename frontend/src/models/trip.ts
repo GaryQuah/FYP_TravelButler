@@ -16,6 +16,7 @@ export interface Trip {
   itinerary_ids: string[];
   chat_id?: string;
   ai_chat_id?: string;
+  trip_image?: string | null;
 }
 
 export interface TripCreationData {

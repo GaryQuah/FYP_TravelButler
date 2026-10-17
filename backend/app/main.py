@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import DEBUG
+from app.config import ALLOW_ORIGINS, DEBUG
 from app.controllers.user_controller import router as user_router
 from app.controllers.trips_controller import router as trips_router
 from app.controllers.itinerary_controller import router as itinerary_router
@@ -34,12 +34,9 @@ app.include_router(ai_chat_router)
 app.include_router(document_router)
 
 
-# CORS configuration to allow requests from the frontend on localhost:5173
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173",
-                    "https://fyp-travel-butler.vercel.app",
-                    "https://fyp-travel-butler-git-production-gary-6b97.vercel.app",],
+    allow_origins=ALLOW_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

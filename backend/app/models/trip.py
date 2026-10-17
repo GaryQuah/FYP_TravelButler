@@ -17,6 +17,7 @@ class Trip(BaseModel):
     chat_id: Optional[str] = Field(None)
     ai_chat_id: Optional[str] = Field(None)
     document_ids: Optional[list[str]] = Field(None)
+    trip_image: Optional[str] = Field(None)
 
     class Config:
         validate_by_name = True

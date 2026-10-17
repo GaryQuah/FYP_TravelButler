@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Request
+from fastapi import APIRouter, HTTPException, status, Depends, Request, UploadFile, File
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.trip import Trip, TripCreationRequest, TripUpdateRequest
 from pydantic import BaseModel
@@ -17,6 +17,7 @@ from app.dependencies import (
     require_trip_member,
     get_users_collection,
     get_trips_collection,
+    get_db,
 )
 from app.services.trip_service import (
     create_trip,
@@ -27,6 +28,7 @@ from app.services.trip_service import (
     add_user_to_trip_by_email,
     get_trip_members,
 )
+from app.services.document_service import DocumentService
  
 router = APIRouter(prefix="/api/trips", tags=["trips"])
 
@@ -38,6 +40,9 @@ def get_budgets_collection(request: Request) -> AsyncIOMotorCollection:
 
 def get_ai_chat_collection(request: Request) -> AsyncIOMotorCollection:
     return request.app.ai_chats_collection  
+
+def get_document_service(db=Depends(get_db)):
+    return DocumentService(db)
 
 @router.get("/")
 async def get_all_trips_route(
@@ -90,6 +95,26 @@ async def update_trip_by_id(
     if not updated_trip:
         raise HTTPException(status_code=404, detail="Trip not found")
     return updated_trip
+
+
+@router.post("/{trip_id}/image")
+async def upload_trip_image(
+    trip_id: str,
+    file: UploadFile | None = File(None),
+    document_service: DocumentService = Depends(get_document_service),
+    trips_collection: AsyncIOMotorCollection = Depends(get_trips_collection),
+    current_user: User = Depends(get_current_user),
+):
+    await require_trip_member(trips_collection, trip_id, current_user.user_id)
+    if file is None:
+        raise HTTPException(status_code=400, detail="Image file is required")
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files are allowed")
+
+    image_url = await document_service.upload_trip_image(
+        file.file, file.filename, trip_id, file.content_type
+    )
+    return {"trip_image": image_url}
  
  
 @router.delete("/{trip_id}")

@@ -16,6 +16,7 @@ import AvailabilityTrackerCard from "../components/cards/AvailabilityTrackerCard
 import AvailabilityTrackerModal from "../components/modals/AvailabilityTrackerModal";
 import "../assets/css/HomePage.css";
 import { createTracker as apiCreateTracker } from "../api/home";
+import { uploadTripImage } from "../api/trip";
 
 type AlertState = {
   show: boolean;
@@ -29,6 +30,7 @@ export function HomePage() {
     createNewTrip,
     deleteTrip,
     updateTrip,
+    refreshTrips,
     loading: tripsLoading,
   } = useTrips();
   const {
@@ -72,9 +74,16 @@ export function HomePage() {
     setShowTripModal(true);
   };
 
-  const handleUpdateTrip = async (tripData: Partial<TripCreationData>) => {
+  const handleUpdateTrip = async (
+    tripData: Partial<TripCreationData>,
+    imageFile: File | null,
+  ) => {
     if (!editingTrip) return;
     await updateTrip(editingTrip.trip_id, tripData);
+    if (imageFile) {
+      await uploadTripImage(editingTrip.trip_id, imageFile);
+      await refreshTrips();
+    }
     setShowTripModal(false);
     setEditingTrip(null);
   };
@@ -173,15 +182,21 @@ export function HomePage() {
         {showTripModal && (
           <AddTripModal
             onClose={() => setShowTripModal(false)}
-            onSave={async (tripData) => {
+            onSave={async (tripData, imageFile) => {
               if (editingTrip) {
-                await handleUpdateTrip(tripData);
+                await handleUpdateTrip(tripData, imageFile);
               } else if (user?.user_id) {
                 const fullTripData = {
                   ...tripData,
                   user_ids: [user.user_id],
                 };
-                await createNewTrip(fullTripData, [user.user_id]);
+                const newTrip = await createNewTrip(fullTripData, [
+                  user.user_id,
+                ]);
+                if (newTrip && imageFile) {
+                  await uploadTripImage(newTrip.trip_id, imageFile);
+                  await refreshTrips();
+                }
               }
               setShowTripModal(false);
             }}
