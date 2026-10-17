@@ -24,7 +24,12 @@ export const loginOrRegisterUser = async (
     return null;
   }
 
-  return response.json();
+  const data: LoginResponse = await response.json();
+
+  localStorage.setItem("access_token", data.access_token);
+  localStorage.setItem("user", JSON.stringify(data.user));
+
+  return data;
 };
 
 export async function inviteUserToTrip(
@@ -83,6 +88,19 @@ export async function getCurrentUser(): Promise<User> {
   if (!response.ok) {
     throw new Error("Failed to fetch current user");
   }
+  return response.json();
+}
+
+export async function updateUsername(name: string): Promise<User> {
+  const response = await apiFetch(`/api/users/me`, {
+    method: "PUT",
+    body: JSON.stringify({ name }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update username");
+  }
+
   return response.json();
 }
 

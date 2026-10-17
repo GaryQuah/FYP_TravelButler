@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button, Card, Form, Modal, ProgressBar, Stack } from "react-bootstrap";
+import LoadingOverlay from "../../components/LoadingOverlay";
 import { useUser } from "../../contexts/UserContext";
 import {
   createPoll as apiCreatePoll,
@@ -128,152 +129,155 @@ export function TripPollPage() {
   };
 
   return (
-    <div className="row">
-      <div className="col-12">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">Trip Polls</h2>
-          <Button variant="primary" onClick={() => setShowAddPollModal(true)}>
-            Create Poll
-          </Button>
-        </div>
-
-        <Modal
-          show={showAddPollModal}
-          onHide={() => setShowAddPollModal(false)}
-          centered
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Create Poll</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form.Group className="mb-3">
-              <Form.Label>Poll Question</Form.Label>
-              <Form.Control
-                value={newPollTitle}
-                onChange={(e) => setNewPollTitle(e.target.value)}
-                placeholder="Enter poll question"
-              />
-            </Form.Group>
-            <Form.Label>Options</Form.Label>
-            {newOptions.map((option, index) => (
-              <Form.Control
-                key={index}
-                className="mb-2"
-                value={option}
-                placeholder={`Option ${index + 1}`}
-                onChange={(e) => updateOptionField(index, e.target.value)}
-              />
-            ))}
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              onClick={addOptionField}
-            >
-              Add Option
-            </Button>
-            {addPollError && (
-              <div className="text-danger mt-3">{addPollError}</div>
-            )}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => setShowAddPollModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={handleCreatePoll}>
+    <>
+      <LoadingOverlay show={isLoading} />
+      <div className="row">
+        <div className="col-12">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2 className="mb-0">Trip Polls</h2>
+            <Button variant="primary" onClick={() => setShowAddPollModal(true)}>
               Create Poll
             </Button>
-          </Modal.Footer>
-        </Modal>
+          </div>
 
-        {isLoading ? (
-          <div>Loading...</div>
-        ) : sortedPolls.length > 0 ? (
-          <Stack gap={3}>
-            {sortedPolls.map((poll) => {
-              const totalVotes = poll.options.reduce(
-                (sum, option) => sum + option.votes.length,
-                0,
-              );
-              return (
-                <Card key={poll.id}>
-                  <Card.Body>
-                    <div className="d-flex justify-content-between">
-                      <div>
-                        <Card.Title>{poll.title}</Card.Title>
-                        <Card.Subtitle className="text-muted">
-                          {new Date(poll.createdAt).toLocaleString()}
-                        </Card.Subtitle>
-                      </div>
-                      <div className="d-flex align-items-center">
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={() => handleDeletePoll(poll.id)}
-                          className="me-2"
-                        >
-                          Delete
-                        </Button>
-                        <div className="text-end">
-                          <strong>{totalVotes}</strong>
-                          <div>Total Votes</div>
+          <Modal
+            show={showAddPollModal}
+            onHide={() => setShowAddPollModal(false)}
+            centered
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Create Poll</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form.Group className="mb-3">
+                <Form.Label>Poll Question</Form.Label>
+                <Form.Control
+                  value={newPollTitle}
+                  onChange={(e) => setNewPollTitle(e.target.value)}
+                  placeholder="Enter poll question"
+                />
+              </Form.Group>
+              <Form.Label>Options</Form.Label>
+              {newOptions.map((option, index) => (
+                <Form.Control
+                  key={index}
+                  className="mb-2"
+                  value={option}
+                  placeholder={`Option ${index + 1}`}
+                  onChange={(e) => updateOptionField(index, e.target.value)}
+                />
+              ))}
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={addOptionField}
+              >
+                Add Option
+              </Button>
+              {addPollError && (
+                <div className="text-danger mt-3">{addPollError}</div>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => setShowAddPollModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleCreatePoll}>
+                Create Poll
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          {sortedPolls.length > 0 ? (
+            <Stack gap={3}>
+              {sortedPolls.map((poll) => {
+                const totalVotes = poll.options.reduce(
+                  (sum, option) => sum + option.votes.length,
+                  0,
+                );
+                return (
+                  <Card key={poll.id}>
+                    <Card.Body>
+                      <div className="d-flex justify-content-between">
+                        <div>
+                          <Card.Title>{poll.title}</Card.Title>
+                          <Card.Subtitle className="text-muted">
+                            {new Date(poll.createdAt).toLocaleString()}
+                          </Card.Subtitle>
+                        </div>
+                        <div className="d-flex align-items-center">
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={() => handleDeletePoll(poll.id)}
+                            className="me-2"
+                          >
+                            Delete
+                          </Button>
+                          <div className="text-end">
+                            <strong>{totalVotes}</strong>
+                            <div>Total Votes</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <hr />
-                    {poll.options.map((option) => {
-                      const percentage =
-                        totalVotes === 0
-                          ? 0
-                          : Number(
-                              (
-                                (option.votes.length / totalVotes) *
-                                100
-                              ).toFixed(1),
-                            );
-                      return (
-                        <Card
-                          key={option.id}
-                          className="mb-3 border-0 bg-light"
-                        >
-                          <Card.Body>
-                            <div className="d-flex justify-content-between mb-2">
-                              <strong>{option.text}</strong>
-                              <span>
-                                {percentage}% ({option.votes.length})
-                              </span>
-                            </div>
-                            <ProgressBar now={percentage} className="mb-3" />
-                            <div className="small text-muted mb-2">
-                              <strong>Voters:</strong>{" "}
-                              {option.votes.length > 0
-                                ? option.votes.map((v) => v.userName).join(", ")
-                                : "No votes yet"}
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="outline-primary"
-                              onClick={() => handleVote(poll.id, option.id)}
-                            >
-                              Vote
-                            </Button>
-                          </Card.Body>
-                        </Card>
-                      );
-                    })}
-                  </Card.Body>
-                </Card>
-              );
-            })}
-          </Stack>
-        ) : (
-          <div className="text-center">
-            <p>No polls available. Create one to get started!</p>
-          </div>
-        )}
+                      <hr />
+                      {poll.options.map((option) => {
+                        const percentage =
+                          totalVotes === 0
+                            ? 0
+                            : Number(
+                                (
+                                  (option.votes.length / totalVotes) *
+                                  100
+                                ).toFixed(1),
+                              );
+                        return (
+                          <Card
+                            key={option.id}
+                            className="mb-3 border-0 bg-light"
+                          >
+                            <Card.Body>
+                              <div className="d-flex justify-content-between mb-2">
+                                <strong>{option.text}</strong>
+                                <span>
+                                  {percentage}% ({option.votes.length})
+                                </span>
+                              </div>
+                              <ProgressBar now={percentage} className="mb-3" />
+                              <div className="small text-muted mb-2">
+                                <strong>Voters:</strong>{" "}
+                                {option.votes.length > 0
+                                  ? option.votes
+                                      .map((v) => v.userName)
+                                      .join(", ")
+                                  : "No votes yet"}
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline-primary"
+                                onClick={() => handleVote(poll.id, option.id)}
+                              >
+                                Vote
+                              </Button>
+                            </Card.Body>
+                          </Card>
+                        );
+                      })}
+                    </Card.Body>
+                  </Card>
+                );
+              })}
+            </Stack>
+          ) : (
+            <div className="text-center">
+              <p>No polls available. Create one to get started!</p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

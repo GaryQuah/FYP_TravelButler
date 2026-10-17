@@ -4,6 +4,7 @@ import { useUser } from "../../contexts/UserContext";
 import { addChatMessage, getChat } from "../../api";
 import type { ChatMessage, Chat } from "../../models";
 import { convertUtcToLocalTime } from "../../utils/dateUtils";
+import LoadingOverlay from "../../components/LoadingOverlay";
 import "../../assets/css/TripChatPage.css";
 
 export function TripChatPage() {
@@ -11,12 +12,16 @@ export function TripChatPage() {
   const { user } = useUser();
   const [input, setInput] = useState("");
   const [chat, setChat] = useState<Chat | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (trip?.chat_id) {
       getChat(trip.chat_id)
         .then(setChat)
-        .catch((err) => console.error("Failed to load chat:", err));
+        .catch((err) => console.error("Failed to load chat:", err))
+        .finally(() => setIsLoading(false));
+    } else if (trip) {
+      setIsLoading(false);
     }
   }, [trip?.chat_id]);
 
@@ -49,6 +54,7 @@ export function TripChatPage() {
 
   return (
     <div className="d-flex flex-column">
+      <LoadingOverlay show={isLoading} />
       <h2>Trip Chat</h2>
 
       {/* Chat messages */}

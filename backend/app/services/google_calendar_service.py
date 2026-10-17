@@ -32,8 +32,13 @@ async def exchange_code_for_tokens(code: str) -> GoogleCalendarTokens:
         )
         
         if response.status_code != 200:
-            logger.error(f"Google token exchange failed: {response.status_code} {response.text}")
-            response.raise_for_status()
+            logger.error(
+                f"Google token exchange failed: "
+                f"{response.status_code} {response.text}"
+            )
+            raise ValueError(
+                f"Google token exchange failed: {response.text}"
+            )
             
         token_data = response.json()
         
@@ -69,6 +74,9 @@ async def get_google_calendar_integration(
 
 async def refresh_access_token(tokens: GoogleCalendarTokens) -> GoogleCalendarTokens:
     """Refresh access token if it's expired or about to expire"""
+    if not tokens.refresh_token:
+        raise ValueError("Google Calendar refresh token is missing")
+
     # Refresh if token expires in less than 5 minutes
     if tokens.token_expiry - datetime.utcnow() > timedelta(minutes=5):
         return tokens
@@ -95,6 +103,32 @@ async def refresh_access_token(tokens: GoogleCalendarTokens) -> GoogleCalendarTo
             token_expiry=token_expiry,
             token_type=token_data["token_type"]
         )
+
+async def check_google_calendar_connection(
+    integrations_collection: AsyncIOMotorCollection,
+    user_id: str,
+) -> bool:
+    """Refresh the user's token when needed and remove invalid connections."""
+    integration = await get_google_calendar_integration(
+        integrations_collection,
+        user_id,
+    )
+    if not integration:
+        return False
+
+    try:
+        tokens = await refresh_access_token(integration.tokens)
+        if tokens.access_token != integration.tokens.access_token:
+            await update_tokens_in_db(integrations_collection, integration.id, tokens)
+        return True
+    except (httpx.HTTPStatusError, KeyError, TypeError, ValueError) as exc:
+        logger.warning(
+            "Removing invalid Google Calendar integration for user %s: %s",
+            user_id,
+            exc,
+        )
+        await delete_google_calendar_integration(integrations_collection, user_id)
+        return False
 
 async def save_google_calendar_integration(
     integrations_collection: AsyncIOMotorCollection,

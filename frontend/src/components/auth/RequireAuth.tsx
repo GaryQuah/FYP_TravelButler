@@ -1,3 +1,4 @@
+import LoadingOverlay from "../LoadingOverlay";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useUser } from "../../contexts/UserContext";
 
@@ -6,12 +7,16 @@ export default function RequireAuth() {
   const location = useLocation();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingOverlay show />;
   }
 
   if (!user) {
     return <Navigate to="/" replace state={{ from: location }} />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+    </>
+  );
 }

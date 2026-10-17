@@ -1,4 +1,4 @@
-import sys
+import os
 import uvicorn
 
 from fastapi import FastAPI
@@ -20,15 +20,6 @@ from app.db.mongo import lifespan
 
 app = FastAPI(lifespan=lifespan, debug=DEBUG)
 
-# CORS configuration to allow requests from the frontend on localhost:5173
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://fyp-travel-butler.vercel.app"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Routers
 app.include_router(user_router)
 app.include_router(trips_router)
@@ -42,8 +33,21 @@ app.include_router(gemini_router)
 app.include_router(ai_chat_router)
 app.include_router(document_router)
 
+
+# CORS configuration to allow requests from the frontend on localhost:5173
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173",
+                    "https://fyp-travel-butler.vercel.app",
+                    "https://fyp-travel-butler-git-production-gary-6b97.vercel.app",],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 def main():
-    uvicorn.run("app.main:app", host="0.0.0.0", port=3001, reload=DEBUG)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=DEBUG)
 
 if __name__ == "__main__":
     main()

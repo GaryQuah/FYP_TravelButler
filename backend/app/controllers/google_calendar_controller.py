@@ -4,11 +4,11 @@ from datetime import datetime
 from app.utils.jwt import get_current_user
 from app.models.user import User
 from app.services.google_calendar_service import (
-    get_google_calendar_integration,
     save_google_calendar_integration,
     delete_google_calendar_integration,
     create_calendar_event,
-    exchange_code_for_tokens
+    exchange_code_for_tokens,
+    check_google_calendar_connection,
 )
 from app.models.google_calendar_integration import (
     GoogleCalendarIntegrationCreateRequest,
@@ -34,8 +34,11 @@ async def check_connection_status(
     integrations_collection: AsyncIOMotorCollection = Depends(get_integrations_collection)
 ):
     """Check if user has connected Google Calendar"""
-    integration = await get_google_calendar_integration(integrations_collection, current_user.user_id)
-    return {"connected": integration is not None}
+    connected = await check_google_calendar_connection(
+        integrations_collection,
+        current_user.user_id,
+    )
+    return {"connected": connected}
 
 @router.post("/connect")
 async def connect_google_calendar(

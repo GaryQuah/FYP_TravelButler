@@ -1,9 +1,3 @@
-/*
-This file defines a React context for managing user authentication state across the application. 
-It provides a UserProvider component that wraps the app and manages the user state, including loading state while checking localStorage for existing user data. 
-The useUser hook allows components to easily access the user state and update it when needed.
-TODO: Is this the best way to manage user data? 
-*/
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User } from "../models";

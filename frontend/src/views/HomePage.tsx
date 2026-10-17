@@ -1,3 +1,4 @@
+import LoadingOverlay from "../components/LoadingOverlay";
 import { useState, useEffect } from "react";
 import Navbar from "../components/navigation/Navbar";
 import Card from "../components/cards/TripCard";
@@ -126,6 +127,7 @@ export function HomePage() {
 
   return (
     <>
+      <LoadingOverlay show={tripsLoading || trackersLoading} />
       <Navbar />
       <div className="container">
         {alert.show && (

@@ -4,6 +4,7 @@ This is to standardize naming across files preventing hardcoding of values in mu
 configuration settings in the future.
 """
 import os
+import json
 
 from dotenv import load_dotenv
 
@@ -32,5 +33,17 @@ POLL_COLLECTION = os.environ.get("POLL_COLLECTION", "polls")
 # Stores user integration data such as services and tokens for external APIs (e.g. Google Calendar)
 INTEGRATIONS_COLLECTION = os.environ.get("INTEGRATIONS_COLLECTION", "integrations")
 DOCUMENT_COLLECTION = os.environ.get("DOCUMENT_COLLECTION", "documents")
+GCS_BUCKET_NAME = os.environ.get("GCS_BUCKET_NAME", "documents_1_fyp")
+GCS_CREDENTIALS_JSON = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+
+if not GCS_CREDENTIALS_JSON:
+    raise RuntimeError("GOOGLE_APPLICATION_CREDENTIALS_JSON is not configured")
+
+try:
+    GCS_CREDENTIALS_INFO = json.loads(GCS_CREDENTIALS_JSON)
+except json.JSONDecodeError as exc:
+    raise RuntimeError(
+        "GOOGLE_APPLICATION_CREDENTIALS_JSON must contain valid service-account JSON"
+    ) from exc
 
 DEBUG = os.environ.get("DEBUG", "").strip().lower() in {"1", "true", "on", "yes"}

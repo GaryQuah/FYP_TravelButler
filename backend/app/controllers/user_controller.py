@@ -48,6 +48,22 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
+@router.put("/me", response_model=User)
+async def update_current_user(
+    data: UpdateUserRequest,
+    users_collection: AsyncIOMotorCollection = Depends(get_users_collection),
+    current_user: User = Depends(get_current_user),
+):
+    update_data = {k: v for k, v in data.dict().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    user = await update_user(users_collection, current_user.user_id, update_data)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
 @router.get("/by-email/{email}")
 async def get_user(
     email: str,

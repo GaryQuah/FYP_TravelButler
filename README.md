@@ -56,3 +56,12 @@ poetry install
 ```bash
 cd .\backend\; poetry run uvicorn app.main:app --reload
 ```
+
+The local backend listens on `http://localhost:8000`. Set the frontend
+`VITE_API_URL` to `http://localhost:8000` for local development and to
+`https://fyp-travelbutler.onrender.com` in the production Vercel environment.
+
+Google Identity Services also requires `http://localhost:5173` to be listed as
+an authorized JavaScript origin for the OAuth client configured by
+`VITE_OAUTH_CLIENT_ID`. Configure this in Google Cloud Console; do not place
+the OAuth client secret in the frontend environment.
