@@ -1,10 +1,8 @@
 import type { User } from "../models";
 import { apiFetch } from "./apiFetch";
-import { clearAuthState } from "./auth";
+import { clearAuthState, clearLegacyAccessToken } from "./auth";
 
 export interface LoginResponse {
-  access_token: string;
-  token_type: string;
   user: User;
 }
 
@@ -26,7 +24,7 @@ export const loginOrRegisterUser = async (
 
   const data: LoginResponse = await response.json();
 
-  localStorage.setItem("access_token", data.access_token);
+  clearLegacyAccessToken();
   localStorage.setItem("user", JSON.stringify(data.user));
 
   return data;

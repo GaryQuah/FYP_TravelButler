@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User } from "../models";
-import { clearAuthState } from "../api/auth";
+import { clearAuthState, clearLegacyAccessToken } from "../api/auth";
 import { getCurrentUser } from "../api/user";
 
 interface UserContextType {
@@ -19,6 +19,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const hydrateUser = async () => {
       try {
+        clearLegacyAccessToken();
         const user = await getCurrentUser();
         setUserState(user);
         window.localStorage.setItem("user", JSON.stringify(user));

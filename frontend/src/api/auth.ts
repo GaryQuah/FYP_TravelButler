@@ -1,18 +1,11 @@
-const ACCESS_TOKEN_KEY = "access_token";
+const LEGACY_ACCESS_TOKEN_KEY = "access_token";
 const USER_KEY = "user";
 
-export function getAuthHeaders(): HeadersInit {
-  const token = window.localStorage.getItem(ACCESS_TOKEN_KEY);
-  const headers: Record<string, string> = {};
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  return headers;
+export function clearLegacyAccessToken() {
+  window.localStorage.removeItem(LEGACY_ACCESS_TOKEN_KEY);
 }
 
 export function clearAuthState() {
-  window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+  clearLegacyAccessToken();
   window.localStorage.removeItem(USER_KEY);
 }
