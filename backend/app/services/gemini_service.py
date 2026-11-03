@@ -239,8 +239,6 @@ class GeminiService:
             max_output_tokens=max_output_tokens
         )
 
-        print(response_text)
-
         try:
             # The response might be wrapped in markdown
             clean_response = (
@@ -383,8 +381,6 @@ class GeminiService:
             temperature=temperature,
             max_output_tokens=max_output_tokens
         )
-
-        print("raw response:", response_text)
 
         try:
             # Use regex to find the JSON block

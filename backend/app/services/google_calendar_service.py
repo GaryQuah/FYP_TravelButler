@@ -219,15 +219,12 @@ async def create_calendar_event(
             "https://www.googleapis.com/oauth2/v1/tokeninfo",
             params={"access_token": tokens.access_token}
         )
-        #print(f"Token info: {token_response.json()}")
         
         # First check if we can access calendars
         calendar_list_response = await client.get(
             "https://www.googleapis.com/calendar/v3/users/me/calendarList",
             headers={"Authorization": f"Bearer {tokens.access_token}"}
         )
-        #print(f"Calendar list status: {calendar_list_response.status_code}")
-        #print(f"Calendar list response: {calendar_list_response.text}")
         
         # Try to create the event
         response = await client.post(
@@ -235,7 +232,5 @@ async def create_calendar_event(
             headers={"Authorization": f"Bearer {tokens.access_token}"},
             json=event_data
         )
-        #print(f"Event creation status: {response.status_code}")
-        #print(f"Event creation response: {response.text}")
         response.raise_for_status()
         return response.json()

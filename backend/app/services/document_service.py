@@ -70,19 +70,12 @@ class DocumentService:
 
     async def get_documents_for_trip(self, trip_id):
         trip = await self.db.trips.find_one({"_id": ObjectId(trip_id)})
-        #print(f"Found trip: {trip}")
         if not trip or not trip.get("document_ids"):
-            #print("Trip not found or has no document_ids")
             return []
-
-        document_ids = trip.get("document_ids")
-        #print(f"Document IDs: {document_ids}")
 
         documents = await self.db.documents.find(
             {"_id": {"$in": trip["document_ids"]}}
         ).to_list(100)
-        
-        #print(f"Found documents from DB: {documents}")
 
         for doc in documents:
             blob = self.storage_client.bucket(self.bucket_name).blob(doc["gcs_path"])
@@ -92,7 +85,6 @@ class DocumentService:
                 method="GET",
             )
 
-        print(f"Documents with signed URLs: {documents}")
         return documents
 
     async def delete_document_for_trip(self, trip_id: str, document_id: str) -> bool:

@@ -35,43 +35,34 @@ Frontend implementation for user interaction, input handling, and result visuali
 Backend implementation for business logic, data management, and integration with Gen-AI services or other external API services.
 Basic user authentication and preference handling.
 
-## Run Locally
-
-### Frontend
-
-To run the frontend
-
-Install dependencies
-
-```bash
-cd .\frontend\
-```
-
-```bash
- npm install
-```
-
-```bash
-npm run dev
-```
+## Installation
 
 ### Backend
 
-To run the backend
-
-Install dependencies
-
-```bash
-cd .\backend\
-```
-
-```bash
+```powershell
+Set-Location .\backend
 poetry install
-```
-
-```bash
 poetry run uvicorn app.main:app --reload
 ```
+
+If Poetry is unavailable:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python -m uvicorn app.main:app --reload
+```
+
+### Frontend
+
+```powershell
+Set-Location .\frontend
+npm install
+npm run dev
+```
+
+Useful commands are `npm run build`, `npm run lint`, and `npm run preview`.
 
 The local backend listens on `http://localhost:8000`. Set the frontend
 `VITE_API_URL` to `http://localhost:8000` for local development and to
@@ -101,35 +92,6 @@ the OAuth client secret in the frontend environment.
 | Google Calendar API         | Calendar integration               | <https://developers.google.com/calendar/api>  |
 | Google Cloud Storage        | Images and uploaded documents      | <https://cloud.google.com/storage>            |
 | Vercel / Render             | Frontend / backend hosting         | <https://vercel.com/> / <https://render.com/> |
-
-## Installation
-
-### Backend
-
-```powershell
-Set-Location .\backend
-poetry install
-poetry run uvicorn app.main:app --reload
-```
-
-If Poetry is unavailable:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-python -m uvicorn app.main:app --reload
-```
-
-### Frontend
-
-```powershell
-Set-Location .\frontend
-npm install
-npm run dev
-```
-
-Useful commands are `npm run build`, `npm run lint`, and `npm run preview`.
 
 ## Environment parameters
 
@@ -218,11 +180,6 @@ frontend/src/
   Cloud Storage using short-lived signed URLs.
 - `google_calendar_service.py` handles OAuth token exchange, refresh, and event
   creation.
-
-The authentication cookie is `HttpOnly`; browser JavaScript must not read it or
-restore the old local-storage bearer-token flow. OAuth redirect URIs must match
-Google Cloud Console exactly. Run `npm run build` before deploying frontend
-changes, and rotate credentials immediately if they are exposed.
 
 The detailed versioned software inventory and implementation notes are also
 available in [DOCUMENTATION.md](./DOCUMENTATION.md).

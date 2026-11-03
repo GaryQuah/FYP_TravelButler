@@ -114,7 +114,6 @@ const ItineraryCard = ({
           </div>
         )}
 
-        {/*TODO: Add image upload support for the trip card, and display the image here if it exists*/}
       </div>
     </div>
   );
