@@ -6,6 +6,7 @@ import AddItineraryModal from "../../components/modals/AddItineraryModal";
 import ItineraryAnalysisModal from "../../components/modals/ItineraryAnalysisModal";
 import { ItineraryModal } from "../../components/modals/ItineraryModal";
 import { DateSelectionModal } from "../../components/modals/DateSelectionModal";
+import ThinkingRobot from "../../components/ThinkingRobot";
 import { useItineraries } from "../../hooks/UseItineraries";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import {
@@ -186,6 +187,7 @@ export function TripItineraryPage() {
   const checkDescriptionForExpenditure = async (description: string) => {
     if (!description.includes("$")) return;
 
+    setIsAnalyzing(true);
     try {
       const result = await analyzeDescription(description);
       const detectedExpenditures = result?.expenditures ??
@@ -235,6 +237,8 @@ export function TripItineraryPage() {
         message: "Unable to analyze the itinerary description.",
         type: "danger",
       });
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -377,6 +381,11 @@ export function TripItineraryPage() {
             </>
           )}
         </button>
+        {isAnalyzing && (
+          <div className="mt-2">
+            <ThinkingRobot label="Analyzing with AI..." />
+          </div>
+        )}
         {googleConnected && itineraries && itineraries.length > 0 && (
           <button
             className="btn btn-success ms-2"
