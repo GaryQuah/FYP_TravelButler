@@ -14,7 +14,7 @@ import {
 } from "../../api";
 
 import { analyzeDescription, analyzeItinerary } from "../../api/gemini.ts";
-import { addExpenditure } from "../../api/budget.ts";
+import { addExpenditure, getTripBudget } from "../../api/budget.ts";
 import type { Itinerary, ItineraryCreationData } from "../../models";
 
 import "../..//assets/css/TripItineraryPage.css";
@@ -37,13 +37,22 @@ export function TripItineraryPage() {
   const [googleConnected, setGoogleConnected] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
-  const [, setAlert] = useState<{ message: string; type: string } | null>(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [expenditure, setExpenditure] = useState<{
-    amount: number;
-    item: string;
-    category: string;
+  const [alert, setAlert] = useState<{
+    message: string;
+    type: "success" | "danger";
   } | null>(null);
+  const [showExpenditureModal, setShowExpenditureModal] = useState(false);
+  const [expenditures, setExpenditures] = useState<
+    Array<{
+      amount: number;
+      item: string;
+      category: string;
+      selectedCategory: string;
+      customCategory: string;
+    }>
+  >([]);
+  const [expenditureCount, setExpenditureCount] = useState(0);
+  const [budgetCategories, setBudgetCategories] = useState<string[]>([]);
   const [editingItinerary, setEditingItinerary] = useState<Itinerary | null>(
     null,
   );
@@ -144,8 +153,13 @@ export function TripItineraryPage() {
       const result = await analyzeItinerary(itineraries);
       setAnalysis(result);
       setShowAnalysisModal(true);
+      setAlert({ message: "Itinerary analysis completed.", type: "success" });
     } catch (error) {
       console.error("Failed to analyze itinerary:", error);
+      setAlert({
+        message: "Failed to analyze itinerary. Please try again.",
+        type: "danger",
+      });
     } finally {
       setIsAnalyzing(false);
     }
@@ -169,10 +183,67 @@ export function TripItineraryPage() {
     }
   };
 
+  const checkDescriptionForExpenditure = async (description: string) => {
+    if (!description.includes("$")) return;
+
+    try {
+      const result = await analyzeDescription(description);
+      const detectedExpenditures = result?.expenditures ??
+        (result?.expenditure ? [result.expenditure] : []);
+      if (detectedExpenditures.length === 0) {
+        setAlert({
+          message: "No expenses were detected in the description.",
+          type: "success",
+        });
+        return;
+      }
+
+      const budget = tripId ? await getTripBudget(tripId) : null;
+      const categories =
+        budget?.categories.map((category: { name: string }) => category.name) ??
+        [];
+      setBudgetCategories(categories);
+      setExpenditures(
+        detectedExpenditures.map(
+          (detectedExpenditure: {
+            amount: number;
+            item: string;
+            category: string;
+          }) => {
+            const detectedCategory = detectedExpenditure.category?.trim() ?? "";
+            const existingCategory = categories.find(
+              (category: string) =>
+                category.toLowerCase() === detectedCategory.toLowerCase(),
+            );
+            return {
+              ...detectedExpenditure,
+              selectedCategory: existingCategory ?? "__new__",
+              customCategory: existingCategory ? "" : detectedCategory,
+            };
+          },
+        ),
+      );
+      setExpenditureCount(detectedExpenditures.length);
+      setShowExpenditureModal(true);
+      setAlert({
+        message: `${detectedExpenditures.length} expenditure${detectedExpenditures.length === 1 ? "" : "s"} found.`,
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to analyze itinerary description:", error);
+      setAlert({
+        message: "Unable to analyze the itinerary description.",
+        type: "danger",
+      });
+    }
+  };
+
   const handleSaveItinerary = async (data: ItineraryCreationData) => {
     if (!tripId) return;
     try {
       await addItinerary(data);
+      setAlert({ message: "Activity added to itinerary!", type: "success" });
+      await checkDescriptionForExpenditure(data.description);
       setIsModalOpen(false);
     } catch (error) {
       console.error("Failed to add itinerary item:", error);
@@ -216,14 +287,7 @@ export function TripItineraryPage() {
         setAnalysis({ ...analysis, recommendations: updatedRecommendations });
       }
 
-      // Handle expenditure analysis
-      if (itineraryData.description) {
-        const result = await analyzeDescription(itineraryData.description);
-        if (result && result.expenditure) {
-          setExpenditure(result.expenditure);
-          setShowConfirmation(true);
-        }
-      }
+      await checkDescriptionForExpenditure(itineraryData.description);
     } catch (error) {
       console.error("Failed to save recommended itinerary:", error);
     }
@@ -238,11 +302,44 @@ export function TripItineraryPage() {
     setEditingItinerary(null);
   };
 
-  const handleConfirmAddExpenditure = async () => {
-    if (expenditure && tripId) {
-      await addExpenditure(tripId, expenditure);
-      setShowConfirmation(false);
-      setExpenditure(null);
+  const handleConfirmAddExpenditure = async (index: number) => {
+    if (!tripId) return;
+    const expenditure = expenditures[index];
+    if (!expenditure) return;
+
+    const category =
+      expenditure.selectedCategory === "__new__"
+        ? expenditure.customCategory.trim()
+        : expenditure.selectedCategory;
+    if (!category) return;
+
+    try {
+      await addExpenditure(tripId, {
+        amount: expenditure.amount,
+        item: expenditure.item,
+        category,
+      });
+      setExpenditures((current) =>
+        current.filter((_, expenditureIndex) => expenditureIndex !== index),
+      );
+      if (expenditures.length === 1) {
+        setShowExpenditureModal(false);
+        setAlert({
+          message: "Expenditure created successfully.",
+          type: "success",
+        });
+      } else {
+        setAlert({
+          message: "Expenditure created successfully.",
+          type: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to create expenditure:", error);
+      setAlert({
+        message: "Failed to create expenditure. Please try again.",
+        type: "danger",
+      });
     }
   };
 
@@ -250,6 +347,19 @@ export function TripItineraryPage() {
     <>
       <LoadingOverlay show={tripLoading || itinerariesLoading} />
       <div>
+        {alert && (
+          <div
+            className={`alert alert-${alert.type} alert-dismissible fade show`}
+            role="alert"
+          >
+            {alert.message}
+            <button
+              type="button"
+              className="btn-close"
+              onClick={() => setAlert(null)}
+            ></button>
+          </div>
+        )}
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>
           <i className="bi bi-plus-circle me-2"></i>Add Itinerary
         </button>
@@ -339,31 +449,128 @@ export function TripItineraryPage() {
         maxDate={formatDateForInput(trip?.end_date)}
       />
 
-      {showConfirmation && expenditure && (
+      {showExpenditureModal && expenditures.length > 0 && (
         <div
           className="modal d-block"
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
         >
-          <div className="modal-dialog">
+          <div className="modal-dialog modal-lg">
             <div className="modal-content p-3">
-              <h5>Add to Budget?</h5>
-              <p>
-                Would you like to add an expenditure of {expenditure.amount} for
-                "{expenditure.item}" under the category "{expenditure.category}"
-                to your budget?
-              </p>
+              <h5>{expenditureCount} expenditures found</h5>
+              <div style={{ maxHeight: "55vh", overflowY: "auto" }}>
+                {expenditures.map((expenditure, index) => (
+                  <div className="card mb-3" key={`${expenditure.item}-${index}`}>
+                    <div className="card-body">
+                      <h6 className="card-title">Expenditure {index + 1}</h6>
+                      <label className="form-label">Item</label>
+                      <input
+                        className="form-control mb-2"
+                        value={expenditure.item}
+                        onChange={(event) =>
+                          setExpenditures((current) =>
+                            current.map((item, itemIndex) =>
+                              itemIndex === index
+                                ? { ...item, item: event.target.value }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                      <label className="form-label">Amount</label>
+                      <input
+                        className="form-control mb-2"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={expenditure.amount}
+                        onChange={(event) =>
+                          setExpenditures((current) =>
+                            current.map((item, itemIndex) =>
+                              itemIndex === index
+                                ? {
+                                    ...item,
+                                    amount: Number(event.target.value),
+                                  }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                      <label className="form-label">Category</label>
+                      <select
+                        className="form-select mb-2"
+                        value={expenditure.selectedCategory}
+                        onChange={(event) =>
+                          setExpenditures((current) =>
+                            current.map((item, itemIndex) =>
+                              itemIndex === index
+                                ? {
+                                    ...item,
+                                    selectedCategory: event.target.value,
+                                  }
+                                : item,
+                            ),
+                          )
+                        }
+                      >
+                        <option value="" disabled>
+                          Select a category
+                        </option>
+                        {budgetCategories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                        <option value="__new__">Add new category...</option>
+                      </select>
+                      {expenditure.selectedCategory === "__new__" && (
+                        <input
+                          className="form-control mb-3"
+                          placeholder="New category name"
+                          value={expenditure.customCategory}
+                          onChange={(event) =>
+                            setExpenditures((current) =>
+                              current.map((item, itemIndex) =>
+                                itemIndex === index
+                                  ? {
+                                      ...item,
+                                      customCategory: event.target.value,
+                                    }
+                                  : item,
+                              ),
+                            )
+                          }
+                        />
+                      )}
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => handleConfirmAddExpenditure(index)}
+                        disabled={
+                          !expenditure.item.trim() ||
+                          !Number.isFinite(expenditure.amount) ||
+                          expenditure.amount < 0 ||
+                          !(
+                            expenditure.selectedCategory &&
+                            (expenditure.selectedCategory !== "__new__" ||
+                              expenditure.customCategory.trim())
+                          )
+                        }
+                      >
+                        Create Expenditure
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
               <div className="d-flex justify-content-end">
                 <button
                   className="btn btn-secondary me-2"
-                  onClick={() => setShowConfirmation(false)}
+                  onClick={() => {
+                    setShowExpenditureModal(false);
+                    setExpenditures([]);
+                  }}
                 >
-                  No
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={handleConfirmAddExpenditure}
-                >
-                  Yes
+                  Cancel
                 </button>
               </div>
             </div>

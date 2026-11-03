@@ -78,13 +78,13 @@ class GeminiService:
         """
 
         prompt = f"""
-        Extract the first budget-related expense from the following text.
+        Extract every budget-related expense from the following text.
 
         Text:
         {user_input}
 
         Instructions:
-        1. Identify the first expense mentioned with a specific monetary amount.
+        1. Identify every expense mentioned with a specific monetary amount.
         2. Determine:
             - item
             - amount
@@ -93,16 +93,19 @@ class GeminiService:
         4. Remove currency symbols.
         5. Return ONLY valid JSON.
         6. Do not include markdown or explanations.
-        7. If no expense exists, return {{}}.
+        7. If no expense exists, return {{"expenditures": []}}.
+        8. Preserve the order in which expenses appear in the text.
 
         Expected format:
 
         {{
-            "expenditure": {{
-                "item": "Dinner at restaurant",
-                "amount": 50.00,
-                "category": "Food"
-            }}
+            "expenditures": [
+                {{
+                    "item": "Dinner at restaurant",
+                    "amount": 50.00,
+                    "category": "Food"
+                }}
+            ]
         }}
         """
 
