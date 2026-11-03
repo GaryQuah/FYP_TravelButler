@@ -2,15 +2,12 @@ import os
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, Request, Response, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.models.user import User
 from bson import ObjectId
 from bson.errors import InvalidId
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.dependencies import get_users_collection
 from app.config import DEBUG
-
-http_bearer = HTTPBearer(auto_error=False)
 
 SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
 ALGORITHM = os.environ.get("JWT_ALGORITHM")
@@ -46,7 +43,7 @@ def set_access_cookie(response: Response, token: str):
         value=token,
         httponly=True,
         secure=not DEBUG,
-        samesite="lax",
+        samesite="lax" if DEBUG else "none",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
     )
@@ -56,16 +53,15 @@ def clear_access_cookie(response: Response):
     response.delete_cookie(
         key="access_token",
         path="/",
-        samesite="lax",
+        samesite="lax" if DEBUG else "none",
         secure=not DEBUG,
     )
 
 async def get_current_user(
     request: Request,
-    credentials: HTTPAuthorizationCredentials | None = Depends(http_bearer),
     users_collection: AsyncIOMotorCollection = Depends(get_users_collection)
 ):
-    token = credentials.credentials if credentials else request.cookies.get("access_token")
+    token = request.cookies.get("access_token")
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

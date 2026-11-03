@@ -35,7 +35,7 @@ async def login_google(
 
     access_token = create_access_token(data={"sub": user["user_id"]})
     set_access_cookie(response, access_token)
-    return {"access_token": access_token, "token_type": "bearer", "user": user}
+    return {"user": user}
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
