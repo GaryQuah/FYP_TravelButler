@@ -8,6 +8,7 @@ import { formatTime } from "../../utils/dateUtils";
 import { ItineraryModal } from "../../components/modals/ItineraryModal";
 import { DateSelectionModal } from "../../components/modals/DateSelectionModal";
 import LoadingOverlay from "../../components/LoadingOverlay";
+import ThinkingRobot from "../../components/ThinkingRobot";
 import "../../assets/css/TripAssistancePage.css";
 
 import { addAIChatMessage, getAIChat, addItinerary } from "../../api";
@@ -271,7 +272,7 @@ export function TripAssistancePage() {
           <div className="mb-3 d-flex justify-content-start">
             <div className="p-2 rounded bg-light border chat-bubble">
               <div className="small fw-bold">AI Assistant</div>
-              <div>typing...</div>
+              <ThinkingRobot />
             </div>
           </div>
         )}

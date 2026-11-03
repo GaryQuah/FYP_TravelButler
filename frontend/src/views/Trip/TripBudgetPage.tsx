@@ -27,6 +27,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { analyzeReceipt } from "../../api/gemini";
+import ThinkingRobot from "../../components/ThinkingRobot";
 
 import type { TripBudget, ExpenseItem, Category } from "../../models/budget";
 
@@ -500,6 +501,11 @@ export function TripBudgetPage() {
                   )}
                   {isAnalyzing ? " Analyzing..." : " Upload Receipt"}
                 </Button>
+                {isAnalyzing && (
+                  <div className="mt-2">
+                    <ThinkingRobot label="Analyzing your receipt..." />
+                  </div>
+                )}
                 <input
                   type="file"
                   ref={fileInputRef}
