@@ -11,6 +11,7 @@ import { addItinerary } from "../../api/itinerary";
 
 import { UploadDocumentModal } from "../../components/modals/UploadDocumentModal";
 import LoadingOverlay from "../../components/LoadingOverlay";
+import ThinkingRobot from "../../components/ThinkingRobot";
 import "../../assets/css/TripDocumentPage.css";
 
 type AnalysisActionType = "itinerary" | "budget";
@@ -446,10 +447,7 @@ export function TripDocumentPage() {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-body text-center">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-                <p className="mt-3">Analyzing your document...</p>
+                <ThinkingRobot label="Analyzing your document..." />
               </div>
             </div>
           </div>
