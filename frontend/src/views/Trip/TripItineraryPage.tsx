@@ -17,6 +17,7 @@ import {
 import { analyzeDescription, analyzeItinerary } from "../../api/gemini.ts";
 import { addExpenditure, getTripBudget } from "../../api/budget.ts";
 import type { Itinerary, ItineraryCreationData } from "../../models";
+import { rebaseItineraryDates } from "../../utils/dateUtils";
 
 import "../..//assets/css/TripItineraryPage.css";
 
@@ -60,6 +61,7 @@ export function TripItineraryPage() {
   const [analysis, setAnalysis] = useState<any | null>(null);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isAddingRecommendations, setIsAddingRecommendations] = useState(false);
   const [selectedItinerary, setSelectedItinerary] =
     useState<ItineraryCreationData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -87,37 +89,25 @@ export function TripItineraryPage() {
     setIsDateModalOpen(true);
   };
 
-  const handleSaveAllItineraries = async (date: Date) => {
+  const handleSaveAllItineraries = async (dates: Record<string, string>) => {
     if (!tripId || !analysis?.recommendations) return;
 
+    setIsAddingRecommendations(true);
     try {
-      const dateString = formatDateForInput(date);
-      if (!dateString) {
-        setAlert({ message: "Invalid date selected.", type: "danger" });
-        return;
-      }
-
-      const formatTimeFromString = (dateTimeString: string): string => {
-        const timePart = dateTimeString.split("T")[1];
-        if (timePart) {
-          const [hours, minutes] = timePart.split(":");
-          return `${hours}:${minutes}`;
-        }
-        return ""; // Fallback
-      };
-
-      const itineraryPromises = analysis.recommendations.map((rec: any) => {
-        const startTime = formatTimeFromString(rec.gap_start_time);
-        const endTime = formatTimeFromString(rec.gap_end_time);
-
-        const newItem = {
+      const recommendations: ItineraryCreationData[] =
+        analysis.recommendations.map((rec: any) => ({
           activity_name: rec.recommendation.activity_name,
-          start_time: `${dateString}T${startTime}`,
-          end_time: `${dateString}T${endTime}`,
+          start_time: rec.gap_start_time,
+          end_time: rec.gap_end_time,
           description: rec.recommendation.description,
-        };
-        return addItinerary(newItem);
-      });
+        }));
+      const rebasedRecommendations = rebaseItineraryDates(
+        recommendations,
+        dates,
+      );
+      const itineraryPromises = rebasedRecommendations.map((item) =>
+        addItinerary(item),
+      );
 
       await Promise.all(itineraryPromises);
 
@@ -134,6 +124,8 @@ export function TripItineraryPage() {
           "Failed to add all activities. Please check the console for details.",
         type: "danger",
       });
+    } finally {
+      setIsAddingRecommendations(false);
     }
   };
 
@@ -349,7 +341,14 @@ export function TripItineraryPage() {
 
   return (
     <>
-      <LoadingOverlay show={tripLoading || itinerariesLoading} />
+      <LoadingOverlay
+        show={tripLoading || itinerariesLoading || isAddingRecommendations}
+        label={
+          isAddingRecommendations
+            ? "Adding recommended activities..."
+            : undefined
+        }
+      />
       <div>
         {alert && (
           <div
@@ -454,6 +453,10 @@ export function TripItineraryPage() {
         show={isDateModalOpen}
         onHide={() => setIsDateModalOpen(false)}
         onSave={handleSaveAllItineraries}
+        itineraryDates={(analysis?.recommendations ?? []).map(
+          (rec: { gap_start_time: string }) =>
+            rec.gap_start_time.slice(0, 10),
+        )}
         minDate={formatDateForInput(trip?.start_date)}
         maxDate={formatDateForInput(trip?.end_date)}
       />

@@ -12,6 +12,7 @@ import {
   saveAvailability,
   updateAvailabilityTracker,
 } from "../api/availability";
+import { uploadTripImage } from "../api/trip";
 import AddUserModal from "../components/modals/AddUserModal";
 import AddTripModal from "../components/modals/AddTripModal";
 import { useTrips } from "../hooks/UseTrip";
@@ -209,9 +210,12 @@ function AvailabilityPage() {
               ),
               description: `Trip planned from ${tracker.name} availability tracker.`,
             }}
-            onSave={async (tripData) => {
+            onSave={async (tripData, imageFile) => {
               const newTrip = await createNewTrip(tripData, tracker.user_ids);
               if (newTrip) {
+                if (imageFile) {
+                  await uploadTripImage(newTrip.trip_id, imageFile);
+                }
                 setShowAddTripModal(false);
                 navigate(`/trip/${newTrip.trip_id}`);
               }

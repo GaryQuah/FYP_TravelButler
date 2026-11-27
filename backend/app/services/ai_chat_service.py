@@ -56,11 +56,18 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.chat import Message
 from app.services.gemini_service import GeminiService
 from bson import ObjectId
-from datetime import datetime
+from datetime import date, datetime
 
 gemini = GeminiService()
 
-async def add_message_to_ai_chat(collection: AsyncIOMotorCollection, ai_chat_id: str, user_id: str, message: str, country: str):
+async def add_message_to_ai_chat(
+    collection: AsyncIOMotorCollection,
+    ai_chat_id: str,
+    user_id: str,
+    message: str,
+    country: str,
+    trips_collection: AsyncIOMotorCollection | None = None,
+):
     """
     Add a message to an AI chat and get a response from the AI.
     """
@@ -87,13 +94,28 @@ async def add_message_to_ai_chat(collection: AsyncIOMotorCollection, ai_chat_id:
             })
 
     itinerary = chat.get("ai_recommendations", []) if chat else []
+    trip = (
+        await trips_collection.find_one({"_id": ObjectId(chat["trip_id"])})
+        if trips_collection is not None and chat and chat.get("trip_id")
+        else None
+    )
+
+    def format_trip_date(value):
+        if isinstance(value, datetime):
+            return value.date().isoformat()
+        if isinstance(value, date):
+            return value.isoformat()
+        return str(value)[:10] if value else None
 
     ai_response = await asyncio.to_thread(
         gemini.generate_chat_response,
         user_input=message,
         history=history,
-        country=country,
+        country=trip.get("country", country) if trip else country,
         itinerary=itinerary,
+        trip_start_date=format_trip_date(trip.get("start_date")) if trip else None,
+        trip_end_date=format_trip_date(trip.get("end_date")) if trip else None,
+        traveler_count=len(trip.get("user_ids", [])) if trip else None,
     )
 
     ai_response_text = ai_response.get("response", "")
