@@ -8,6 +8,7 @@ import {
 } from "../../api/document";
 import { analyzeDocument } from "../../api/gemini";
 import { addItinerary } from "../../api/itinerary";
+import { addExpenditure } from "../../api/budget";
 
 import { UploadDocumentModal } from "../../components/modals/UploadDocumentModal";
 import LoadingOverlay from "../../components/LoadingOverlay";
@@ -28,11 +29,23 @@ interface ItineraryDraft {
   description: string;
 }
 
+interface BudgetDraft {
+  item: string;
+  amount: string;
+  category: string;
+}
+
 const EMPTY_ITINERARY_DRAFT: ItineraryDraft = {
   activity_name: "",
   start_time: "",
   end_time: "",
   description: "",
+};
+
+const EMPTY_BUDGET_DRAFT: BudgetDraft = {
+  item: "",
+  amount: "",
+  category: "",
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -124,6 +137,14 @@ function buildItineraryDraft(payload: Record<string, unknown>): ItineraryDraft {
   };
 }
 
+function buildBudgetDraft(payload: Record<string, unknown>): BudgetDraft {
+  return {
+    item: getStringValue(payload, ["item", "title", "merchant", "store", "name"]),
+    amount: getStringValue(payload, ["amount", "total", "price"]),
+    category: getStringValue(payload, ["category", "expense_category"]),
+  };
+}
+
 function toRecordOrNull(value: unknown): Record<string, unknown> | null {
   return isRecord(value) ? value : null;
 }
@@ -143,20 +164,23 @@ function buildAnalysisActions(analysis: unknown): AnalysisAction[] {
     toRecordOrNull(analysis.expense);
 
   const actions: AnalysisAction[] = [];
-
-  const serialized = JSON.stringify(analysis).toLowerCase();
+  const itineraryDetails = itineraryPayload
+    ? buildItineraryDraft(itineraryPayload)
+    : EMPTY_ITINERARY_DRAFT;
   const hasItinerarySignal =
-    Boolean(itineraryPayload) ||
-    analysis.itinerary_found === true ||
-    analysis.ticket_found === true ||
-    serialized.includes("ticket") ||
-    serialized.includes("itinerary") ||
-    serialized.includes("flight");
-
+    (analysis.itinerary_found === true || analysis.ticket_found === true) &&
+    Boolean(
+      itineraryDetails.activity_name ||
+        itineraryDetails.start_time ||
+        itineraryDetails.end_time ||
+        itineraryDetails.description,
+    );
+  const budgetDetails = budgetPayload
+    ? buildBudgetDraft(budgetPayload)
+    : EMPTY_BUDGET_DRAFT;
   const hasBudgetSignal =
-    Boolean(budgetPayload) ||
-    analysis.budget_found === true ||
-    analysis.expenditure_found === true;
+    (analysis.budget_found === true || analysis.expenditure_found === true) &&
+    Boolean(budgetDetails.item || budgetDetails.amount || budgetDetails.category);
 
   if (hasItinerarySignal) {
     actions.push({
@@ -184,12 +208,14 @@ export function TripDocumentPage() {
   const [itineraryDraft, setItineraryDraft] = useState<ItineraryDraft>(
     EMPTY_ITINERARY_DRAFT,
   );
+  const [budgetDraft, setBudgetDraft] =
+    useState<BudgetDraft>(EMPTY_BUDGET_DRAFT);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [alert, setAlert] = useState<{
     message: string;
-    type: "success" | "danger";
+    type: "success" | "danger" | "info";
   } | null>(null);
 
   const filteredDocuments = documents.filter(
@@ -225,6 +251,9 @@ export function TripDocumentPage() {
       setItineraryDraft(buildItineraryDraft(activeAction.payload));
       return;
     }
+    if (activeAction.type === "budget") {
+      setBudgetDraft(buildBudgetDraft(activeAction.payload));
+    }
   }, [activeAction]);
 
   const moveToNextAnalysisAction = () => {
@@ -259,6 +288,41 @@ export function TripDocumentPage() {
     }
   };
 
+  const handleSaveBudgetItem = async () => {
+    if (!tripId) return;
+
+    const amount = Number(budgetDraft.amount);
+    if (
+      !budgetDraft.item.trim() ||
+      !budgetDraft.amount.trim() ||
+      !Number.isFinite(amount) ||
+      amount < 0 ||
+      !budgetDraft.category.trim()
+    ) {
+      setAlert({
+        message: "Please provide a valid item, amount, and category.",
+        type: "danger",
+      });
+      return;
+    }
+
+    try {
+      await addExpenditure(tripId, {
+        item: budgetDraft.item.trim(),
+        amount,
+        category: budgetDraft.category.trim(),
+      });
+      setAlert({ message: "Budget item added successfully!", type: "success" });
+      moveToNextAnalysisAction();
+    } catch (error) {
+      console.error("Failed to add budget item:", error);
+      setAlert({
+        message: "Failed to add the budget item. Please try again.",
+        type: "danger",
+      });
+    }
+  };
+
   const handleImageAnalysis = async (file: File) => {
     setIsAnalyzing(true);
     try {
@@ -267,6 +331,11 @@ export function TripDocumentPage() {
       if (actions.length > 0) {
         setAnalysisQueue(actions);
         setActiveAnalysisIndex(0);
+      } else {
+        setAlert({
+          message: "No itinerary or budget details were found in this image.",
+          type: "info",
+        });
       }
     } catch (error) {
       console.error("Error analyzing document:", error);
@@ -432,6 +501,106 @@ export function TripDocumentPage() {
                   onClick={handleSaveItinerary}
                 >
                   Create Itinerary
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeAction?.type === "budget" && (
+        <div
+          className="modal d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Add Item to Budget?</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={moveToNextAnalysisAction}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <p>
+                  We found a budget-related item in your image. Review the
+                  details and choose whether to add it to your trip budget.
+                </p>
+                <label className="form-label" htmlFor="document-budget-item">
+                  Item
+                </label>
+                <input
+                  id="document-budget-item"
+                  className="form-control mb-2"
+                  value={budgetDraft.item}
+                  onChange={(event) =>
+                    setBudgetDraft((draft) => ({
+                      ...draft,
+                      item: event.target.value,
+                    }))
+                  }
+                />
+                <label
+                  className="form-label"
+                  htmlFor="document-budget-amount"
+                >
+                  Amount
+                </label>
+                <input
+                  id="document-budget-amount"
+                  className="form-control mb-2"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={budgetDraft.amount}
+                  onChange={(event) =>
+                    setBudgetDraft((draft) => ({
+                      ...draft,
+                      amount: event.target.value,
+                    }))
+                  }
+                />
+                <label
+                  className="form-label"
+                  htmlFor="document-budget-category"
+                >
+                  Category
+                </label>
+                <input
+                  id="document-budget-category"
+                  className="form-control"
+                  value={budgetDraft.category}
+                  onChange={(event) =>
+                    setBudgetDraft((draft) => ({
+                      ...draft,
+                      category: event.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={moveToNextAnalysisAction}
+                >
+                  Skip
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleSaveBudgetItem}
+                  disabled={
+                    !budgetDraft.item.trim() ||
+                    !budgetDraft.amount.trim() ||
+                    !Number.isFinite(Number(budgetDraft.amount)) ||
+                    Number(budgetDraft.amount) < 0 ||
+                    !budgetDraft.category.trim()
+                  }
+                >
+                  Add to Budget
                 </button>
               </div>
             </div>
