@@ -3,9 +3,11 @@ import logging
 import os
 import json
 import re
+import time
 from typing import Optional
 
 from google import genai
+from google.genai import errors
 from google.genai import types
 
 
@@ -24,6 +26,8 @@ class GeminiService:
     """
 
     DEFAULT_MODEL = "models/gemini-2.5-flash"
+    MAX_503_RETRIES = 3
+    RETRY_BACKOFF_SECONDS = 1
 
     def __init__(
         self,
@@ -42,6 +46,31 @@ class GeminiService:
         self.model = model
         self.logger = logging.getLogger(__name__)
 
+    def _generate_content_with_retry(
+        self,
+        contents,
+        config: types.GenerateContentConfig,
+    ) -> types.GenerateContentResponse:
+        for attempt in range(self.MAX_503_RETRIES + 1):
+            try:
+                return self.client.models.generate_content(
+                    model=self.model,
+                    contents=contents,
+                    config=config,
+                )
+            except errors.ServerError as error:
+                if error.code != 503 or attempt == self.MAX_503_RETRIES:
+                    raise
+
+                delay = self.RETRY_BACKOFF_SECONDS * (2**attempt)
+                self.logger.warning(
+                    "Gemini returned 503; retrying request (%d/%d) in %.1f seconds",
+                    attempt + 1,
+                    self.MAX_503_RETRIES,
+                    delay,
+                )
+                time.sleep(delay)
+
     def generate_text(
         self,
         prompt: str,
@@ -59,8 +88,7 @@ class GeminiService:
             max_output_tokens=max_output_tokens,
         )
 
-        response = self.client.models.generate_content(
-            model=self.model,
+        response = self._generate_content_with_retry(
             contents=prompt,
             config=config
         )
@@ -136,7 +164,10 @@ class GeminiService:
         country: str,
         temperature: float = 0.7,
         itinerary: Optional[list] = None,
-         max_output_tokens: int = 8192
+        max_output_tokens: int = 8192,
+        trip_start_date: Optional[str] = None,
+        trip_end_date: Optional[str] = None,
+        traveler_count: Optional[int] = None,
     ) -> dict:
         """
         Generate a chat response.
@@ -144,6 +175,11 @@ class GeminiService:
 
         system_instruction = f"""
     You are a travel assistant helping the user plan a trip to {country}.
+
+    Trip dates: {trip_start_date or "Not provided"} through {trip_end_date or "Not provided"}.
+    Number of travelers: {traveler_count if traveler_count is not None else "Not provided"}.
+    Treat the trip dates as authoritative. Keep all generated activities within this
+    date range and do not substitute today's date or an unrelated date.
 
     You MUST return ONLY valid JSON. No markdown, code fences, or text outside the JSON.
 
@@ -201,6 +237,17 @@ class GeminiService:
 
     If the user provides no exact time for a new activity, infer a reasonable time
     from surrounding activities while maintaining the requested order.
+
+    SHIFTING ACTIVITIES:
+    - When the user moves an activity or schedule earlier/later, preserve the duration
+      and ordering of affected activities.
+    - If the user shifts the start of a day's schedule, apply the same time shift to
+      the remaining activities on that day unless they ask to move only one activity.
+      Do not leave later activities at their old times when that creates a gap caused
+      by the requested shift.
+    - If only one activity is moved, adjust following activities only as needed to
+      avoid overlap and close any gap created by that move. Keep unrelated days and
+      pre-existing spacing unchanged.
 
     GENERAL QUESTIONS:
     For questions unrelated to itinerary modification (e.g. currency, weather,
@@ -306,8 +353,7 @@ class GeminiService:
             ),
         ]
 
-        response = self.client.models.generate_content(
-            model=self.model,
+        response = self._generate_content_with_retry(
             contents=contents,
             config=types.GenerateContentConfig(
                 temperature=temperature,
@@ -445,8 +491,7 @@ class GeminiService:
             ),
         ]
 
-        response = self.client.models.generate_content(
-            model=self.model,
+        response = self._generate_content_with_retry(
             contents=contents,
             config=types.GenerateContentConfig(
                 temperature=temperature,

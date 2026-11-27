@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
+import { formatDateLabel } from "../../utils/dateUtils";
 
 interface DateSelectionModalProps {
   show: boolean;
   onHide: () => void;
-  onSave: (date: Date) => void;
+  onSave: (dates: Record<string, string>) => void;
+  itineraryDates: string[];
   minDate?: string;
   maxDate?: string;
 }
@@ -13,79 +15,71 @@ export function DateSelectionModal({
   show,
   onHide,
   onSave,
+  itineraryDates,
   minDate,
   maxDate,
 }: DateSelectionModalProps) {
-  const getInitialDate = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  const itineraryDatesKey = itineraryDates.join("|");
+  const sourceDates = useMemo(
+    () => [...new Set(itineraryDatesKey ? itineraryDatesKey.split("|") : [])].sort(),
+    [itineraryDatesKey],
+  );
+  const initialDates = useMemo(() => {
+    return Object.fromEntries(sourceDates.map((date) => [date, date]));
+  }, [sourceDates]);
 
-    const min = minDate ? new Date(minDate.replace(/-/g, "/")) : null;
-    const max = maxDate ? new Date(maxDate.replace(/-/g, "/")) : null;
-
-    if (min && min > today) {
-      return min; // If the trip is in the future, start with the first day of the trip
-    }
-
-    const isTodayInRange = (!min || today >= min) && (!max || today <= max);
-
-    if (isTodayInRange) {
-      return today; // If today is within the trip's range, start with today
-    } else if (min) {
-      return min; // Otherwise, default to the first day of the trip
-    }
-
-    return today; // Fallback to today if no minDate is provided
-  };
-
-  const [selectedDate, setSelectedDate] = useState(getInitialDate());
+  const [selectedDates, setSelectedDates] =
+    useState<Record<string, string>>(initialDates);
 
   useEffect(() => {
-    setSelectedDate(getInitialDate());
-  }, [minDate, maxDate]);
+    setSelectedDates(initialDates);
+  }, [initialDates]);
 
   const handleSave = () => {
-    onSave(selectedDate);
-  };
-
-  const isValidDate = (date: Date) => date && !isNaN(date.getTime());
-
-  const toInputFormat = (date: Date) => {
-    if (!isValidDate(date)) return "";
-    // Manually format to YYYY-MM-DD to avoid timezone issues with toISOString()
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+    onSave(selectedDates);
   };
 
   return (
     <Modal show={show} onHide={onHide}>
       <Modal.Header closeButton>
-        <Modal.Title>Select a Date</Modal.Title>
+        <Modal.Title>Select a Date for Each Itinerary Day</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Form.Group className="mb-3">
-            <Form.Label>Date</Form.Label>
-            <Form.Control
-              type="date"
-              value={toInputFormat(selectedDate)}
-              onChange={(e) =>
-                setSelectedDate(new Date(e.target.value.replace(/-/g, "/")))
-              }
-              min={minDate}
-              max={maxDate}
-            />
-          </Form.Group>
+          {sourceDates.map((sourceDate, index) => (
+            <Form.Group className="mb-3" key={sourceDate}>
+              <Form.Label>
+                Day {index + 1} recommendations ({formatDateLabel(sourceDate)})
+              </Form.Label>
+              <Form.Control
+                type="date"
+                value={selectedDates[sourceDate] ?? ""}
+                onChange={(event) =>
+                  setSelectedDates((currentDates) => ({
+                    ...currentDates,
+                    [sourceDate]: event.target.value,
+                  }))
+                }
+                min={minDate}
+                max={maxDate}
+              />
+            </Form.Group>
+          ))}
         </Form>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>
           Close
         </Button>
-        <Button variant="primary" onClick={handleSave}>
-          Save Changes
+        <Button
+          variant="primary"
+          onClick={handleSave}
+          disabled={
+            sourceDates.length === 0 ||
+            sourceDates.some((sourceDate) => !selectedDates[sourceDate])
+          }
+        >
+          Add Activities
         </Button>
       </Modal.Footer>
     </Modal>

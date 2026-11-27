@@ -4,7 +4,11 @@ import { useParams } from "react-router-dom";
 import { useTripDetails } from "../../hooks/useTripDetails";
 import { useUser } from "../../contexts/UserContext";
 import { MiniItineraryCard } from "../../components/cards/MiniItineraryCard";
-import { formatTime } from "../../utils/dateUtils";
+import {
+  formatDateLabel,
+  formatTime,
+  rebaseItineraryDates,
+} from "../../utils/dateUtils";
 import { ItineraryModal } from "../../components/modals/ItineraryModal";
 import { DateSelectionModal } from "../../components/modals/DateSelectionModal";
 import LoadingOverlay from "../../components/LoadingOverlay";
@@ -55,6 +59,22 @@ export function TripAssistancePage() {
     );
   }, [members]);
 
+  const recommendationGroups = useMemo(() => {
+    const recommendations = [...(chat?.ai_recommendations ?? [])].sort(
+      (a, b) => a.start_time.localeCompare(b.start_time),
+    );
+    const groups = new Map<string, ItineraryCreationData[]>();
+
+    recommendations.forEach((recommendation) => {
+      const date = recommendation.start_time.slice(0, 10);
+      const group = groups.get(date) ?? [];
+      group.push(recommendation);
+      groups.set(date, group);
+    });
+
+    return Array.from(groups, ([date, items]) => ({ date, items }));
+  }, [chat?.ai_recommendations]);
+
   const handleAddToItinerary = (item: ItineraryCreationData) => {
     setSelectedItinerary(item);
     setIsModalOpen(true);
@@ -80,36 +100,17 @@ export function TripAssistancePage() {
     }
   };
 
-  const handleSaveAllItineraries = async (date: Date) => {
+  const handleSaveAllItineraries = async (dates: Record<string, string>) => {
     if (!tripId || !chat?.ai_recommendations) return;
 
     try {
-      const dateString = formatDateForInput(date);
-      if (!dateString) {
-        setAlert({ message: "Invalid date selected.", type: "danger" });
-        return;
-      }
-
-      const formatTimeFromString = (dateTimeString: string): string => {
-        const timePart = dateTimeString.split("T")[1];
-        if (timePart) {
-          const [hours, minutes] = timePart.split(":");
-          return `${hours}:${minutes}`;
-        }
-        return ""; // Fallback
-      };
-
-      const itineraryPromises = chat.ai_recommendations.map((item) => {
-        const startTime = formatTimeFromString(item.start_time);
-        const endTime = formatTimeFromString(item.end_time);
-
-        const newItem = {
-          ...item,
-          start_time: `${dateString}T${startTime}`,
-          end_time: `${dateString}T${endTime}`,
-        };
-        return addItinerary(tripId, newItem);
-      });
+      const rebasedRecommendations = rebaseItineraryDates(
+        chat.ai_recommendations,
+        dates,
+      );
+      const itineraryPromises = rebasedRecommendations.map((item) =>
+        addItinerary(tripId, item),
+      );
 
       const newItineraryItems = await Promise.all(itineraryPromises);
       newItineraryItems.forEach(addItineraryItem);
@@ -250,15 +251,28 @@ export function TripAssistancePage() {
                       >
                         Add All to Itinerary
                       </button>
-                      {chat.ai_recommendations.map((itinerary, i) => {
-                        return (
-                          <MiniItineraryCard
-                            key={i}
-                            itinerary={itinerary}
-                            onAddToItinerary={handleAddToItinerary}
-                          />
-                        );
-                      })}
+                      {recommendationGroups.map(({ date, items }, dayIndex) => (
+                        <div key={date}>
+                          <div
+                            className="d-flex align-items-center gap-2 my-3"
+                            role="separator"
+                            aria-label={`Recommendations for ${formatDateLabel(date)}`}
+                          >
+                            <hr className="flex-grow-1 my-0" />
+                            <span className="small fw-semibold text-muted text-nowrap">
+                              Day {dayIndex + 1} - {formatDateLabel(date)}
+                            </span>
+                            <hr className="flex-grow-1 my-0" />
+                          </div>
+                          {items.map((itinerary) => (
+                            <MiniItineraryCard
+                              key={`${itinerary.start_time}-${itinerary.activity_name}`}
+                              itinerary={itinerary}
+                              onAddToItinerary={handleAddToItinerary}
+                            />
+                          ))}
+                        </div>
+                      ))}
                     </div>
                   )}
                 <div className="text-end small opacity-75">
@@ -306,6 +320,7 @@ export function TripAssistancePage() {
         show={isDateModalOpen}
         onHide={() => setIsDateModalOpen(false)}
         onSave={handleSaveAllItineraries}
+        itineraryDates={recommendationGroups.map(({ date }) => date)}
         minDate={formatDateForInput(trip?.start_date)}
         maxDate={formatDateForInput(trip?.end_date)}
       />

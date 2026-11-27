@@ -41,7 +41,14 @@ async def add_message(
     current_user: User = Depends(get_current_user)
 ):
     await require_ai_chat_member(collection, trips_collection, ai_chat_id, current_user.user_id)
-    chat = await add_message_to_ai_chat(collection, ai_chat_id, current_user.user_id, request.message, request.country)
+    chat = await add_message_to_ai_chat(
+        collection=collection,
+        ai_chat_id=ai_chat_id,
+        user_id=current_user.user_id,
+        message=request.message,
+        country=request.country,
+        trips_collection=trips_collection,
+    )
     if chat:
         return chat
     raise HTTPException(status_code=404, detail="Chat not found")
