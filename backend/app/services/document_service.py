@@ -38,7 +38,7 @@ class DocumentService:
             user_id=user_id
         )
 
-        result = await self.db.documents.insert_one(document.dict(by_alias=True))
+        result = await self.db.documents.insert_one(document.model_dump(by_alias=True))
         update_result = await self.db.trips.update_one(
             {"_id": ObjectId(trip_id)},
             {"$push": {"document_ids": result.inserted_id}}
@@ -90,7 +90,6 @@ class DocumentService:
     async def delete_document_for_trip(self, trip_id: str, document_id: str) -> bool:
         try:
             trip_object_id = ObjectId(trip_id)
-            document_object_id = ObjectId(document_id)
         except InvalidId:
             return False
 
@@ -98,20 +97,37 @@ class DocumentService:
         if not trip:
             return False
 
-        if document_object_id not in trip.get("document_ids", []):
+        document_ids = trip.get("document_ids", [])
+        normalized_document_ids = {
+            str(document_id) for document_id in document_ids
+        }
+        if document_id not in normalized_document_ids:
             return False
 
-        document = await self.db.documents.find_one({"_id": document_object_id})
+        document_object_id = None
+        try:
+            document_object_id = ObjectId(document_id)
+            document = await self.db.documents.find_one(
+                {"_id": {"$in": [document_object_id, document_id]}}
+            )
+        except InvalidId:
+            document = await self.db.documents.find_one({"_id": document_id})
+
         if not document:
             return False
 
-        blob = self.storage_client.bucket(self.bucket_name).blob(document["gcs_path"])
-        if blob.exists():
-            blob.delete()
+        gcs_path = document.get("gcs_path")
+        if gcs_path:
+            blob = self.storage_client.bucket(self.bucket_name).blob(gcs_path)
+            if blob.exists():
+                blob.delete()
 
-        await self.db.documents.delete_one({"_id": document_object_id})
+        await self.db.documents.delete_one({"_id": document["_id"]})
+        reference_values = [document["_id"], document_id]
+        if document_object_id is not None:
+            reference_values.append(document_object_id)
         await self.db.trips.update_one(
             {"_id": trip_object_id},
-            {"$pull": {"document_ids": document_object_id}},
+            {"$pull": {"document_ids": {"$in": reference_values}}},
         )
         return True
